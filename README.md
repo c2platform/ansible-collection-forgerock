@@ -1,3 +1,3 @@
-# Ansible Collection - c2.forgerock
+# Ansible Collection ForgeRock
 
 Documentation for the collection.
