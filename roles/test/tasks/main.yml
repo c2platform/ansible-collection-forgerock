@@ -1,2 +1,5 @@
 ---
 # tasks file for test
+- name: ForgeRock collection test
+  debug:
+    msg: "ForgeRock collection"
