@@ -1,0 +1,31 @@
+---
+- name: Create owner
+  user:
+    name: "{{ am_owner }}"
+    shell: /bin/bash
+    system: true
+
+- name: Create home
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+  with_items:
+    - "{{ openam_home }}"
+    - "{{ openam_home }}/{{ openam_version }}"
+    - "{{ openam_home }}/{{ openam_version }}/downloads"
+
+
+- include: download.yml
+- include: install.yml
+
+#- name: Home link
+# Deactivated for now; the intention is that in case multiple versions exist in one server, the symlink
+# (e.g. from a systemd.service file) can go to the symlink instead of a physical binary.
+#  file:
+#   src: "{{ openam_version }}"
+#   dest: "{{ am_home_link }}"
+#   state: link
+
