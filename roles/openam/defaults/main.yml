@@ -3,6 +3,15 @@ openam_version: 6.5.3
 openam_home: /opt/am
 am_home_link: /opt/am
 
+amster_version: 6.5.3
+amster_home: /opt/amster
+
+amster_versions:
+  6.5.3:
+    url: file:///vagrant/downloads/Amster-6.5.3.zip
+    checksum: "sha256: 933f97cabd60ac37073229729668461993c99db4f56ff7ad02eb055f663ecae8"
+
+
 am_owner: forgerock
 am_group: forgerock
 

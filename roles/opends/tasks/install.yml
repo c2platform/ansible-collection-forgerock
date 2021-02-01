@@ -35,6 +35,18 @@
   register: ds_status
   ignore_errors: yes
 
+- name: Systemd DS config 2-step level
+  template:
+    src: dsconfig-init.j2
+    dest:  "{{ opends_home }}/{{ opends_version }}/config/opendj/bin/dsconfig-init.sh" 
+    owner: root
+    group: root
+    mode: 0755
+
+
+# For explanation of the rather crazy model needed, see https://backstage.forgerock.com/knowledge/kb/article/a56766667
+# We do it bottoms-up. First the init script, then the service that calls the init script, and finally the enabling
+
 - name: Systemd DS config service
   template:
     src: dsconfig.service.j2
@@ -43,17 +55,21 @@
     group: root
     mode: 0755
   notify: systemctl-daemon-reload
-# For explanation of the rather crazy model needed, see https://backstage.forgerock.com/knowledge/kb/article/a56766667
-# As during install through the setup command the service gets started, we do not run a start here. The whole two-step install
-# solely accomplishes that start-ds shell script is run upon boot. The perils of running an init.d era startup script in the syemctl Unix era.
 
-- name: DS config service two-step vehicle
-  template:
-    src: dsconfig-init.j2
-    dest:  "{{ opends_home }}/{{ opends_version }}/config/opendj/bin/dsconfig-init.sh"
-    owner: root
-    group: root
-    mode: 0755
+- name: ensure config service (running and) set to start on boot
+  service:
+    name: ds-config
+    enabled: yes
+
+
+# As during install through the setup command the service gets started, we cannot require 'started' here. Error would be "unable to start service ds-config" :-( 
+# The whole two-step install
+# mainly accomplishes that start-ds shell script is run upon boot. The perils of running an init.d era startup script in the syemctl Unix era.
+
+
+# End of section for config DS instance
+
+
 
 - name: Unzip User
   unarchive:
@@ -94,6 +110,18 @@
   register: ds_status
   ignore_errors: yes
 
+
+ 
+
+- name: DS user service two-step vehicle
+  template:
+    src: dsuser-init.j2
+    dest:  "{{ opends_home }}/{{ opends_version }}/user/opendj/bin/dsuser-init.sh" 
+    owner:
+    group: root
+    mode: 0755
+    
+
 - name: Systemd DS user service
   template:
     src: dsuser.service.j2
@@ -104,13 +132,14 @@
   notify: systemctl-daemon-reload
 
 
-- name: DS user service two-step vehicle
-  template:
-    src: dsuser-init.j2
-    dest:  "{{ opends_home }}/{{ opends_version }}/user/opendj/bin/dsuser-init.sh"
-    owner:
-    group: root
-    mode: 0755
+
+- name: ensure user service (running and) set to start on boot
+  service:
+    name: ds-user
+    enabled: yes    
+    
+    
+
 
 
 
