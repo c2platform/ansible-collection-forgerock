@@ -20,7 +20,7 @@
   register: configds_installed
 
 - name: Setup OpenDS config # noqa 301
-  command: "./setup directory-server {{ opends_setup_config|opends_cmd }}"
+  command: "./setup directory-server {{ opends_setup_config|c2platform.forgerock.opends_cmd }}"
   become: yes
   become_user: forgerock
   args:
@@ -38,7 +38,7 @@
 - name: Systemd DS config 2-step level
   template:
     src: dsconfig-init.j2
-    dest:  "{{ opends_home }}/{{ opends_version }}/config/opendj/bin/dsconfig-init.sh" 
+    dest:  "{{ opends_home }}/{{ opends_version }}/config/opendj/bin/dsconfig-init.sh"
     owner: root
     group: root
     mode: 0755
@@ -92,10 +92,10 @@
   register: userds_installed
 
 # - debug:
-#   msg: "Command: {{ opends_setup_user|opends_cmd }}"
+#   msg: "Command: {{ opends_setup_user|c2platform.forgerock.opends_cmd }}"
 
 - name: Setup OpenDS
-  command: "./setup directory-server {{ opends_setup_user|opends_cmd }}"
+  command: "./setup directory-server {{ opends_setup_user|c2platform.forgerock.opends_cmd }}"
   become: yes
   become_user: forgerock
   args:
@@ -139,9 +139,3 @@
     enabled: yes    
     
     
-
-
-
-
-
-
