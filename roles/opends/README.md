@@ -10,8 +10,8 @@ This Ansible role is used to install, upgrade and remove [ForgeRock Directory Se
 
 
 # Filesystem before and after situation
-Before: no /opt/ds and anything below it
-After: opt/ds/version/config/opendj and version/user/opendj branches. All relevant activity happens in the two opendj/bin directories.
+Before: no `/opt/ds` and anything below it
+After: `opt/ds/version/config/opendj` and `version/user/opendj` branches. All relevant activity happens in the two `opendj/bin` directories.
 However to check whether the 'setup directory-server' command was already run, we check for existence of the opendj/bak directory; if it exists Ansible skips the setup.
 
 # Systemd services changed
