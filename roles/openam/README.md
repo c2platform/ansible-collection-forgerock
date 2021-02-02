@@ -36,7 +36,7 @@ Same war file is also deployed as am.war under /opt/tomcat/webapps (our Tomcat r
 
 After situation for Amster:
 /opt/amster/<version> has the tool.
-/opt/amster/<version>/openamcfg is created after a succesful run of Amster (and used to check existence, avoiding a duplicate run)
+/opt/am/<version>/openamcfg is created after a succesful run of Amster (and used to check existence, avoiding a duplicate run)
 And amster tool makes a lot of changes in how AM works; probably most of them are stored in the associated DS server.
 
 
