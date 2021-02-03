@@ -1,0 +1,59 @@
+---
+- name: Create owner
+  user:
+    name: "{{ amster_owner }}"
+    shell: /bin/bash
+    system: true
+
+- name: Create home
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+  with_items:
+    - "{{ amster_home }}"
+    - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
+
+- name: Download zip file
+  get_url:
+    url: "{{ amster_versions[amster_version]['url'] }}"
+    dest: "{{ amster_download_dir }}/{{ amster_versions[amster_version]['url']|basename }}"
+    checksum: "{{ amster_versions[amster_version]['checksum'] }}"
+    timeout: 600
+    mode: 1373
+  register: get_url_result
+  until: get_url_result is succeeded
+
+- name: Unzip the zipfile
+  unarchive:
+    dest:  "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    remote_src: yes
+    src: "{{ amster_download_dir }}/{{ amster_versions[amster_version]['url']|basename }}"
+
+- name: Stat openamcfg dir to prevent running twice
+  stat:
+    path: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/openamcfg"
+  register: amster_has_run
+
+- name: Create config.amster script file
+  template:
+    src: config.amster.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/config.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+ # Note to AppAutomation team: the 2nd template line, " --serverUrl http://{{ opends_hostname }}:8080/am \", is a bug in waiting.
+ # It works when AM and DS are on one server, but with the US for splitting AM and DS it will fail. A separate var, openam_hostname, will be needed.
+ # The other two occurrences of the hostname in the script/template are for DS and hence fine.
+
+#  command: "./amster config.amster"
+#  become: yes
+#  become_user: forgerock
+#  args:
+#   chdir: "{{ amster_home }}/{{ amster_version }}"
+#  when: not amster_has_run.stat.exists
+

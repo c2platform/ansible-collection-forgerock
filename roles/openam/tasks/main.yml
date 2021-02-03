@@ -17,10 +17,8 @@
     - "{{ openam_home }}/{{ openam_version }}"
     - "{{ openam_home }}/{{ openam_version }}/downloads"
 
-
 - include: download.yml
 - include: install.yml
-- include: amster.yml
 
 #- name: Home link
 # Deactivated for now; the intention is that in case multiple versions exist in one server, the symlink
