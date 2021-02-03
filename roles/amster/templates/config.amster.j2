@@ -1,21 +1,2 @@
-install-openam \
---serverUrl http://{{ opends_hostname }}:8080/am \
---adminPwd FRdemo123 \
---acceptLicense \
---cookieDomain example.com  \
---cfgStoreDirMgr 'uid=am-config,ou=admins,ou=am-config' \ 
---cfgStoreDirMgrPwd FRdemo123 \ 
---cfgStore dirServer  \
---cfgStoreHost {{ opends_hostname }} \
---cfgDir {{ openam_home }}/{{ openam_version }}/openamcfg  \
---cfgStoreAdminPort 34444  \
---cfgStorePort 3389  \
---cfgStoreRootSuffix ou=am-config  \
---userStoreDirMgr 'cn=Directory Manager'  \
---userStoreDirMgrPwd FRdemo123  \
---userStoreHost  {{opends_hostname }} \
---userStoreType LDAPv3ForOpenDS  \
---userStorePort 4389 \ 
---userStoreRootSuffix dc=example,dc=com
+install-openam --serverUrl http://{{ opends_hostname }}:8080/am --adminPwd FRdemo123 --acceptLicense --cookieDomain example.com  --cfgStoreDirMgr ' uid=am-config,ou=admins,ou=am-config' --cfgStoreDirMgrPwd FRdemo123 --cfgStore dirServer --cfgStoreHost {{ opends_hostname }} --cfgDir {{ openam_home }}/{{ openam_version }}/openamcfg --cfgStoreAdminPort 34444 --cfgStorePort 3389 --cfgStoreRootSuffix ou=am-config  --userStoreDirMgr 'cn=Directory Manager' --userStoreDirMgrPwd FRdemo123 --userStoreHost  {{opends_hostname }} --userStoreType LDAPv3ForOpenDS --userStorePort 4389 --userStoreRootSuffix dc=example,dc=com
 :exit
-
