@@ -14,6 +14,9 @@ has to run before the Amster role. If testing is done with separate nodes, provi
 enhancement is to do a CURL-like test to check connectivity with the DS node before running the Amster role, and halting if
 it cannot be reached; this is in scope of the User Story to split into separate AM and DS plays.
 
+Also note that the role itself is idempotent: if Amster has been run already (detected through directory /opt/am/<version>/openamcfg), it won't run again. Reason is that in the DS modifications, Amster does some 'create' calls with unique keys.
+Hence if your role has changed (e.g. different content of a template like config.amster.j2) and you want to provision afresh, recreate both the DS VM and the AM VM in order for the new Amster settings to have effect!
+
 ## Role description
 
 1. Download and unpack Amster tool
