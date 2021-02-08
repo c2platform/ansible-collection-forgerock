@@ -36,7 +36,7 @@
 
 - name: Stat openamcfg dir  (in /opt/am, not /opt/amster!) to prevent running twice
   stat:
-    path: "{{ openam_home }}/{{openam_version }}/openamcfg"
+    path: "{{ am_home }}/{{ am_version }}/openamcfg"
   register: amster_has_run
 
 - name: Create config.amster script file
@@ -46,15 +46,15 @@
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0755
-# Note to AppAutomation team: the 2nd template line, " --serverUrl http://{{ opends_hostname }}:8080/am \", is a bug in waiting.
-# It works when AM and DS are on one server, but with the US for splitting AM and DS it will fail. A separate var, openam_hostname, will be needed.
-# The other two occurrences of the hostname in the script/template are for DS and hence fine.
-# Also note that we preferred having config.amster in a muli-line readable format with \ concatenation, but even without Ansible
+# Note that we preferred having config.amster in a muli-line readable format with \ concatenation, but even without Ansible
 # this proved too buggy in Amster 6.5. Hence the looooong line :-(
+# Also note that --cookieDomain  is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
+# for post-MVP but the whole .amster file logistics change then, with part input from BKWI git (file which are part of a CI-CD Java release)
+# Hence we left out making an extra Ansible variable for it.
 
 - name: Confirm AM up
   uri:
-    url: "http://{{ opends_hostname }}:8080/am"
+    url: "http://{{ amster_install_am['serverURL']  }}:8080/am"
     status_code: 200
   register: am_up_result
   until: am_up_result.status == 200
