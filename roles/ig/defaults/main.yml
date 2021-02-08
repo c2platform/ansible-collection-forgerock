@@ -1,11 +1,10 @@
-tomcat_instance: openig
-openig_service: "openig.service"
+tomcat_instance: ig
+ig_service: "ig.service"
 tomcat_instance_dir: "/opt/{{tomcat_instance}}"
 
 github: "https://github.com/OpenRock/OpenIG/releases/download/"
 
-openig_version: "3.0.0"
-openig_github: "{{github}}/{{openig_version}}"
-openig_zip: "OpenIG-{{openig_version}}.war"
-openig_download_url: "{{openig_github}}/{{openig_zip}}"
-
+ig_version: "3.0.0"
+ig_home: /opt/ig
+ig_owner: forgerock
+ig_group: forgerock

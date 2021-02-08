@@ -3,15 +3,15 @@
 # Assumes tomcat openig instance has been previously deployed
 # Pass tomcat_instance_dir as a role param
 
-- name: Download OpenIG war, use /opt/openig as staging dir
+- name: Download OpenIG war
   get_url:
-    url: "{{ openig_download_url }}"
+    url: "{{ ig_download_url }}"
     dest: "{{ tomcat_instance_dir }}/openig.war"
     mode: "755"
 
 # in case it is already running...
 - name: Stop OpenIG
-  service: name="{{ openig_service }}" state=stopped
+  service: name="{{ ig_service }}" state=stopped
 
 # Remove the ROOT dir so we can install the gateway at the root
 
@@ -34,4 +34,4 @@
   copy: src=config.json dest=/home/fr/.ForgeRock/OpenIG/config.json mode=0644
 
 - name: restart tomcat
-  service: name="{{ openig_service }}" state=restarted
+  service: name="{{ ig_service }}" state=restarted
