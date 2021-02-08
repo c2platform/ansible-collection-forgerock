@@ -1,0 +1,29 @@
+# (Open)AM won't start without home directory
+# and robertdebock.tomcat does not create tomcat home directory
+# Probably not needed anymore as we now use forgerock user for tomcat, and main.yml already creates that home directory.
+#- name: Create home directory for tomcat
+#  file:
+#    path: /home/tomcat
+#    state: directory
+#    owner: tomcat
+#    group: tomcat
+#    mode: 0755
+
+- name: Unzip the .war file
+  unarchive:
+    dest: "{{ am_home }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    remote_src: yes
+    src: "{{ am_home }}/{{ am_version }}/downloads/{{ am_versions[am_version]['url']|basename }}"
+
+- name: Download (Open)AM war, this time put it in Tomcat webapps directory.
+# Could be simplified as a simple copy from the source dir, but both the DEV situation (URL is a local file) and the TAP situations (URL is a local git-like server)
+# don't really justify putting effort in this small code change.
+  get_url:
+    url: "{{ am_versions[am_version]['url'] }}"
+    checksum: "{{ am_versions[am_version]['checksum'] }}"
+    dest: /opt/tomcat/webapps/am.war
+    mode: "755"
+  notify: restart tomcat instance
+
