@@ -61,8 +61,43 @@
   retries: 10
   delay: 10 # seconds
   when: not amster_has_run.stat.exists
+#  This is a waitloop until AM web interface, assumed needed for the Amster REST calls, is up and running
 
-- name: execute amster if not yet done (with max 3 retries in case of DS timeout)
+- name: Create DSping bash script file
+  template:
+    src: DSping.sh.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/DSping.sh"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode:  a+rwx
+# The outcome if ldapsearch cannot reach DS node is "ldap_sasl_bind(SIMPLE): Can't contact LDAP server (-1)"
+# If it can reach it then it''ll be quite some lines includingh "alive: true" . Now we use wc -l instead of grep
+# as the grep works badly with ldapsearch and wc works well
+
+
+
+- name: Check connection to DS server
+  shell: "./DSping.sh wc -l " 
+  register: ldapoutlines
+  until: ldapoutlines.stdout > 1
+  retries: 5
+  become: yes
+  become_user: "{{ am_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
+
+- name: debug  ldapoutlines
+  debug:
+    msg: "{{ ldapoutlines.stdout }}" 
+
+
+- name: Exit if no running DS service found
+  fail: msg="The DS server needed to provision using Amster is not running"
+  when: ldapoutlines = 1   
+# So this would happen when 5 retries gave the same result which is negative
+
+
+- name: execute amster if not yet done 
   command: "./amster config.amster"
   register: task_register_var
   become: yes
