@@ -1,6 +1,4 @@
-tomcat_instance: ig
 ig_service: "ig.service"
-tomcat_instance_dir: "/opt/{{tomcat_instance}}"
 
 github: "https://github.com/OpenRock/OpenIG/releases/download/"
 
@@ -8,3 +6,6 @@ ig_version: "3.0.0"
 ig_home: /opt/ig
 ig_owner: forgerock
 ig_group: forgerock
+
+tomcat_instance_dir: "/opt/{{tomcat_instance}}"
+tomcat_instance: ig
