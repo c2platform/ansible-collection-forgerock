@@ -13,9 +13,9 @@
     group: "{{ am_group }}"
     mode: 0755
   with_items:
-    - "{{ openam_home }}"
-    - "{{ openam_home }}/{{ openam_version }}"
-    - "{{ openam_home }}/{{ openam_version }}/downloads"
+    - "{{ am_home }}"
+    - "{{ am_home }}/{{ am_version }}"
+    - "{{ am_home }}/{{ am_version }}/downloads"
 
 - include: download.yml
 - include: install.yml
@@ -24,7 +24,7 @@
 # Deactivated for now; the intention is that in case multiple versions exist in one server, the symlink
 # (e.g. from a systemd.service file) can go to the symlink instead of a physical binary.
 #  file:
-#   src: "{{ openam_version }}"
+#   src: "{{ am_version }}"
 #   dest: "{{ am_home_link }}"
 #   state: link
 
