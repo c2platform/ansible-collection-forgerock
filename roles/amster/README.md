@@ -9,15 +9,20 @@ This Ansible role is used to install, upgrade and remove [ForgeRock Amster CLI](
 ForgeRock uses zip files mostly - not tarballs, so to use this role `unzip` is required on target nodes.
 
 Note that the 'Amster' utility part of the AM install connects with a ForgeRock DS server.
-Hence requirement is that the configured DS server already is up and running. If testing is done on a combined DS/AM node, the DS role hence
-has to run before the Amster role. If testing is done with separate nodes, provisioning of the DS node goes first. A suggested
-enhancement is to do a CURL-like test to check connectivity with the DS node before running the Amster role, and halting if
-it cannot be reached; this is in scope of the User Story to split into separate AM and DS plays.
+Hence requirement is that the configured DS server already is up and running. In a 2-server setup as is now the standard, provisioning of the DS node goes first. The role does a check whether the DS instance is up and running, using the ldapsearch utility which checks on port level.
 
 Also note that the role itself is idempotent: if Amster has been run already (detected through directory /opt/am/<version>/openamcfg), it won't run again. Reason is that in the DS modifications, Amster does some 'create' calls with unique keys.
 Hence if your role has changed (e.g. different content of a template like config.amster.j2) and you want to provision afresh, recreate both the DS VM and the AM VM in order for the new Amster settings to have effect! As you see in the check above however requirement is that Amster is installed on the same server as AM. The split into a separate role was done as technically Amster can be a separate machine, but there are no current plans
 for this yet. Materialising these plans would mean that the idempotency check above cannot be a local check on the openamcfg directory,
-but must become a remote call from the Amster node to a different node (DS or AM) to determine whether it already has been run.
+but must become a remote call from the Amster node to a different node (DS or AM) to determine whether it already has been run for this Amster file.
+(In the real life situation, the AM/DS nodes get configured using quite a few Amster files - roughly one per Suwinet application.)
+
+Also note that the idempotency check, even if improved as above checking the AM node, is not complete.
+The effect of an Amster run is not only a change on the file system of the AM/Amster node, being the openamcfg directory, but also stores data in DS.
+If you e.g. throw away an AM-Amster node but not the associated DS node Amster will fail with a not-so-helpful NullPointerException error, see.
+
+https://backstage.forgerock.com/knowledge/kb/article/a81999726
+
 
 ## Role description
 
