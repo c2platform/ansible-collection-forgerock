@@ -29,15 +29,13 @@ User and homedirectory for forgerock.
 Same war file is also deployed as am.war under /opt/tomcat/webapps (our Tomcat role might have this directory name as variable, using it instead of hardcoding would then be better.)
 
 
-
 # Code samples and variable usage 
 TODO if needed
 
 
 # All dependencies/requirements to other parts
-Note: combined for AM-DS, needs to be separated once we split these two roles into 2 plays.
 The role currently runs requiring the Common, Java and Tomcat roles of the underlying Ansible ecosystem.
-Requirements configured (now as group_vars for the openam play, but it could be done at role level too) are JDK/Java version, Tomcat version,
+Requirements configured (now as group_vars for the suwinet_am play, but it could be done at role level too) are JDK/Java version, Tomcat version,
 java_home directory, tomcat userid, expose java_home set to Yes.
 So if the Java and Tomcat roles would need to be replaced by different ones, these requirements would need to be translated for the new underlying roles.
 
