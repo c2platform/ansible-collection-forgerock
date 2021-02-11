@@ -43,6 +43,13 @@ Currently this is limited to
 # TODO
 
 1. Starts two instances. Why? What is the purpose / idea of having two instances? Where is this deployment config explained  in ForgeRock documents?
+More info on this in the VIPS wiki for ForgeRock:
+logs tampering prevention.
 
+ForgeRock Access Management relies on the following repositories to deliver by the Directory service:
+
+Configuration Store (CFG): Each access management server comes with an store that you can configure to store policies, configuration data, identity data, and CTS tokens. At BKWI we will use ForgeRock Directory Services as an external configuration store.
+
+User Store (USR): Access Management checks user credentials against one (or several) ForgeRock Directory Services.
 
 
