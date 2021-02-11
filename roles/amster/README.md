@@ -33,8 +33,8 @@ https://backstage.forgerock.com/knowledge/kb/article/a81999726
 Before: no opt/amster and anything below it.
 
 After situation for Amster:
-/opt/amster/<version> has the tool.
-/opt/am/<version>/openamcfg is created after a succesful run of Amster (and used to check existence, avoiding a duplicate run)
+/opt/amster/amster-[version] has the tool.
+/opt/am/[version]/openamcfg is created after a succesful run of Amster (and used to check existence, avoiding a duplicate run)
 And amster tool makes a lot of changes in how AM works; probably most of them are stored in the associated DS server.
 
 
