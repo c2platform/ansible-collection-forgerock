@@ -12,7 +12,7 @@ This Ansible role is used to install, upgrade and remove [ForgeRock Directory Se
 
 # Filesystem before and after situation
 Before: no `/opt/ds` and anything below it
-After: `opt/ds/version/config/opendj` and `version/user/opendj` branches. All relevant activity happens in the two `opendj/bin` directories.
+After: `opt/ds/[version]/config/opendj` and `[version]/user/opendj` branches. All relevant activity happens in the two `opendj/bin` directories.
 However to check whether the `setup directory-server` command was already run, we check for existence of the `opendj/bak directory`; if it exists Ansible skips the setup.
 
 # Systemd services changed
@@ -23,11 +23,9 @@ TODO if needed
 
 
 # All dependencies/requirements to other parts
-Note: combined for AM-DS, needs to be separated once we split these two roles into 2 plays.
-The role currently runs requiring the Common, Java and Tomcat roles of the underlying Ansible ecosystem.
-Requirements configured (now as group_vars for the openam play, but it could be done at role level too) are JDK/Java version, Tomcat version,
-`java_home` directory, tomcat userid, expose `java_home` set to Yes.
-So if the Java and Tomcat roles would need to be replaced by different ones, these requirements would need to be translated for the new underlying roles.
+The role currently runs requiring the Common and Java roles of the underlying Ansible ecosystem.
+Requirements configured (now as group_vars for the suwinet_ds play, but it could be done at role level too) are JDK/Java version, expose `java_home` set to Yes.
+So if the Java role would need to be replaced by different ones, these requirements would need to be translated for the new underlying roles.
 
 
 # Definition of Done
