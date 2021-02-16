@@ -1,6 +1,6 @@
 ---
-opends_version: 6.5.4
-opends_home: /opt/ds
+ds_version: 6.5.4
+ds_home: /opt/ds
 
 ds_owner: forgerock
 ds_group: forgerock
@@ -8,21 +8,21 @@ ds_group: forgerock
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically
-# So override ds_versions in a group_vars / host_vars file
+# So override ds_versions in a group_vars / host_vars file (on DEV a local cache, from BTO onwards a BKWI git location)
 ds_versions:
   6.5.4:
     url: https://backstage.forgerock.com/downloads/
     checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
 
-opends_versions_sequence: [6.5.4]
-opends_hostname: fr1.example.com
+ds_versions_sequence: [6.5.4]
+ds_hostname: fr1.example.com
 # Probably overwritten in the group_vars for a specific play, eg. with a nip.io adress
 
-opends_setup_config:
+ds_setup_config:
   rootUserDN: '"cn=Directory Manager"'
   rootUserPassword: FRdemo123
   monitorUserPassword: FRdemo123
-  hostname: "{{ opends_hostname }}"
+  hostname: "{{ ds_hostname }}"
   ldapPort: 3389
   ldapsPort: 3636
   adminConnectorPort: 34444
@@ -37,10 +37,10 @@ opends_setup_config:
 # --httpsPort 38443 
 
 
-opends_setup_user:
+ds_setup_user:
   rootUserDN: '"cn=Directory Manager"'
   rootUserPassword: FRdemo123
-  hostname: "{{ opends_hostname }}"
+  hostname: "{{ ds_hostname }}"
   ldapPort: 4389
   ldapsPort: 4636
   adminConnectorPort: 44444

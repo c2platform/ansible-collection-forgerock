@@ -1,4 +1,11 @@
 ---
+
+
+
+
+
+
+
 - name: Unzip config
   unarchive:
     dest: "{{ opends_home }}/{{ opends_version }}/config"
