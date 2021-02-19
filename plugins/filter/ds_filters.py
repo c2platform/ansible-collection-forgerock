@@ -5,8 +5,8 @@ __metaclass__ = type
 
 from ansible.errors import AnsibleFilterError
 
-# Return command switches for OpenDS
-def opends_cmd(cmd_config):
+# Return command switches for ds
+def ds_cmd(cmd_config):
   cmd_line = ''
   for key in cmd_config:
     cmd_line += ' --{} {}'.format(key,cmd_config[key])
@@ -17,5 +17,5 @@ class FilterModule(object):
 
     def filters(self):
         return {
-            'opends_cmd': opends_cmd
+            'ds_cmd': ds_cmd
         }

@@ -1,0 +1,55 @@
+---
+- name: Ensure group forgerock exists
+  group:
+    name: "{{ ds_group }}"
+    state: present
+
+- name: Create owner
+  user:
+    name: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    home: "{{ ds_home }}"
+    shell: /bin/bash
+    system: true
+# For now looks best to have /opt/ds as homedir, not the dir of the specific version
+    
+
+- name: Create home
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: 0755
+  with_items:
+    - "{{ ds_home }}"
+    - "{{ ds_home }}/downloads"
+    - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+#    - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/config"
+    
+
+- name: Add specific limits for ds_owner in limits.conf
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    state: present
+    regexp: '^65536'
+    line: "{{ ds_owner }}   soft    nofile    65536" 
+
+- name: Add 2nd limit
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    state: present
+    regexp: '131072'
+    line:  "{{ ds_owner }}   hard    nofile    131072" 
+ 
+- name: Download zip
+  get_url:
+    url: "{{ ds_versions[ds_version]['url'] }}"
+    dest: "{{ ds_home }}/downloads/{{ ds_versions[ds_version]['url']|basename }}"
+    checksum: "{{ ds_versions[ds_version]['checksum'] }}"
+    timeout: 300
+    mode: 1373
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+  register: get_url_result
+  until: get_url_result is succeeded

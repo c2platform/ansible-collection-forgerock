@@ -24,7 +24,7 @@
 # description: Control the OpenDJ Directory Server
 
 # Set the path to the OpenDJ instance to manage
-INSTALL_ROOT="{{ opends_home }}/{{ opends_version }}/config/opendj"
+INSTALL_ROOT="{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
 export INSTALL_ROOT
 
 cd ${INSTALL_ROOT}

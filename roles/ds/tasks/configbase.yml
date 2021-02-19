@@ -1,0 +1,28 @@
+---
+
+
+- name: DSconfig set certificate
+  command: "./dsconfig set-connection-handler-prop {{ dsconf_cert|c2platform.forgerock.opends_cmd }}"
+  # Skeleton values for the setup are in defaults of DS role, and actual values in group_vars or the Ansible play
+  # Note that for dsconfig parameters, IGNORE the Forgerock website docu and use the dsconfig --help info instead!
+  # The when: condition reuses the status --offline check outcome in install.yml
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
+  when:  ds_status is search("The server has not been configured") 
+  register: cert_status
+
+
+- name: Set Certificate -status to prevent running dsconfig twice
+# The actual check on the result is in the 'when' clause for the setup, see below
+  shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"
+  become: yes
+  become_user: forgerock
+  register: cert_status
+  ignore_errors: yes
+
+- name: debug cert_status
+  debug:
+    msg: "{{ cert_status }}"
+
