@@ -14,6 +14,31 @@
   register: cert_status
 
 
+- name: Create BKWI subdir
+  file:
+    path: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi" 
+    state: directory
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: 0755
+
+- name:  DSC-config set lookthrough  
+  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_look|c2platform.forgerock.opends_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
+
+- name:  DSC-config set smtp 
+  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_smtp|c2platform.forgerock.opends_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
+  
+
+
+# Below not in use yet, the  if-check-then-do pattern from install.yml
 - name: Set Certificate -status to prevent running dsconfig twice
 # The actual check on the result is in the 'when' clause for the setup, see below
   shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"

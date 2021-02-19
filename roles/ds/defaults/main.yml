@@ -40,5 +40,26 @@ dsconf_cert:
   port: 4444
   bindDN: 'cn=Directory Manager' 
   bindPassword: "{{ ds_rootpw }}  "
-  trustAll: 
+  trustAll: ""
+  no-prompt: ""
+
+
+dsc_conf_look:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN: 'cn=Directory Manager' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  
+  
+  
+  
+  
+dsc_conf_smtp:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN: 'cn=Directory Manager' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
   no-prompt: ""
