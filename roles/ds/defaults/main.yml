@@ -38,7 +38,7 @@ dsconf_cert:
   add: ssl-cert-nickname:config-server-cert
   hostname: "{{ ds_hostname }}"
   port: 4444
-  bindDN: 'cn=Directory Manager' 
+  bindDN: '"cn=Directory Manager"' 
   bindPassword: "{{ ds_rootpw }}  "
   trustAll: ""
   no-prompt: ""
@@ -47,19 +47,76 @@ dsconf_cert:
 dsc_conf_look:
   hostname: "{{ ds_hostname }}"
   port: 4444
-  bindDN: 'cn=Directory Manager' 
+  bindDN:  '"cn=Directory Manager"' 
   bindPassword: "{{ ds_rootpw }}  "
   trustAll: ""
   no-prompt: ""
+  set: 'lookthrough-limit:20000'   
   
-  
-  
-  
-  
+ 
 dsc_conf_smtp:
   hostname: "{{ ds_hostname }}"
   port: 4444
-  bindDN: 'cn=Directory Manager' 
+  bindDN:  '"cn=Directory Manager"' 
   bindPassword: "{{ ds_rootpw }}  "
   trustAll: ""
   no-prompt: ""
+  set: 'smtp-server:127.0.0.1:25'
+
+dsc_connect_LDAP:
+  handler-name: LDAP
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'enabled:false' 
+
+
+dsc_connect_LDAPS:
+  handler-name: LDAPS
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'allow-ldap-v2:true'
+
+
+dsc_logger_file:
+  publisher-name: '"File-Based Access Logger"'
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'enabled:false' 
+
+
+dsc_logger_test:
+  publisher-name: '"File-Based Access Logger"'
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'enabled:false'
+  set: 'Testvalue'
+
+dsc_pol_default_inquire:
+  port: 10636
+  bindDN: '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  policy-name: '"Default Password Policy"' 
+
+
+
+
+
+

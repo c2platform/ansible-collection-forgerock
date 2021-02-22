@@ -20,7 +20,7 @@
   register: configds_installed
 
 - name: Setup OpenDS config # noqa 301
-  command: "./setup directory-server {{ opends_setup_config|c2platform.forgerock.opends_cmd }}"
+  command: "./setup directory-server {{ opends_setup_config|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:

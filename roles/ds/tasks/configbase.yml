@@ -2,7 +2,7 @@
 
 
 - name: DSconfig set certificate
-  command: "./dsconfig set-connection-handler-prop {{ dsconf_cert|c2platform.forgerock.opends_cmd }}"
+  command: "./dsconfig set-connection-handler-prop {{ dsconf_cert|c2platform.forgerock.ds_cmd }}"
   # Skeleton values for the setup are in defaults of DS role, and actual values in group_vars or the Ansible play
   # Note that for dsconfig parameters, IGNORE the Forgerock website docu and use the dsconfig --help info instead!
   # The when: condition reuses the status --offline check outcome in install.yml
@@ -22,32 +22,78 @@
     group: "{{ ds_group }}"
     mode: 0755
 
+# Section Set component settings
+
 - name:  DSC-config set lookthrough  
-  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_look|c2platform.forgerock.opends_cmd }}"
+  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_look|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
 
 - name:  DSC-config set smtp 
-  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_smtp|c2platform.forgerock.opends_cmd }}"
+  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_smtp|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
   
+# Section Set connection handler settings
 
-
-# Below not in use yet, the  if-check-then-do pattern from install.yml
-- name: Set Certificate -status to prevent running dsconfig twice
-# The actual check on the result is in the 'when' clause for the setup, see below
-  shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"
+- name: DSC-connectionhandler set LDAP
+  command: "./dsconfig set-connection-handler-prop {{ dsc_connect_LDAP|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
-  register: cert_status
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+- name: DSC-connectionhandler set LDAPS
+  command: "./dsconfig set-connection-handler-prop {{ dsc_connect_LDAPS|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+# Section Set log publisher settings
+
+- name: DSC-logpublisher filebased
+  command: "./dsconfig set-log-publisher-prop {{ dsc_logger_file|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+
+- name: DSC-logpublisher  debug
+  debug:
+    msg: "./dsconfig set-log-publisher-prop {{ dsc_logger_test|c2platform.forgerock.ds_cmd }}"
+
+
+- name: Copy suwinetPerson ldif file
+# Note that source location is really for DEV only, it was copied from 
+# https://gitlab.bkwi.nl/bkwi-dxc/sbp-data/-/blob/master/gitlab_projects/BKWI-Suwi-Cookbooks/bkw_ds_role/files/default/suwinetPerson.ldif
+# But for Ansible BTO another BKWI git location is the plan. And then we'll make the source path below using a variable too.
+  copy:
+    src:  /vagrant/downloads/suwinetPerson.ldif
+    remote_src: yes
+    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/db/schema/./suwinetPerson.ldif"
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: '0640'
+
+
+
+
+- name: Password policy  - exists Default ?
+# The actual check on the result is in the 'when' clauses  for the 2 setups, see below
+  shell:  "./dsconfig get-password-policy-prop {{ dsc_pol_default_inquire|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: pol_default_inquire
   ignore_errors: yes
 
-- name: debug cert_status
+- name: debug cert_status 
   debug:
-    msg: "{{ cert_status }}"
-
+    msg: "{{ pol_default_inquire }}"
