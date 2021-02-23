@@ -4,7 +4,7 @@ ds_home: /opt/ds
 
 ds_owner: forgerock
 ds_group: forgerock
-
+ds_rootpwd: 4NnJLdVq9oxqUcVixWP4 
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically
@@ -19,32 +19,104 @@ ds_hostname: fr1.example.com
 # Probably overwritten in the group_vars for a specific play, eg. with a nip.io adress
 
 ds_setup_config:
-  rootUserDN: '"cn=Directory Manager"'
-  rootUserPassword: FRdemo123
-  monitorUserPassword: FRdemo123
+  instancePath:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+  rootUserDn: '"cn=Directory Manager"'
+  rootUserPassword: "{{ ds_rootpw }}"
   hostname: "{{ ds_hostname }}"
-  ldapPort: 3389
-  ldapsPort: 3636
-  adminConnectorPort: 34444
-  profile: am-config
-  set: am-config/amConfigAdminPassword:FRdemo123
+  adminConnectorPort: 4444
+  ldapPort: 10389
+  enableStartTls: ""
+  productionMode: ""
+  ldapsPort: 10636
+  profile: am-config:6.5
+  set: "am-config/amConfigAdminPasswor:{{ ds_rootpwd }}" 
   acceptLicense: ""
-  
-  
-# There extra fields are in the specs-docoument in case of PRD.  Simply add them to the config string by uncommenting when needed.
-# --productionMode 
-# --httpPort 38081 
-# --httpsPort 38443 
 
 
-ds_setup_user:
-  rootUserDN: '"cn=Directory Manager"'
-  rootUserPassword: FRdemo123
+dsconf_cert:
+  handler-name: LDAPS 
+  add: ssl-cert-nickname:config-server-cert
   hostname: "{{ ds_hostname }}"
-  ldapPort: 4389
-  ldapsPort: 4636
-  adminConnectorPort: 44444
-  baseDN: dc=example,dc=com 
-  acceptLicense: ""
+  port: 4444
+  bindDN: '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+
+
+dsc_conf_look:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'lookthrough-limit:20000'   
   
-  
+ 
+dsc_conf_smtp:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'smtp-server:127.0.0.1:25'
+
+dsc_connect_LDAP:
+  handler-name: LDAP
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'enabled:false' 
+
+
+dsc_connect_LDAPS:
+  handler-name: LDAPS
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'allow-ldap-v2:true'
+
+
+dsc_logger_file:
+  publisher-name: '"File-Based Access Logger"'
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'enabled:false' 
+
+
+dsc_logger_test:
+  publisher-name: '"File-Based Access Logger"'
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set: 'enabled:false'
+  set: 'Testvalue'
+
+dsc_pol_default_inquire:
+  port: 10636
+  bindDN: '"cn=Directory Manager"' 
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  policy-name: '"Default Password Policy"' 
+
+
+
+
+
+

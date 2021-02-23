@@ -1,38 +1,8 @@
 ---
-- name: Create owner
-  user:
-    name: "{{ ds_owner }}"
-    shell: /bin/bash
-    system: true
 
-- name: Create home
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ds_owner }}"
-    group: "{{ ds_group }}"
-    mode: 0755
-  with_items:
-    - "{{ ds_home }}"
-    - "{{ ds_home }}/downloads"
-    - "{{ ds_home }}/{{ ds_version }}"
-    - "{{ ds_home }}/{{ ds_version }}/config"
-    - "{{ ds_home }}/{{ ds_version }}/user"
-
-- name: Add the specific limits for ds_owner in limits.conf
-  ansible.builtin.lineinfile:
-    path: /etc/security/limits.conf
-    state: present
-    regexp: '^65536'
-    line: "{{ ds_owner }}   soft    nofile 65536" 
-
-- name: Add 2nd limit
-  ansible.builtin.lineinfile:
-    path: /etc/security/limits.conf
-    state: present
-    regexp: '131072'
-    line:  "{{ ds_owner }}   hard    nofile    131072" 
-
-
-- include: download.yml
-#- include: install.yml
+- include: init-and-dl.yml
+- include: install.yml
+- include: configbase.yml
+#- include: configusers.yml
+#- include: dsreplicate.yml
+# This last one  only testable on ACC, hence lower prio

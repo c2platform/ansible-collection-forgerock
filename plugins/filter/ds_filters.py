@@ -6,7 +6,7 @@ __metaclass__ = type
 from ansible.errors import AnsibleFilterError
 
 # Return command switches for ForgeRock CLI utilities
-def opends_cmd(cmd_config):
+def ds_cmd(cmd_config):
   cmd_line = ''
   for key in cmd_config:
     if isinstance(cmd_config[key], list):
@@ -21,5 +21,5 @@ class FilterModule(object):
 
     def filters(self):
         return {
-            'opends_cmd': opends_cmd
+            'ds_cmd': ds_cmd
         }

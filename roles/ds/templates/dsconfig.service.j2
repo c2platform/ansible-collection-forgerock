@@ -1,5 +1,5 @@
 [Unit]
-SourcePath={{ opends_home }}/{{ opends_version }}/config/opendj/bin
+SourcePath={{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin
 Description=Config DS server
 Before=runlevel5.target shutdown.target
 After=
@@ -14,8 +14,8 @@ KillMode=process
 GuessMainPID=no
 RemainAfterExit=yes
 Environment=OPENDJ_JAVA_HOME={{ adoptopenjdk_java_home }} 
-ExecStart={{ opends_home }}/{{ opends_version }}/config/opendj/bin/dsconfig-init.sh start
-ExecStop={{ opends_home }}/{{ opends_version }}/config/opendj/bin/dsconfig-init.sh stop
+ExecStart={{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/dsconfig-init.sh start
+ExecStop={{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/dsconfig-init.sh stop
 
 [Install]
 WantedBy=multi-user.target
