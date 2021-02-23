@@ -64,15 +64,12 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
 
 
-- name: DSC-logpublisher  debug
-  debug:
-    msg: "./dsconfig set-log-publisher-prop {{ dsc_logger_test|c2platform.forgerock.ds_cmd }}"
-
 
 - name: Copy suwinetPerson ldif file
 # Note that source location is really for DEV only, it was copied from 
 # https://gitlab.bkwi.nl/bkwi-dxc/sbp-data/-/blob/master/gitlab_projects/BKWI-Suwi-Cookbooks/bkw_ds_role/files/default/suwinetPerson.ldif
 # But for Ansible BTO another BKWI git location is the plan. And then we'll make the source path below using a variable too.
+# Same issue for the Forgerrock/Java install files but these at least already have a variable.
   copy:
     src:  /vagrant/downloads/suwinetPerson.ldif
     remote_src: yes
@@ -82,6 +79,42 @@
     mode: '0640'
 
 
+- name: Password  Validator -  length
+  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_length|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+- name: Password  Validator -   similarity
+  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_similar|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+- name: Password  Validator -   attribute value
+  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_attrib|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+- name: Password  Validator -   unique characters
+  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_unique|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+- name: Password  Validator -   character set
+  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_charset|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+        
 
 
 - name: Password policy  - exists Default ?
@@ -94,6 +127,134 @@
   register: pol_default_inquire
   ignore_errors: yes
 
-- name: debug cert_status 
+
+- name: Password policy in case Default does not exist
+  shell:  "./dsconfig create-password-policy {{ dsc_pol_default_create|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: pol_default_inquire is search("Password Policy does not exist")
+  register: pol_default_actiondone
+
+- name: Password policy in case Default _does_ already  exist
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_pol_default_update|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when:  not pol_default_inquire is search("Password Policy does not exist")
+  register: pol_default_actiondone
+
+
+- name: Password policy  - exists Service Accounts ?
+# The actual check on the result is in the 'when' clauses  for the 2 setups, see below
+  shell:  "./dsconfig get-password-policy-prop {{ dsc_pol_servacc_inquire|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: pol_servacc_inquire
+  ignore_errors: yes
+ 
+
+
+
+- name: Password policy in case Service Accounts does not exist
+  shell:  "./dsconfig create-password-policy {{ dsc_pol_servacc_create|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: pol_servacc_inquire is search("Password Policy does not exist")
+  register: pol_servacc_actiondone
+
+
+- name: Password policy in case Service Accounts  _does_ already  exist
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_pol_servacc_update|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when:  not pol_servacc_inquire is search("Password Policy does not exist")
+  register: pol_servacc_actiondone
+
+
+
+
+- name: Password policy  - exists JMX Accounts ?
+# The actual check on the result is in the 'when' clauses  for the 2 setups, see below
+  shell:  "./dsconfig get-password-policy-prop {{ dsc_pol_jmxacc_inquire|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: pol_jmxacc_inquire
+  ignore_errors: yes
+ 
+
+- name: Password policy in case JMX Accounts does not exist
+  shell:  "./dsconfig create-password-policy {{ dsc_pol_jmxacc_create|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: pol_jmxacc_inquire is search("Password Policy does not exist")
+  register: pol_jmxacc_actiondone
+
+- name: debug Default update
   debug:
-    msg: "{{ pol_default_inquire }}"
+    msg: "{{ dsc_pol_jmxacc_create|c2platform.forgerock.ds_cmd }}"
+
+
+- name: Password policy in case JMX Accounts  _does_ already  exist
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_pol_jmxacc_update|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when:  not pol_jmxacc_inquire is search("Password Policy does not exist")
+  register: pol_jmxacc_actiondone
+
+
+- name:  Default policy - add validator length
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_addvalid_length|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+- name:  Default policy - add validator similar
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_addvalid_similar|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+
+- name:  Default policy - add validator  Attribute
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_addvalid_attrib|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+
+- name:  Default policy - add validator  unique
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_addvalid_unique|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+
+- name:  Default policy - add validator  Character
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_addvalid_charset|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+
+
+
