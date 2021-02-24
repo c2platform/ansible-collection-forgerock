@@ -40,7 +40,7 @@ ds_setup_config:
   productionMode: ""
   ldapsPort: 10636
   profile: am-config:6.5
-  set: "am-config/amConfigAdminPasswor:{{ ds_rootpwd }}"
+  set: "am-config/amConfigAdminPasswor:{{ ds_rootpw }}"
   acceptLicense: ""
 
 dsconf_cert:
