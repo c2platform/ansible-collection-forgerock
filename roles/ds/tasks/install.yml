@@ -47,7 +47,7 @@
   template:
     src: dsconfig-init.j2
     dest:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/dsconfig-init.sh"
-    owner: root 
+    owner: root
     group: root
     mode: 0755
 
