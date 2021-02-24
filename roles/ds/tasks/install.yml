@@ -58,8 +58,7 @@
 
 # For explanation of the rather crazy model needed, see https://backstage.forgerock.com/knowledge/kb/article/a56766667
 # We do it bottoms-up. First the init script, then the service that calls the init script, and finally the enabling
-# Note
-that  we deviate from Chef, but result (from our MVP) is same
+# Note that  we deviate from Chef, but result (from our MVP) is same
 
 - name: Systemd DS config service
   template:
