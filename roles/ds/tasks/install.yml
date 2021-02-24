@@ -42,13 +42,11 @@
   register: ds_setup_status
 
 - name: chown recursive (hardly needed)
-  file: 
-    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+  file:    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     recurse: yes
-   
-    
+
 - name: Systemd DS config 2-step level
   template:
     src: dsconfig-init.j2
@@ -60,7 +58,8 @@
 
 # For explanation of the rather crazy model needed, see https://backstage.forgerock.com/knowledge/kb/article/a56766667
 # We do it bottoms-up. First the init script, then the service that calls the init script, and finally the enabling
-#MNote we deviate from Chef, but result (from our MVP) is same
+# Note
+that  we deviate from Chef, but result (from our MVP) is same
 
 - name: Systemd DS config service
   template:
