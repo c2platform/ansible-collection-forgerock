@@ -4,7 +4,7 @@ ds_home: /opt/ds
 
 ds_owner: forgerock
 ds_group: forgerock
-ds_rootpwd: 4NnJLdVq9oxqUcVixWP4
+ds_rootpw: 4NnJLdVq9oxqUcVixWP4
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically
