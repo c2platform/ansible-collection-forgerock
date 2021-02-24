@@ -27,10 +27,6 @@
   register: ds_status
   ignore_errors: yes
 
-- name: debug cert_status
-  debug:
-    msg: "{{ ds_setup_config }}"
-
 - name: Setup ds config
   command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
   become: yes
