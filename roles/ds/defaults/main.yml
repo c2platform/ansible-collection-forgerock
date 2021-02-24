@@ -20,7 +20,7 @@ ds_hostname: fr1.example.com
 
 ds_setup_config:
   instancePath:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-  rootUserDn: '"cn=Directory Manager"'
+  rootUserDN: '"cn=Directory Manager"'
   rootUserPassword: "{{ ds_rootpw }}"
   hostname: "{{ ds_hostname }}"
   adminConnectorPort: 4444
@@ -31,7 +31,6 @@ ds_setup_config:
   profile: am-config:6.5
   set: "am-config/amConfigAdminPasswor:{{ ds_rootpwd }}"
   acceptLicense: ""
-
 
 dsconf_cert:
   handler-name: LDAPS
