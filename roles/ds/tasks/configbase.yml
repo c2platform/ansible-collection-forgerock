@@ -36,9 +36,9 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
+   chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
   
-# Section Set connection handler settings
+  # Section Set connection handler settings
 
 - name: DSC-connectionhandler set LDAP
   command: "./dsconfig set-connection-handler-prop {{ dsc_connect_LDAP|c2platform.forgerock.ds_cmd }}"
@@ -72,6 +72,8 @@
     group: "{{ ds_group }}"
     mode: '0640'
   with_items: "{{ ds_db_schema_ldifs }}"
+
+  # Section password validators
 
 - name: Password  Validator -  length
   shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_length|c2platform.forgerock.ds_cmd }}"
@@ -108,8 +110,7 @@
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
 
-        
-
+# Section create 3 password p[olicies]
 
 - name: Password policy  - exists Default ?
 # The actual check on the result is in the 'when' clauses  for the 2 setups, see below
@@ -150,8 +151,6 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   register: pol_servacc_inquire
   ignore_errors: yes
- 
-
 
 
 - name: Password policy in case Service Accounts does not exist
@@ -174,8 +173,6 @@
   register: pol_servacc_actiondone
 
 
-
-
 - name: Password policy  - exists JMX Accounts ?
 # The actual check on the result is in the 'when' clauses  for the 2 setups, see below
   shell:  "./dsconfig get-password-policy-prop {{ dsc_pol_jmxacc_inquire|c2platform.forgerock.ds_cmd }}"
@@ -185,7 +182,6 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   register: pol_jmxacc_inquire
   ignore_errors: yes
- 
 
 - name: Password policy in case JMX Accounts does not exist
   shell:  "./dsconfig create-password-policy {{ dsc_pol_jmxacc_create|c2platform.forgerock.ds_cmd }}"
@@ -210,6 +206,7 @@
   when:  not pol_jmxacc_inquire is search("Password Policy does not exist")
   register: pol_jmxacc_actiondone
 
+# Section add validators to default pw policy
 
 - name:  Default policy - add validator length
   shell:  "./dsconfig set-password-policy-prop {{ dsc_addvalid_length|c2platform.forgerock.ds_cmd }}"
@@ -247,7 +244,56 @@
   become: yes
   become_user: forgerock
   args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin" 
+
+# Section remove unneeded validators from default pw policy
+
+
+- name: Default policy - exist validator list 
+# The actual check on the result is in the 'when' clause for the 4  removes, see below
+  shell:  "./dsconfig get-password-policy-prop {{ dsc_validators_inquire|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: default_validator_list
+
+- name: Default policy - remove validator list 8chars
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_removvalid_8chars|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: default_validator_list is search("At least 8 characters")
+
+- name: Default policy - remove validator list  Common
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_removvalid_common|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: default_validator_list is search("Common passwords")
+
+
+- name: Default policy - remove validator list Dictionary
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_removvalid_dictionary|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: default_validator_list is search("Dictionary")
+
+
+- name: Default policy - remove validator list  Repeated
+  shell:  "./dsconfig set-password-policy-prop {{ dsc_removvalid_repeated|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: default_validator_list is search("Repeated Characters")
+
+
+ 
 
 
 

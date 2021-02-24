@@ -456,3 +456,56 @@ dsc_addvalid_charset:
   no-prompt: ""
   policy-name: '"Default Password Policy"'
   add: "password-validator:'Character Set'"
+
+
+dsc_validators_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 10636
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  policy-name: '"Default Password Policy"'
+  property: '"password-validator"'  
+  script-friendly: ""
+
+dsc_removvalid_8chars:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  policy-name: '"Default Password Policy"'
+  remove: '"password-validator:At least 8 characters"'
+
+dsc_removvalid_common:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  policy-name: '"Default Password Policy"'
+  remove: '"password-validator:Common passwords"'
+
+dsc_removvalid_dictionary:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  policy-name: '"Default Password Policy"'
+  remove: '"password-validator:Dictionary"'
+
+dsc_removvalid_repeated:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  policy-name: '"Default Password Policy"'
+  remove: '"password-validator:Repeated Characters"'
+
