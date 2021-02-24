@@ -1,6 +1,4 @@
 ---
-
-
 - name: DSconfig set certificate
   command: "./dsconfig set-connection-handler-prop {{ dsconf_cert|c2platform.forgerock.ds_cmd }}"
   # Skeleton values for the setup are in defaults of DS role, and actual values in group_vars or the Ansible play
@@ -12,7 +10,6 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   when:  ds_status is search("The server has not been configured")
   register: cert_status
-
 
 - name: Create BKWI subdir
   file:
