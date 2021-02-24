@@ -14,13 +14,12 @@
   become_user: forgerock
   ignore_errors: yes
 
-
 - name: erase opendj dir even if filled due to failed mv (double run)
   file:
     path:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/opendj"
     state: absent
 
-- name: Check whether DS setup already run
+- name: Check whether DS setup already run # noqa 305
 # The actual check on the result is in the 'when' clause for the setup, see below
   shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"
   become: yes
@@ -32,17 +31,18 @@
   debug:
     msg: "{{ ds_setup_config }}"
 
-- name: Setup ds config 
+- name: Setup ds config
   command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-  when:  ds_status is search("The server has not been configured") 
+  when:  ds_status is search("The server has not been configured")
   register: ds_setup_status
 
 - name: chown recursive (hardly needed)
-  file:    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+  file:
+    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     recurse: yes
