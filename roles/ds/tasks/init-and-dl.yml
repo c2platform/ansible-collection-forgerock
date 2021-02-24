@@ -25,7 +25,7 @@
     - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
 #    - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/config"
 
-- name: Add pam limits /etc/security/limits.conf
+- name: Add pam limits # /etc/security/limits.conf
   community.general.pam_limits:
     domain: "{{ ds_owner }}"
     limit_type: "{{ item['limit_type'] }}"
