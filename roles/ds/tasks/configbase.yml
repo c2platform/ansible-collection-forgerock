@@ -63,21 +63,15 @@
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
 
-
-
-- name: Copy suwinetPerson ldif file
-# Note that source location is really for DEV only, it was copied from 
-# https://gitlab.bkwi.nl/bkwi-dxc/sbp-data/-/blob/master/gitlab_projects/BKWI-Suwi-Cookbooks/bkw_ds_role/files/default/suwinetPerson.ldif
-# But for Ansible BTO another BKWI git location is the plan. And then we'll make the source path below using a variable too.
-# Same issue for the Forgerrock/Java install files but these at least already have a variable.
+- name: Create db schema ldifs
   copy:
-    src:  /vagrant/downloads/suwinetPerson.ldif
+    content: "{{ ds_db_schema_ldifs[item] }}"
     remote_src: yes
-    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/db/schema/./suwinetPerson.ldif"
+    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/db/schema/./{{ item }}.ldif"
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     mode: '0640'
-
+  with_items: "{{ ds_db_schema_ldifs }}"
 
 - name: Password  Validator -  length
   shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_length|c2platform.forgerock.ds_cmd }}"

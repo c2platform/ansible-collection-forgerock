@@ -18,6 +18,17 @@ ds_versions_sequence: [6.5.4]
 ds_hostname: fr1.example.com
 # Probably overwritten in the group_vars for a specific play, eg. with a nip.io adress
 
+ds_db_schema_ldifs:
+  appPerson: | # /opt/ds/ds-6.5.4/db/schema/appPerson.ldif
+    dn: cn=schema
+    changetype: modify
+    add: attributeTypes
+    attributeTypes: ( app-account-expiration-time-oid NAME 'app-account-expiration-time' DESC 'The time the account becomes disabled' EQUALITY generalizedTimeMatch ORDERING generalizedTimeOrderingMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE USAGE userApplications )
+    dn: cn=schema
+    changetype: modify
+    add: objectClasses
+    objectClasses: ( AppPerson-oid NAME 'appPerson' DESC 'Extra properties for a app user' SUP top AUXILIARY MAY ( app-account-expiration-time ) )
+
 ds_setup_config:
   instancePath:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
   rootUserDN: '"cn=Directory Manager"'
