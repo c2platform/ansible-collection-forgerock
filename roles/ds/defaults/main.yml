@@ -105,73 +105,6 @@ dsc_logger_file:
   no-prompt: ""
   set: 'enabled:false'
 
-
-dsc_validate_length:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  validator-name: '"Length-Based Password Validator"'
-  set:
-    - enabled:true
-    - min-password-length:8
-    - max-password-length:0
-
-dsc_validate_similar:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  validator-name: '"Similarity-Based Password Validator"'
-  set:
-    - enabled:true
-    - min-password-difference:3
-
-dsc_validate_attrib:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  validator-name: '"Attribute Value"'
-  set: '"enabled:true "'
-  add:
-    - match-attribute:cn
-    - match-attribute:sn
-    - match-attribute:givenName
-    - match-attribute:uid
-
-dsc_validate_unique:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  validator-name: '"Unique Characters"'
-  set:
-    - enabled:true
-    - min-unique-characters:4
-    - case-sensitive-validation:true
-
-dsc_validate_charset:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  validator-name: '"Character Set"'
-  set:
-    - enabled:true
-    - allow-unclassified-characters:true
-
-
 dsc_pol_default_inquire:
   port: 10636
   bindDN: '"cn=Directory Manager"'
@@ -509,3 +442,37 @@ dsc_removvalid_repeated:
   policy-name: '"Default Password Policy"'
   remove: '"password-validator:Repeated Characters"'
 
+ds_config:
+  generic:
+    hostname: "{{ ds_hostname }}"
+    port: 4444
+    bindDN:  '"cn=Directory Manager"'
+    bindPassword: "{{ ds_rootpw }}  "
+    trustAll: ""
+    no-prompt: ""
+  set-password-validator-prop:
+    - validator-name: '"Length-Based Password Validator"'
+      set:
+        - enabled:true
+        - min-password-length:8
+        - max-password-length:0
+    - validator-name: '"Similarity-Based Password Validator"'
+      set:
+        - enabled:true
+        - min-password-difference:3
+    - validator-name: '"Attribute Value"'
+      set: '"enabled:true"'
+      add:
+        - match-attribute:cn
+        - match-attribute:sn
+        - match-attribute:givenName
+        - match-attribute:uid
+    - validator-name: '"Unique Characters"'
+      set:
+        - enabled:true
+        - min-unique-characters:4
+        - case-sensitive-validation:true
+    - validator-name: '"Character Set"'
+      set:
+        - enabled:true
+        - allow-unclassified-characters:true
