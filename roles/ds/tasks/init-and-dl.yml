@@ -11,8 +11,6 @@
     home: "{{ ds_home }}"
     shell: /bin/bash
     system: true
-# For now looks best to have /opt/ds as homedir, not the dir of the specific version
-    
 
 - name: Create home
   file:
