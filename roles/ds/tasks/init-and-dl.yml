@@ -25,19 +25,17 @@
     - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
 #    - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/config"
 
-- name: Add specific limits for ds_owner in limits.conf
+- name: Add pam limits /etc/security/limits.conf
   community.general.pam_limits:
-    domain: forgerock
-    limit_type: soft
+    domain: "{{ ds_owner }}"
+    limit_type: "{{ item['limit_type'] }}"
     limit_item: nofile
-    value: 65536
-
-- name: Add 2nd limit
-  community.general.pam_limits:
-    domain: forgerock
-    limit_type: hard
-    limit_item: nofile
-    value: 131072
+    value: "{{ item['value'] }}"
+  with_items:
+    - limit_type: soft
+      value: 65536
+    - limit_type: hard
+      value: 131072
 
 - name: Download zip
   get_url:
