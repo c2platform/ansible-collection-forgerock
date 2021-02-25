@@ -1,0 +1,27 @@
+---
+- name: Component configuration
+  block:
+    - name: Get current configuration
+      shell: >
+        ./dsconfig get-{{ component }}-prop
+        {{ ds_config['generic']|c2platform.forgerock.ds_cmd }}
+        --property {{ item }}
+      with_items: "{{ ds_config['get-' + component + '-prop'] }}"
+      args:
+        chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+      register: current_config
+      when: ds_config['get-' + component + '-prop']|default(False)
+      changed_when: False
+
+    - name: Set component configuration
+      shell: >
+        ./dsconfig set-{{ component }}-prop
+        {{ ds_config['generic']|c2platform.forgerock.ds_cmd }}
+        {{ item|c2platform.forgerock.ds_cmd }}
+      with_items: "{{ ds_config['set-' + component + '-prop'] }}"
+      when:
+        - item|c2platform.forgerock.ds_config_property_change(current_config.results|default(''))
+      args:
+        chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  become: yes
+  become_user: forgerock
