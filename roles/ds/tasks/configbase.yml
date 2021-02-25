@@ -19,21 +19,10 @@
     group: "{{ ds_group }}"
     mode: 0755
 
-# Section Set component settings
-
-- name:  DSC-config set lookthrough #noqa 301
-  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_look|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-
-- name:  DSC-config set smtp
-  command: "./dsconfig set-global-configuration-prop {{ dsc_conf_smtp|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
-  args:
-   chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+- include_tasks: "config_component.yml"
+  with_items: "{{ ds_config_components }}"
+  loop_control:
+    loop_var: component
 
   # Section Set connection handler settings
 
@@ -69,59 +58,6 @@
     group: "{{ ds_group }}"
     mode: '0640'
   with_items: "{{ ds_db_schema_ldifs }}"
-
-#- debug:
-#    msg: >
-#      ./dsconfig set-password-validator-prop
-#      {{ ds_config['generic']|c2platform.forgerock.ds_cmd }}
-#      {{ item|c2platform.forgerock.ds_cmd }}
-#  with_items: "{{ ds_config['set-password-validator-prop'] }}"
-
-- name: Password validators
-  shell: >
-    ./dsconfig set-password-validator-prop
-    {{ ds_config['generic']|c2platform.forgerock.ds_cmd }}
-    {{ item|c2platform.forgerock.ds_cmd }}
-  become: yes
-  become_user: forgerock
-  with_items: "{{ ds_config['set-password-validator-prop'] }}"
-  args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-
-#- name: Password  Validator -  length  #noqa 305
-#  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_length|c2platform.forgerock.ds_cmd }}"
-#  become: yes
-#  become_user: forgerock
-#  args:
-#    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-#
-#- name: Password  Validator -   similarity
-#  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_similar|c2platform.forgerock.ds_cmd }}"
-#  become: yes
-#  become_user: forgerock
-#  args:
-#    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-#
-#- name: Password  Validator -   attribute value
-#  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_attrib|c2platform.forgerock.ds_cmd }}"
-#  become: yes
-#  become_user: forgerock
-#  args:
-#    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-#
-#- name: Password  Validator -   unique characters
-#  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_unique|c2platform.forgerock.ds_cmd }}"
-#  become: yes
-#  become_user: forgerock
-#  args:
-#    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-#
-#- name: Password  Validator -   character set
-#  shell:  "./dsconfig set-password-validator-prop  {{ dsc_validate_charset|c2platform.forgerock.ds_cmd }}"
-#  become: yes
-#  become_user: forgerock
-#  args:
-#    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
 
 # Section create 3 password p[olicies]
 
