@@ -46,6 +46,34 @@ this also makes the chance less that in AM and IG rollout errors are found relat
 
 To be determined ;-)
 
+## Global configuration
+
+Global configuration such as `lookthrough-limit`, `smtp-server` can be configured as shown below
+
+```yaml
+ds_config:
+  set-global-configuration-prop:
+    - set: lookthrough-limit:20000
+    - set: smtp-server:127.0.0.1:25
+```
+
+This will execute commands similar to
+
+```bash
+./dsconfig set-global-configuration-prop  \
+--hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" \
+--bindPassword supersecure   --trustAll  --no-prompt   \
+--set lookthrough-limit:20000
+```
+
+Using `get-global-configuration-prop` we can check current value
+
+```bash
+./dsconfig get-global-configuration-prop  \
+--hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" \
+--bindPassword supersecure   --trustAll  --no-prompt   \
+--property lookthrough-limit
+```
 
 ## Password validators
 
