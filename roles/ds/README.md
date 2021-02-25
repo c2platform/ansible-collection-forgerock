@@ -4,6 +4,7 @@ This Ansible role is used to install, upgrade and remove [ForgeRock Directory Se
 
 [[_TOC_]]
 
+# The main steps listed
 
 1. Download and unpack
 2. Run setup 
