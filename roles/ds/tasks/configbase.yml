@@ -58,7 +58,7 @@
     group: "{{ ds_group }}"
     mode: '0640'
   with_items: "{{ ds_db_schema_ldifs }}"
-
+  when: ds_db_schema_ldifs|default(False)
 # Section create 3 password p[olicies]
 
 - name: Password policy  - exists Default ?
