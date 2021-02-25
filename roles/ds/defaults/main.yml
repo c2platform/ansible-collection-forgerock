@@ -4,7 +4,9 @@ ds_home: /opt/ds
 
 ds_owner: forgerock
 ds_group: forgerock
-ds_rootpw: supersecure
+# ds_rootpw: 4NnJLdVq9oxqUcVixWP4
+# (tmp for EdR, Michael is finding out the standard)
+ds_rootpw: supersecret
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically
@@ -420,6 +422,36 @@ dsc_removvalid_repeated:
   no-prompt: ""
   policy-name: '"Default Password Policy"'
   remove: '"password-validator:Repeated Characters"'
+
+  dsc_ustore_createbackend_sroot:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set:
+    - base-dn:'"c=nl"'
+    - enabled:true
+    - db-cache-percent:5
+  type: je  
+  backend-name: suwiRoot
+
+dsc_ustore_createbackend_uroot:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  no-prompt: ""
+  set:
+    - base-dn:'"dc=bkwi,dc=nl"'
+    - enabled:true
+    - db-cache-percent:5
+  type: je 
+  backend-name: userRoot
+
+
 
 ds_config:
   generic:

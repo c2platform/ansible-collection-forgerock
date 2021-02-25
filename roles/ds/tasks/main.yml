@@ -3,6 +3,6 @@
 - include: init-and-dl.yml
 - include: install.yml
 - include: configbase.yml
+- include: configuserstore.yml
 #- include: configusers.yml
 #- include: dsreplicate.yml
-# This last one  only testable on ACC, hence lower prio

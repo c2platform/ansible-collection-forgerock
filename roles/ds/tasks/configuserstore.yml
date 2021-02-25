@@ -1,0 +1,27 @@
+---
+
+
+- name: Create userstore ldifs
+  copy:
+    content: "{{ ds_userstore_ldifs[item] }}"
+    remote_src: yes
+    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/./{{ item }}.ldif"
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: '0640'
+  with_items: "{{ ds_userstore_ldifs }}"
+
+
+- name: DSC Userstore suwiRoot
+  command: "./dsconfig set-connection-handler-prop {{ dsc_ustore_createbackend_uroot:|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+
+- name: DSC Userstore  userRoot
+  command: "./dsconfig set-connection-handler-prop {{ dsc_ustore_createbackend_uroot:|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
