@@ -53,26 +53,6 @@ dsconf_cert:
   trustAll: ""
   no-prompt: ""
 
-
-dsc_conf_look:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  set: 'lookthrough-limit:20000'
-
-
-dsc_conf_smtp:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  set: 'smtp-server:127.0.0.1:25'
-
 dsc_connect_LDAP:
   handler-name: LDAP
   hostname: "{{ ds_hostname }}"
@@ -82,7 +62,6 @@ dsc_connect_LDAP:
   trustAll: ""
   no-prompt: ""
   set: 'enabled:false'
-
 
 dsc_connect_LDAPS:
   handler-name: LDAPS
@@ -450,6 +429,10 @@ ds_config:
     bindPassword: "{{ ds_rootpw }}  "
     trustAll: ""
     no-prompt: ""
+  set-global-configuration-prop:
+    - set: lookthrough-limit:20000
+    - set: smtp-server:127.0.0.1:25
+  get-global-configuration-prop: ['lookthrough-limit','smtp-server']
   set-password-validator-prop:
     - validator-name: '"Length-Based Password Validator"'
       set:
@@ -476,3 +459,7 @@ ds_config:
       set:
         - enabled:true
         - allow-unclassified-characters:true
+
+ds_config_components:
+  - global-configuration
+  - password-validator
