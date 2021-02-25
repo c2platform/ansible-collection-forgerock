@@ -1,4 +1,5 @@
 # Ansible Role ForgeRock Directory Services (DS)
+{:.no_toc}
 
 This Ansible role is used to install, upgrade and remove [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip).
 
