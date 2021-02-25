@@ -23,7 +23,11 @@ def ds_cmd_result_property_value(results, prop):
     p = re.compile(prop + '.*?:.*?([\S.]*)$')
     for result in results:
         if result['item'] == prop:
-            return p.search(result['stdout']).group(1).rstrip()
+            r = p.search(result['stdout'])
+            if r is None:
+                return ''
+            else:
+                return r.group(1).rstrip()
     return ''
 
 # Return value part from set in ds_config var
