@@ -460,7 +460,7 @@ ds_config:
     trustAll: ""
     no-prompt: ""
   global-configuration:
-    - set: lookthrough-limit:20001
+    - set: lookthrough-limit:20000
     - set: smtp-server:127.0.0.1:25
   password-validator:
     - validator-name: '"Length-Based Password Validator"'
