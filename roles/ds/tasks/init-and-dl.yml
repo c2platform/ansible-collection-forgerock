@@ -19,11 +19,12 @@
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     mode: 0755
+    recurse: yes
   with_items:
     - "{{ ds_home }}"
     - "{{ ds_home }}/downloads"
     - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-#    - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/config"
+    - "{{ ds_home|c2platform.forgerock.ds_config_fingerprint_folder(ds_version) }}"
 
 - name: Add pam limits # /etc/security/limits.conf
   community.general.pam_limits:
