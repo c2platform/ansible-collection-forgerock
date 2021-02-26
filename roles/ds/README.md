@@ -1,5 +1,4 @@
 # Ansible Role ForgeRock Directory Services (DS)
-{:.no_toc}
 
 This Ansible role is used to install, upgrade and remove [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip).
 
@@ -41,11 +40,38 @@ this also makes the chance less that in AM and IG rollout errors are found relat
 # Links
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
-
+* [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
 
 # TODO
 
-To be determined ;-)
+
+## dsconfig add
+
+`add` configuration is currently not checked for changes, only `set`. Combine with fingerprint for complete component configuration? I.e. run complete component configuration if 1) fingerprint changes or 2) property changes
+
+```yaml
+    - validator-name: '"Attribute Value"'
+      set: enabled:true
+      add:
+        - match-attribute:cn
+        - match-attribute:sn
+        - match-attribute:givenName
+        - match-attribute:uid
+```
+
+```bash
+forgerock@bkd-ds:~/ds-6.5.4/bin$ ./dsconfig get-password-validator-prop --hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" --bindPassword supersecret --trustAll --no-prompt --validator-name "Attribute Value"
+Property               : Value(s)
+-----------------------:--------------------------------------------------
+check-substrings       : true
+enabled                : true
+match-attribute        : All attributes in the user entry will be checked.
+min-substring-length   : 5
+test-reversed-password : true
+```
+
+
+
 
 ## Global configuration
 

@@ -423,26 +423,6 @@ dsc_removvalid_repeated:
   policy-name: '"Default Password Policy"'
   remove: '"password-validator:Repeated Characters"'
 
-dsc_ustore_sroot_modify:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.suwiRoot.ldif"
-
-dsc_ustore_uroot_modify:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.userRoot.ldif"
-
-
-
 dsc_ustore_createbackend_sroot:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -451,7 +431,7 @@ dsc_ustore_createbackend_sroot:
   trustAll: ""
   no-prompt: ""
   set:
-    - "base-dn:'c=NL'"
+    - base-dn:'"c=nl"'
     - enabled:true
     - db-cache-percent:5
   type: je  
@@ -465,44 +445,24 @@ dsc_ustore_createbackend_uroot:
   trustAll: ""
   no-prompt: ""
   set:
-    - "base-dn:'dc=bkwi,dc=nl'"
+    - base-dn:'"dc=bkwi,dc=nl"'
     - enabled:true
     - db-cache-percent:5
   type: je 
   backend-name: userRoot
 
-dsc_ustore_sroot_inquire:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  useSsl: ""
-  baseDn: '"c=NL"'
-
-dsc_ustore_uroot_inquire:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  useSsl: ""
-  baseDn: '"c=bkwi,dc=nl"'
- 
-
 ds_config:
-  generic:
+  connection:
     hostname: "{{ ds_hostname }}"
     port: 4444
     bindDN:  '"cn=Directory Manager"'
     bindPassword: "{{ ds_rootpw }}  "
     trustAll: ""
     no-prompt: ""
-  set-global-configuration-prop:
+  global-configuration:
     - set: lookthrough-limit:20000
     - set: smtp-server:127.0.0.1:25
-  get-global-configuration-prop: ['lookthrough-limit','smtp-server']
-  set-password-validator-prop:
+  password-validator:
     - validator-name: '"Length-Based Password Validator"'
       set:
         - enabled:true
@@ -513,7 +473,7 @@ ds_config:
         - enabled:true
         - min-password-difference:3
     - validator-name: '"Attribute Value"'
-      set: '"enabled:true"'
+      set: enabled:true
       add:
         - match-attribute:cn
         - match-attribute:sn
@@ -531,4 +491,9 @@ ds_config:
 
 ds_config_components:
   - global-configuration
+  - password-validator
+
+# Components that require use of a fingerpint to detect
+# changes between current and desired state
+ds_config_components_fingerprint:
   - password-validator

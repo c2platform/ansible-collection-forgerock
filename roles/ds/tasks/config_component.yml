@@ -1,27 +1,37 @@
 ---
-- name: Component configuration
-  block:
-    - name: Get current configuration
-      shell: >
-        ./dsconfig get-{{ component }}-prop
-        {{ ds_config['generic']|c2platform.forgerock.ds_cmd }}
-        --property {{ item }}
-      with_items: "{{ ds_config['get-' + component + '-prop'] }}"
-      args:
-        chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-      register: current_config
-      when: ds_config['get-' + component + '-prop']|default(False)
-      changed_when: False
+- name: Fingerprint
+  copy:
+    content: "{{ ds_config[component]|c2platform.forgerock.ds_config_fingerprint }}"
+    dest: "{{ component|c2platform.forgerock.ds_config_fingerprint_component_path(ds_home,ds_version) }}"
+    group: "{{ ds_owner }}"
+    owner: "{{ ds_group }}"
+  when: use_fingerprint
+  register: component_fingerprint
 
-    - name: Set component configuration
-      shell: >
-        ./dsconfig set-{{ component }}-prop
-        {{ ds_config['generic']|c2platform.forgerock.ds_cmd }}
-        {{ item|c2platform.forgerock.ds_cmd }}
-      with_items: "{{ ds_config['set-' + component + '-prop'] }}"
-      when:
-        - item|c2platform.forgerock.ds_config_property_change(current_config.results|default(''))
-      args:
-        chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+- name: Get current configuration
+  shell: >
+    ./dsconfig get-{{ component }}-prop
+    {{ ds_config['connection']|c2platform.forgerock.ds_cmd }}
+    {{ item|c2platform.forgerock.ds_cmd_get(component) }}
+  with_items: "{{ ds_config[component] }}"
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: current_config
+  when: not use_fingerprint
+   # - item|c2platform.forgerock.ds_cmd_get(component)
+  changed_when: False
+  become: yes
+  become_user: forgerock
+
+- name: Set component configuration
+  shell: >
+    ./dsconfig set-{{ component }}-prop
+    {{ ds_config['connection']|c2platform.forgerock.ds_cmd }}
+    {{ item|c2platform.forgerock.ds_cmd }}
+  with_items: "{{ ds_config[component] }}"
+  when:
+    - item|c2platform.forgerock.ds_config_property_change(current_config,component_fingerprint,use_fingerprint)
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   become: yes
   become_user: forgerock

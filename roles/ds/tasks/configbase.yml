@@ -19,8 +19,10 @@
     group: "{{ ds_group }}"
     mode: 0755
 
-- include_tasks: "config_component.yml"
+- include_tasks: config_component.yml
   with_items: "{{ ds_config_components }}"
+  vars:
+    use_fingerprint: "{{ component in ds_config_components_fingerprint }}"
   loop_control:
     loop_var: component
 
