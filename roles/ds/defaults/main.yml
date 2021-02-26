@@ -423,7 +423,7 @@ dsc_removvalid_repeated:
   policy-name: '"Default Password Policy"'
   remove: '"password-validator:Repeated Characters"'
 
-  dsc_ustore_createbackend_sroot:
+dsc_ustore_createbackend_sroot:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
@@ -451,21 +451,18 @@ dsc_ustore_createbackend_uroot:
   type: je 
   backend-name: userRoot
 
-
-
 ds_config:
-  generic:
+  connection:
     hostname: "{{ ds_hostname }}"
     port: 4444
     bindDN:  '"cn=Directory Manager"'
     bindPassword: "{{ ds_rootpw }}  "
     trustAll: ""
     no-prompt: ""
-  set-global-configuration-prop:
-    - set: lookthrough-limit:20000
+  global-configuration:
+    - set: lookthrough-limit:20001
     - set: smtp-server:127.0.0.1:25
-  get-global-configuration-prop: ['lookthrough-limit','smtp-server']
-  set-password-validator-prop:
+  password-validator:
     - validator-name: '"Length-Based Password Validator"'
       set:
         - enabled:true
@@ -476,7 +473,7 @@ ds_config:
         - enabled:true
         - min-password-difference:3
     - validator-name: '"Attribute Value"'
-      set: '"enabled:true"'
+      set: enabled:true
       add:
         - match-attribute:cn
         - match-attribute:sn
