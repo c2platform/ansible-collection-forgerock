@@ -21,22 +21,6 @@
   loop_control:
     loop_var: component
 
-  # Section Set connection handler settings
-
-- name: DSC-connectionhandler set LDAP
-  command: "./dsconfig set-connection-handler-prop {{ dsc_connect_LDAP|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-
-- name: DSC-connectionhandler set LDAPS
-  command: "./dsconfig set-connection-handler-prop {{ dsc_connect_LDAPS|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-
 # Section Set log publisher settings
 
 - name: DSC-logpublisher filebased

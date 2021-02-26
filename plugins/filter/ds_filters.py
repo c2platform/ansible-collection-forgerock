@@ -30,7 +30,6 @@ def ds_cmd_get(cmd_config, component):
 # Return value from property from get results
 # returns None if property does not exist
 def ds_cmd_result_property_value(results, set_item, prop):
-    #p = re.compile(prop + '.*?:.*?([\S.]*)$')
     p = re.compile(prop + '\s+:\s(\S+)')
     for result in results:
         # pprint( {'set_item': set_item, 'result[item]': result['item']} )
@@ -63,12 +62,14 @@ def ds_config_property_name(v):
       raise ValueError('Unable to get property name')
 
 # Determine if a current property is different from target
-def ds_config_property_change(set_item, current_config, component_fingerprint, use_component_fingerprint):
-   # pprint( {'ds_config_property_change': set_item} )
+def ds_config_property_change(set_item, current_config, component_fingerprint, use_component_fingerprint, skip_state_check):
+   #pprint( {'ds_config_property_change': set_item} )
    #pprint( {'component_fingerprint': component_fingerprint} )
    #pprint( {'current_config': current_config} )
    #pprint( {'component_fingerprint[changed]': component_fingerprint['changed']} )
-   if use_component_fingerprint:
+   if skip_state_check:
+      return True
+   elif use_component_fingerprint:
       return component_fingerprint['changed']
    elif current_config is None:
        return True

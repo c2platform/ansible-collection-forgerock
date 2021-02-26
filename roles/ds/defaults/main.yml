@@ -45,37 +45,6 @@ ds_setup_config:
   set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
   acceptLicense: ""
 
-dsconf_cert:
-  handler-name: LDAPS
-  add: ssl-cert-nickname:config-server-cert
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN: '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-
-dsc_connect_LDAP:
-  handler-name: LDAP
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  set: 'enabled:false'
-
-dsc_connect_LDAPS:
-  handler-name: LDAPS
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  set: 'allow-ldap-v2:true'
-
-
 dsc_logger_file:
   publisher-name: '"File-Based Access Logger"'
   hostname: "{{ ds_hostname }}"
@@ -459,6 +428,14 @@ ds_config:
     bindPassword: "{{ ds_rootpw }}  "
     trustAll: ""
     no-prompt: ""
+  connection-handler_set_cert: # note underscore → connection-handler component
+    - handler-name: LDAPS
+      add: ssl-cert-nickname:config-server-cert
+  connection-handler:
+    - handler-name: LDAP
+      set: enabled:false
+    - handler-name: LDAPS
+      set: allow-ldap-v2:true
   global-configuration:
     - set: lookthrough-limit:20000
     - set: smtp-server:127.0.0.1:25
@@ -490,10 +467,12 @@ ds_config:
         - allow-unclassified-characters:true
 
 ds_config_components:
+  - connection-handler
   - global-configuration
   - password-validator
 
 # Components that require use of a fingerpint to detect
 # changes between current and desired state
 ds_config_components_fingerprint:
+  - connection-handler
   - password-validator
