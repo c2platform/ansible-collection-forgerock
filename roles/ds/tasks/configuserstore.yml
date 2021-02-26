@@ -12,16 +12,62 @@
   with_items: "{{ ds_userstore_ldifs }}"
 
 
-- name: DSC Userstore suwiRoot
-  command: "./dsconfig set-connection-handler-prop {{ dsc_ustore_createbackend_uroot:|c2platform.forgerock.ds_cmd }}"
+  
+
+- name: Userstore suwiRoot exists already ?
+# The actual check on the result is in the 'when' clause for the dsconfig and ldapmodify, see below.
+# Last parameter is dashless hence hardcoded here.
+  shell:  "./ldapsearch  {{ dsc_ustore_sroot_inquire|c2platform.forgerock.ds_cmd }} objectclass=top"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: ustore_sroot_inquire
+  ignore_errors: yes
+  
+
+- name: DSC Userstore suwiRoot
+  command: "./dsconfig create-backend {{ dsc_ustore_createbackend_sroot|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: ustore_sroot_inquire is search("No Such Entry")
+
+
+- name: Modify DS with suwiRoot
+  shell:  "./ldapmodify  {{ dsc_ustore_sroot_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: ustore_sroot_inquire is search("No Such Entry")
+  
+
+- name: Userstore userRoot exists already ?
+# The actual check on the result is in the 'when' clause for the dsconfig etc, see below.
+# Last parameter is dashless hence hardcoded here.
+  shell:  "./ldapsearch  {{ dsc_ustore_uroot_inquire|c2platform.forgerock.ds_cmd }} objectclass=top"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: ustore_uroot_inquire
+  ignore_errors: yes  
 
 - name: DSC Userstore  userRoot
-  command: "./dsconfig set-connection-handler-prop {{ dsc_ustore_createbackend_uroot:|c2platform.forgerock.ds_cmd }}"
+  command: "./dsconfig create-backend {{ dsc_ustore_createbackend_uroot|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: ustore_uroot_inquire is search("No Such Entry")
+ 
+
+- name: Modify DS with userRoot
+  shell:  "./ldapmodify  {{ dsc_ustore_uroot_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: ustore_uroot_inquire is search("No Such Entry")
