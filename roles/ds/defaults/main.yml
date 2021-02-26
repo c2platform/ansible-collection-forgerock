@@ -423,7 +423,27 @@ dsc_removvalid_repeated:
   policy-name: '"Default Password Policy"'
   remove: '"password-validator:Repeated Characters"'
 
-  dsc_ustore_createbackend_sroot:
+dsc_ustore_sroot_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.suwiRoot.ldif"
+
+dsc_ustore_uroot_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.userRoot.ldif"
+
+
+
+dsc_ustore_createbackend_sroot:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
@@ -431,7 +451,7 @@ dsc_removvalid_repeated:
   trustAll: ""
   no-prompt: ""
   set:
-    - base-dn:'"c=nl"'
+    - "base-dn:'c=NL'"
     - enabled:true
     - db-cache-percent:5
   type: je  
@@ -445,13 +465,30 @@ dsc_ustore_createbackend_uroot:
   trustAll: ""
   no-prompt: ""
   set:
-    - base-dn:'"dc=bkwi,dc=nl"'
+    - "base-dn:'dc=bkwi,dc=nl'"
     - enabled:true
     - db-cache-percent:5
   type: je 
   backend-name: userRoot
 
+dsc_ustore_sroot_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"c=NL"'
 
+dsc_ustore_uroot_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"c=bkwi,dc=nl"'
+ 
 
 ds_config:
   generic:
