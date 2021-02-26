@@ -495,3 +495,8 @@ ds_config:
 ds_config_components:
   - global-configuration
   - password-validator
+
+# Components that require use of a fingerpint to detect
+# changes between current and desired state
+ds_config_components_fingerprint:
+  - password-validator
