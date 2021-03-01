@@ -1,0 +1,12 @@
+---
+
+
+- name: Create special users ldifs
+  copy:
+    content: "{{ ds_specialusers_ldifs[item] }}"
+    remote_src: yes
+    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/./{{ item }}.ldif"
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: '0640'
+  with_items: "{{ ds_specialusers_ldifs }}"
