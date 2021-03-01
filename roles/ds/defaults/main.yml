@@ -114,6 +114,47 @@ dsc_ustore_uroot_modify:
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.userRoot.ldif"
 
 
+dsc_ustore_special_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"o=special,c=NL"'
+
+
+dsc_ustore_suwi_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"o=suwi,c=NL"'
+
+
+dsc_ustore_special_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.special.ldif"
+
+
+
+dsc_ustore_suwi_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.suwi.ldif"
+
+
 # Password policy settings
 ds_config_pps:
   generic:

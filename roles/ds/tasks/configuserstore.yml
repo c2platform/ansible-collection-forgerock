@@ -67,3 +67,42 @@
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   when: ustore_uroot_inquire is search("No Such Entry")
+
+
+- name: Userstore special exists already ?
+# The actual check on the result is in the 'when' clause for the dsconfig etc, see below.
+# Last parameter is dashless hence hardcoded here
+  shell:  "./ldapsearch  {{ dsc_ustore_special_inquire|c2platform.forgerock.ds_cmd }} objectclass=top"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: ustore_special_inquire
+  ignore_errors: yes
+
+- name: Modify DS with special
+  shell:  "./ldapmodify  {{ dsc_ustore_special_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: ustore_special_inquire is search("No Such Entry
+
+- name: Userstore suwi exists already ?
+# The actual check on the result is in the 'when' clause for the dsconfig etc, see below.
+# Last parameter is dashless hence hardcoded here
+  shell:  "./ldapsearch  {{ dsc_ustore_suwi_inquire|c2platform.forgerock.ds_cmd }} objectclass=top"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: ustore_suwi_inquire
+  ignore_errors: yes
+
+- name: Modify DS with special
+  shell:  "./ldapmodify  {{ dsc_ustore_suwi_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: ustore_suwi_inquire is search("No Such Entry")
