@@ -4,5 +4,5 @@
 - include: install.yml
 - include: configbase.yml
 - include: configuserstore.yml
-#- include: configusers.yml
+- include: configusers.yml
 #- include: dsreplicate.yml
