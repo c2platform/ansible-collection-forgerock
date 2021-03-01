@@ -71,6 +71,62 @@ dsc_ustore_createbackend_uroot:
   type: je 
   backend-name: userRoot
 
+# Password policy settings
+ds_config_pps:
+  generic:
+    - default-password-storage-scheme:Salted SHA-512
+    - password-attribute:userPassword
+    - deprecated-password-storage-scheme:Salted SHA-1
+    - last-login-time-attribute:ds-pwp-last-login-time
+    - last-login-time-format:yyyyMMddHHmmss
+    - password-expiration-warning-interval:7 days
+    - min-password-age:24 hours
+    - password-change-requires-current-password:true
+    - password-history-duration:0 seconds
+    - skip-validation-for-administrators:true
+    - require-secure-authentication:true
+  default:
+    - allow-user-password-changes:true
+    - expire-passwords-without-warning:true
+    - force-change-on-add:true
+    - force-change-on-reset:true
+    - grace-login-count:2
+    - idle-lockout-interval:45 days
+    - lockout-duration:0 minutes
+    - lockout-failure-expiration-interval:0 minutes
+    - lockout-failure-count:5
+    - max-password-age:56 days
+    - max-password-reset-age:14 days
+    - password-history-count:10
+    - require-secure-password-changes:true
+  service-accounts:
+    - expire-passwords-without-warning:false
+    - force-change-on-add:false
+    - force-change-on-reset:false
+    - grace-login-count:10
+    - idle-lockout-interval:2000 days
+    - lockout-duration:1 s
+    - lockout-failure-expiration-interval:1 s
+    - lockout-failure-count:10000
+    - max-password-age:2000 days
+    - max-password-reset-age:8 hours
+    - password-history-count:5
+    - require-secure-password-changes:true      
+  jmx:
+    - default-password-storage-scheme:Salted SHA-512
+    - expire-passwords-without-warning:false
+    - force-change-on-add:false
+    - force-change-on-reset:false
+    - grace-login-count:10
+    - idle-lockout-interval:2000 days
+    - lockout-duration:480 s
+    - lockout-failure-expiration-interval:600 s
+    - lockout-failure-count:5
+    - max-password-age:2000 days
+    - max-password-reset-age:8 hours
+    - password-history-count:5
+    - password-history-duration:0 seconds
+
 ds_config:
   connection:
     hostname: "{{ ds_hostname }}"
@@ -105,31 +161,7 @@ ds_config:
 
   password-policy:
     - policy-name: Default Password Policy
-      set: 
-        - default-password-storage-scheme:Salted SHA-512
-        - password-attribute:userPassword
-        - deprecated-password-storage-scheme:Salted SHA-1
-        - allow-user-password-changes:true
-        - expire-passwords-without-warning:true
-        - password-expiration-warning-interval:7 days
-        - force-change-on-add:true
-        - force-change-on-reset:true
-        - grace-login-count:2
-        - idle-lockout-interval:45 days
-        - last-login-time-attribute:ds-pwp-last-login-time
-        - last-login-time-format:yyyyMMddHHmmss
-        - lockout-duration:0 minutes
-        - lockout-failure-expiration-interval:0 minutes
-        - lockout-failure-count:5
-        - max-password-age:56 days
-        - max-password-reset-age:14 days
-        - min-password-age:24 hours
-        - password-change-requires-current-password:true
-        - password-history-count:10
-        - password-history-duration:0 seconds
-        - skip-validation-for-administrators:true
-        - require-secure-authentication:true
-        - require-secure-password-changes:true
+      set: "{{ ds_config_pps['generic'] + ds_config_pps['default'] }}"
       add:
         - password-validator:Length-Based Password Validator
         - password-validator:Similarity-Based Password Validator
@@ -153,30 +185,7 @@ ds_config:
         - password-attribute:userPassword
   password-policy_service-accounts:
     - policy-name: Password Policy Service Accounts
-      set:         
-        - default-password-storage-scheme:Salted SHA-512
-        - deprecated-password-storage-scheme:Salted SHA-1
-        - expire-passwords-without-warning:false
-        - password-expiration-warning-interval:"7 days"
-        - force-change-on-add:false
-        - force-change-on-reset:false
-        - grace-login-count:10
-        - idle-lockout-interval:2000 days
-        - last-login-time-attribute:ds-pwp-last-login-time
-        - last-login-time-format:yyyyMMddHHmmss
-        - lockout-duration:1 s
-        - lockout-failure-expiration-interval:1 s
-        - lockout-failure-count:10000
-        - max-password-age:2000 days
-        - max-password-reset-age:8 hours
-        - min-password-age:24 hours
-        - password-attribute:userPassword
-        - password-change-requires-current-password:true
-        - password-history-count:5
-        - password-history-duration:0 seconds
-        - skip-validation-for-administrators:true
-        - require-secure-authentication:true
-        - require-secure-password-changes:true
+      set: "{{ ds_config_pps['generic'] + ds_config_pps['service-accounts'] }}"
   password-policy_service-accounts-jmx-create:
     - policy-name: Password Policy JMX Service Accounts
       type: password-policy
@@ -185,29 +194,7 @@ ds_config:
         - password-attribute:userPassword
   password-policy_service-accounts-jmx:
     - policy-name: Password Policy JMX Service Accounts
-      set:         
-        - default-password-storage-scheme:Salted SHA-512
-        - deprecated-password-storage-scheme:Salted SHA-1
-        - expire-passwords-without-warning:false
-        - password-expiration-warning-interval:7 days
-        - force-change-on-add:false
-        - force-change-on-reset:false
-        - grace-login-count:10
-        - idle-lockout-interval:2000 days
-        - last-login-time-attribute:ds-pwp-last-login-time
-        - last-login-time-format:yyyyMMddHHmmss
-        - lockout-duration:480 s
-        - lockout-failure-expiration-interval:600 s
-        - lockout-failure-count:5
-        - max-password-age:2000 days
-        - max-password-reset-age:8 hours
-        - min-password-age:24 hours
-        - password-attribute:userPassword
-        - password-change-requires-current-password:true
-        - password-history-count:5
-        - password-history-duration:0 seconds
-        - skip-validation-for-administrators:true
-        - require-secure-authentication:true
+      set: "{{ ds_config_pps['generic'] + ds_config_pps['jmx'] }}"
   password-validator:
     - validator-name: '"Length-Based Password Validator"'
       set:
