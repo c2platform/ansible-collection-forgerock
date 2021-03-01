@@ -63,7 +63,7 @@ def ds_cmd_get(cmd_config, component):
     # pprint({'component':component, 'cmd_config': cmd_config})
     comp = component.split('_')[0]  # e.g. connection-handler
     if 'when' in cmd_config:
-        if 'cmd' in cmd_config['when']:
+        if 'switches' in cmd_config['when']:
             return ds_cmd(cmd_config['when']['switches'])
         return ''
     if comp == 'global-configuration':
