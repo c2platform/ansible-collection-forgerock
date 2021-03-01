@@ -60,7 +60,7 @@ dsc_ustore_uroot_inquire:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  baseDn: '"c=bkwi,dc=nl"'
+  baseDn: '"dc=bkwi,dc=nl"'
 
 
 
@@ -72,7 +72,7 @@ dsc_ustore_createbackend_sroot:
   trustAll: ""
   no-prompt: ""
   set:
-    - base-dn:'"c=NL"'
+    - "base-dn:'c=NL'"
     - enabled:true
     - db-cache-percent:5
   type: je
@@ -86,7 +86,7 @@ dsc_ustore_createbackend_uroot:
   trustAll: ""
   no-prompt: ""
   set:
-    - base-dn:'"dc=bkwi,dc=nl"'
+    - "base-dn:'dc=bkwi,dc=nl'"
     - enabled:true
     - db-cache-percent:5
   type: je 
