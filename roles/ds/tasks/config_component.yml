@@ -1,7 +1,6 @@
 ---
-- name: Component current state check
-  block:
-    - name: Fingerprint
+- block:
+    - name: "Fingerprint {{ component }}"
       copy:
         content: "{{ ds_config[component]|c2platform.forgerock.ds_config_fingerprint }}"
         dest: "{{ component|c2platform.forgerock.ds_config_fingerprint_component_path(ds_home,ds_version) }}"
@@ -10,9 +9,9 @@
       when: use_fingerprint
       register: component_fingerprint
 
-    - name: Get current configuration
+    - name: "Get current configuration {{ component }}"
       shell: >
-        ./dsconfig get-{{ component.split('_')[0] }}-prop
+        ./dsconfig {{ component|c2platform.forgerock.ds_config_method('get') }}
         {{ ds_config['connection']|c2platform.forgerock.ds_cmd }}
         {{ item|c2platform.forgerock.ds_cmd_get(component) }}
       with_items: "{{ ds_config[component] }}"
@@ -20,15 +19,14 @@
         chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
       register: current_config
       when: not use_fingerprint
-       # - item|c2platform.forgerock.ds_cmd_get(component)
       changed_when: False
       become: yes
       become_user: forgerock
   when: not skip_state_check|default(False)
 
-- name: Set component configuration
+- name: "Set component {{ component }}"
   shell: >
-    ./dsconfig set-{{ component.split('_')[0] }}-prop
+    ./dsconfig {{ component|c2platform.forgerock.ds_config_method }}
     {{ ds_config['connection']|c2platform.forgerock.ds_cmd }}
     {{ item|c2platform.forgerock.ds_cmd }}
   with_items: "{{ ds_config[component] }}"

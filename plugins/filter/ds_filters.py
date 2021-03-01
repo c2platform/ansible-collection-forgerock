@@ -14,18 +14,45 @@ def ds_cmd(cmd_config):
   for key in cmd_config:
     if isinstance(cmd_config[key], list):
       for v in cmd_config[key]:
-        cmd_line += ' --{} {}'.format(key,v)
+        vf = format_ds_cmd_value(v)
+        cmd_line += ' --{} {}'.format(key,vf)
     else:
-      cmd_line += ' --{} {}'.format(key,cmd_config[key])
+      vf = format_ds_cmd_value(cmd_config[key])
+      cmd_line += ' --{} {}'.format(key,vf)
   return cmd_line
+
+# Return string with quotes for values with whitespace
+def format_ds_cmd_value(v):
+    if isinstance(v, int):
+        return str(v)
+    elif '"' in v:
+        return v
+    elif ' ' in v:
+        return '"' + v +'"'
+    return v
+
+# Return ds config method e.g. set-connection-handler-prop
+def ds_config_method(component, get_set = 'set'):
+  comp = component.split('_')[0] # e.g. connection-handler
+  if 'create' in component:
+    return 'create-' + comp
+  elif 'delete' in component:
+    return 'delete-' + comp
+  else:
+    return get_set + '-' + comp + '-prop'
 
 # Return the command switches to get current config
 def ds_cmd_get(cmd_config, component):
-  if component == 'global-configuration':
+  comp = component.split('_')[0] # e.g. connection-handler
+  #pprint({'cmd_config[policy-name]':cmd_config['policy-name'],'cmd_config[set]':cmd_config['set'] })
+  if comp == 'global-configuration':
     return '--property ' + ds_config_property_name(cmd_config['set'])
-  elif component == 'password-validator':
-    return '--validator-name ' + cmd_config['validator-name']
-  return False
+  elif comp == 'password-validator':
+    return '--validator-name ' + format_ds_cmd_value(cmd_config['validator-name'])
+  elif comp == 'log-publisher':
+    return '--publisher-name ' + format_ds_cmd_value(cmd_config['publisher-name'])
+  else:
+    raise Exception("No get command defined for component {}. Use a fingerprint!?".format(comp))
 
 # Return value from property from get results
 # returns None if property does not exist
@@ -92,6 +119,8 @@ def ds_config_property_change(set_item, current_config, component_fingerprint, u
 
 # Return hash value for config
 def ds_config_fingerprint(config):
+    if type(config).__name__ == 'AnsibleUndefined':
+        print('fatal: component configuration is missing')
     json_config = json.dumps(config)
     str = hashlib.sha1(bytes(json_config, 'utf-8'))
     return str.hexdigest()
@@ -113,6 +142,7 @@ class FilterModule(object):
         return {
             'ds_cmd': ds_cmd,
             'ds_cmd_get': ds_cmd_get,
+            'ds_config_method': ds_config_method,
             'ds_cmd_result_property_value': ds_cmd_result_property_value,
             'ds_config_property_value': ds_config_property_value,
             'ds_config_property_name': ds_config_property_name,
