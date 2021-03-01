@@ -256,12 +256,40 @@ ds_config:
   password-policy_remove:
     - policy-name: Default Password Policy
       remove: password-validator:At least 8 characters
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sAt least 8 characters)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
     - policy-name: Default Password Policy
       remove: password-validator:Common passwords
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sCommon passwords)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
     - policy-name: Default Password Policy
       remove: password-validator:Dictionary
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sDictionary)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
     - policy-name: Default Password Policy
       remove: password-validator:Repeated Characters
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sRepeated Characters)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
   password-policy_service-accounts-create:
     - policy-name: Password Policy Service Accounts
       type: password-policy
@@ -342,4 +370,3 @@ ds_config_components_fingerprint:
   - password-policy_service-accounts
   - password-policy_service-accounts-jmx-create
   - password-policy_service-accounts-jmx
-  - password-policy_remove
