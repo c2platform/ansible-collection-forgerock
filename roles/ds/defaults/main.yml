@@ -43,6 +43,28 @@ ds_setup_config:
   set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
   acceptLicense: ""
 
+
+  dsc_ustore_sroot_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"c=NL"'
+
+
+dsc_ustore_uroot_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"c=bkwi,dc=nl"'
+
+
+
 dsc_ustore_createbackend_sroot:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -51,10 +73,10 @@ dsc_ustore_createbackend_sroot:
   trustAll: ""
   no-prompt: ""
   set:
-    - base-dn:'"c=nl"'
+    - base-dn:'"c=NL"'
     - enabled:true
     - db-cache-percent:5
-  type: je  
+  type: je
   backend-name: suwiRoot
 
 dsc_ustore_createbackend_uroot:
@@ -70,6 +92,68 @@ dsc_ustore_createbackend_uroot:
     - db-cache-percent:5
   type: je 
   backend-name: userRoot
+
+
+dsc_ustore_sroot_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.suwiRoot.ldif"
+
+
+dsc_ustore_uroot_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.userRoot.ldif"
+
+
+dsc_ustore_special_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"o=special,c=NL"'
+
+
+dsc_ustore_suwi_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}  "
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"o=suwi,c=NL"'
+
+
+dsc_ustore_special_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.special.ldif"
+
+
+
+dsc_ustore_suwi_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.suwi.ldif"
+
 
 # Password policy settings
 ds_config_pps:
