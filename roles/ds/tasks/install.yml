@@ -20,21 +20,23 @@
     state: absent
 
 - name: Check whether DS setup already run # noqa 305
-# The actual check on the result is in the 'when' clause for the setup, see below
   shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"
   become: yes
   become_user: forgerock
   register: ds_status
   ignore_errors: yes
 
+- name: DS setup fact
+  set_fact:
+    ds_setup: '{{ ds_status is search("The server has not been configured") }}'
+
 - name: Setup ds config
   command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-  when:  ds_status is search("The server has not been configured")
-  register: ds_setup_status
+  when:  ds_setup
+  become: yes
+  become_user: "{{ ds_owner }}"
 
 - name: chown recursive (hardly needed)
   file:
