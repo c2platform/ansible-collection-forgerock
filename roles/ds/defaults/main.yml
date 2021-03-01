@@ -194,7 +194,7 @@ ds_config_pps:
     - max-password-age:2000 days
     - max-password-reset-age:8 hours
     - password-history-count:5
-    - require-secure-password-changes:true      
+    - require-secure-password-changes:true
   jmx:
     - default-password-storage-scheme:Salted SHA-512
     - expire-passwords-without-warning:false
@@ -232,16 +232,18 @@ ds_config:
   log-publisher:
     - publisher-name: File-Based Access Logger
       set: enabled:false
-#  password-policy_create:
-#    - policy-name: Default Password Policy
-#      type: password-policy
-#      set: 
-#        - default-password-storage-scheme:Salted SHA-512
-#        - password-attribute:userPassword
-#      exists_when:
-#        - regex: '^(Default Password Policy)\s+:'
-#        - cmd: list-password-properties
-
+  password-policy_create:
+    - policy-name: Default Password Policy
+      type: password-policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+      when:
+        regex: '^(Default Password Policy)\s+:'
+        method: list-password-policies
+        match: no
+        #switches:
+        #  property: password-attribute
   password-policy:
     - policy-name: Default Password Policy
       set: "{{ ds_config_pps['generic'] + ds_config_pps['default'] }}"
@@ -263,7 +265,7 @@ ds_config:
   password-policy_service-accounts-create:
     - policy-name: Password Policy Service Accounts
       type: password-policy
-      set: 
+      set:
         - default-password-storage-scheme:Salted SHA-512
         - password-attribute:userPassword
   password-policy_service-accounts:
@@ -272,7 +274,7 @@ ds_config:
   password-policy_service-accounts-jmx-create:
     - policy-name: Password Policy JMX Service Accounts
       type: password-policy
-      set: 
+      set:
         - default-password-storage-scheme:Salted SHA-512
         - password-attribute:userPassword
   password-policy_service-accounts-jmx:
@@ -312,18 +314,18 @@ ds_config:
 #        - match-attribute:sn
 #        - match-attribute:givenName
 #        - match-attribute:uid
-#      #remove: 
+#      #remove:
 #      #  - match-attribute:sn
 
 ds_config_components:
   - connection-handler
   - global-configuration
   - log-publisher
-  # - password-policy_create
+  - password-policy_create
   - password-policy
-  - password-policy_service-accounts-create  
+  - password-policy_service-accounts-create
   - password-policy_service-accounts
-  - password-policy_service-accounts-jmx-create 
+  - password-policy_service-accounts-jmx-create
   - password-policy_service-accounts-jmx
   - password-validator
   - password-policy_remove
@@ -336,8 +338,8 @@ ds_config_components_fingerprint:
   #- password-validator_add
   #- password-policy_create
   - password-policy
-  - password-policy_service-accounts-create 
-  - password-policy_service-accounts  
-  - password-policy_service-accounts-jmx-create 
+  - password-policy_service-accounts-create
+  - password-policy_service-accounts
+  - password-policy_service-accounts-jmx-create
   - password-policy_service-accounts-jmx
   - password-policy_remove

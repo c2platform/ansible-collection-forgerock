@@ -11,7 +11,7 @@
 
     - name: "Get current configuration {{ component }}"
       shell: >
-        ./dsconfig {{ component|c2platform.forgerock.ds_config_method('get') }}
+        ./dsconfig {{ component|c2platform.forgerock.ds_config_method(item,'get') }}
         {{ ds_config['connection']|c2platform.forgerock.ds_cmd }}
         {{ item|c2platform.forgerock.ds_cmd_get(component) }}
       with_items: "{{ ds_config[component] }}"
@@ -31,7 +31,7 @@
     {{ item|c2platform.forgerock.ds_cmd }}
   with_items: "{{ ds_config[component] }}"
   when:
-    - item|c2platform.forgerock.ds_config_property_change(current_config,component_fingerprint,use_fingerprint,skip_state_check|default(False))
+    - item|c2platform.forgerock.ds_config_state_diff(current_config,component_fingerprint,use_fingerprint,skip_state_check|default(False))
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   become: yes
