@@ -44,7 +44,7 @@ ds_setup_config:
   acceptLicense: ""
 
 
-  dsc_ustore_sroot_inquire:
+dsc_ustore_sroot_inquire:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
@@ -371,4 +371,3 @@ ds_config_components_fingerprint:
   - password-policy_service-accounts
   - password-policy_service-accounts-jmx-create
   - password-policy_service-accounts-jmx
-  - password-policy_remove
