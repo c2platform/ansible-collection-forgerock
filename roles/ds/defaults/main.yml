@@ -43,353 +43,6 @@ ds_setup_config:
   set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
   acceptLicense: ""
 
-dsc_logger_file:
-  publisher-name: '"File-Based Access Logger"'
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  set: 'enabled:false'
-
-dsc_pol_default_inquire:
-  port: 10636
-  bindDN: '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-
-dsc_pol_default_create:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  type: password-policy
-  set:
-    - default-password-storage-scheme:"Salted SHA-512"
-    - deprecated-password-storage-scheme:"Salted SHA-1"
-    - allow-user-password-changes:true
-    - expire-passwords-without-warning:true
-    - password-expiration-warning-interval:"7 days"
-    - force-change-on-add:true
-    - force-change-on-reset:true
-    - "grace-login-count:2"
-    - idle-lockout-interval:"45 days"
-    - "last-login-time-attribute:ds-pwp-last-login-time"
-    - "last-login-time-format:yyyyMMddHHmmss"
-    - lockout-duration:"0 minutes"
-    - lockout-failure-expiration-interval:"0 minutes"
-    - "lockout-failure-count:5"
-    - max-password-age:"56 days"
-    - max-password-reset-age:"14 days"
-    - min-password-age:"24 hours"
-    - "password-attribute:userPassword"
-    - password-change-requires-current-password:true
-    - "password-history-count:10"
-    - password-history-duration:"0 seconds"
-    - skip-validation-for-administrators:true
-    - require-secure-authentication:true
-    - require-secure-password-changes:true
-
-
-dsc_pol_default_update:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  set:
-    - default-password-storage-scheme:"Salted SHA-512"
-    - deprecated-password-storage-scheme:"Salted SHA-1"
-    - allow-user-password-changes:true
-    - expire-passwords-without-warning:true
-    - password-expiration-warning-interval:"7 days"
-    - force-change-on-add:true
-    - force-change-on-reset:true
-    - "grace-login-count:2"
-    - idle-lockout-interval:"45 days"
-    - "last-login-time-attribute:ds-pwp-last-login-time"
-    - "last-login-time-format:yyyyMMddHHmmss"
-    - lockout-duration:"0 minutes"
-    - lockout-failure-expiration-interval:"0 minutes"
-    - "lockout-failure-count:5"
-    - max-password-age:"56 days"
-    - max-password-reset-age:"14 days"
-    - min-password-age:"24 hours"
-    - "password-attribute:userPassword"
-    - password-change-requires-current-password:true
-    - "password-history-count:10"
-    - password-history-duration:"0 seconds"
-    - skip-validation-for-administrators:true
-    - require-secure-authentication:true
-    - require-secure-password-changes:true
-
-dsc_pol_servacc_inquire:
-  port: 10636
-  bindDN: '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Password Policy Service Accounts"'
-
-
-dsc_pol_servacc_create:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Password Policy Service Accounts"'
-  type: password-policy
-  set:
-    - default-password-storage-scheme:"Salted SHA-512"
-    - deprecated-password-storage-scheme:"Salted SHA-1"
-    - expire-passwords-without-warning:false
-    - password-expiration-warning-interval:"7 days"
-    - force-change-on-add:false
-    - force-change-on-reset:false
-    - "grace-login-count:10"
-    - idle-lockout-interval:"2000 days"
-    - "last-login-time-attribute:ds-pwp-last-login-time"
-    - "last-login-time-format:yyyyMMddHHmmss"
-    - lockout-duration:"1 s"
-    - lockout-failure-expiration-interval:"1 s"
-    - "lockout-failure-count:10000"
-    - max-password-age:"2000 days"
-    - max-password-reset-age:"8 hours"
-    - min-password-age:"24 hours"
-    - "password-attribute:userPassword"
-    - password-change-requires-current-password:true
-    - "password-history-count:5"
-    - password-history-duration:"0 seconds"
-    - skip-validation-for-administrators:true
-    - require-secure-authentication:true
-    - require-secure-password-changes:true
-
-
-dsc_pol_servacc_update:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Password Policy Service Accounts"'
-  set:
-    - default-password-storage-scheme:"Salted SHA-512"
-    - deprecated-password-storage-scheme:"Salted SHA-1"
-    - expire-passwords-without-warning:false
-    - password-expiration-warning-interval:"7 days"
-    - force-change-on-add:false
-    - force-change-on-reset:false
-    - "grace-login-count:10"
-    - idle-lockout-interval:"2000 days"
-    - "last-login-time-attribute:ds-pwp-last-login-time"
-    - "last-login-time-format:yyyyMMddHHmmss"
-    - lockout-duration:"1 s"
-    - lockout-failure-expiration-interval:"1 s"
-    - "lockout-failure-count:10000"
-    - max-password-age:"2000 days"
-    - max-password-reset-age:"8 hours"
-    - min-password-age:"24 hours"
-    - "password-attribute:userPassword"
-    - password-change-requires-current-password:true
-    - "password-history-count:5"
-    - password-history-duration:"0 seconds"
-    - skip-validation-for-administrators:true
-    - require-secure-authentication:true
-    - require-secure-password-changes:true
-
-dsc_pol_jmxacc_inquire:
-  port: 10636
-  bindDN: '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Password Policy JMX Service Accounts"'
-
-
-dsc_pol_jmxacc_create:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Password Policy JMX Service Accounts"'
-  type: password-policy
-  set:
-    - default-password-storage-scheme:"Salted SHA-512"
-    - deprecated-password-storage-scheme:"Salted SHA-1"
-    - expire-passwords-without-warning:false
-    - password-expiration-warning-interval:"7 days"
-    - force-change-on-add:false
-    - force-change-on-reset:false
-    - "grace-login-count:10"
-    - idle-lockout-interval:"2000 days"
-    - "last-login-time-attribute:ds-pwp-last-login-time"
-    - "last-login-time-format:yyyyMMddHHmmss"
-    - lockout-duration:"480 s"
-    - lockout-failure-expiration-interval:"600 s"
-    - "lockout-failure-count:5"
-    - max-password-age:"2000 days"
-    - max-password-reset-age:"8 hours"
-    - min-password-age:"24 hours"
-    - "password-attribute:userPassword"
-    - password-change-requires-current-password:true
-    - "password-history-count:5"
-    - password-history-duration:"0 seconds"
-    - skip-validation-for-administrators:true
-    - require-secure-authentication:true
-    - require-secure-password-changes:true
-
-
-
-dsc_pol_jmxacc_update:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Password Policy JMX Service Accounts"'
-  set:
-    - default-password-storage-scheme:"Salted SHA-512"
-    - deprecated-password-storage-scheme:"Salted SHA-1"
-    - expire-passwords-without-warning:false
-    - password-expiration-warning-interval:"7 days"
-    - force-change-on-add:false
-    - force-change-on-reset:false
-    - "grace-login-count:10"
-    - idle-lockout-interval:"2000 days"
-    - "last-login-time-attribute:ds-pwp-last-login-time"
-    - "last-login-time-format:yyyyMMddHHmmss"
-    - lockout-duration:"480 s"
-    - lockout-failure-expiration-interval:"600 s"
-    - "lockout-failure-count:5"
-    - max-password-age:"2000 days"
-    - max-password-reset-age:"8 hours"
-    - min-password-age:"24 hours"
-    - "password-attribute:userPassword"
-    - password-change-requires-current-password:true
-    - "password-history-count:5"
-    - password-history-duration:"0 seconds"
-    - skip-validation-for-administrators:true
-    - require-secure-authentication:true
-    - require-secure-password-changes:true
-
-dsc_addvalid_length:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  add: "password-validator:'Length-Based Password Validator'"
-
-dsc_addvalid_similar:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  add: "password-validator:'Similarity-Based Password Validator'"
-
-
-dsc_addvalid_attrib:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  add: "password-validator:'Attribute Value'"
-
-dsc_addvalid_unique:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  add: "password-validator:'Unique Characters'"
-
-
-dsc_addvalid_charset:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  add: "password-validator:'Character Set'"
-
-
-dsc_validators_inquire:
-  hostname: "{{ ds_hostname }}"
-  port: 10636
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  property: '"password-validator"'  
-  script-friendly: ""
-
-dsc_removvalid_8chars:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  remove: '"password-validator:At least 8 characters"'
-
-dsc_removvalid_common:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  remove: '"password-validator:Common passwords"'
-
-dsc_removvalid_dictionary:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  remove: '"password-validator:Dictionary"'
-
-dsc_removvalid_repeated:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
-  trustAll: ""
-  no-prompt: ""
-  policy-name: '"Default Password Policy"'
-  remove: '"password-validator:Repeated Characters"'
-
 dsc_ustore_createbackend_sroot:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -422,8 +75,8 @@ ds_config:
   connection:
     hostname: "{{ ds_hostname }}"
     port: 4444
-    bindDN:  '"cn=Directory Manager"'
-    bindPassword: "{{ ds_rootpw }}  "
+    bindDN:  cn=Directory Manager
+    bindPassword: "{{ ds_rootpw }}"
     trustAll: ""
     no-prompt: ""
   connection-handler_set_cert: # note underscore → connection-handler component
@@ -437,6 +90,124 @@ ds_config:
   global-configuration:
     - set: lookthrough-limit:20000
     - set: smtp-server:127.0.0.1:25
+  log-publisher:
+    - publisher-name: File-Based Access Logger
+      set: enabled:false
+#  password-policy_create:
+#    - policy-name: Default Password Policy
+#      type: password-policy
+#      set: 
+#        - default-password-storage-scheme:Salted SHA-512
+#        - password-attribute:userPassword
+#      exists_when:
+#        - regex: '^(Default Password Policy)\s+:'
+#        - cmd: list-password-properties
+
+  password-policy:
+    - policy-name: Default Password Policy
+      set: 
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+        - deprecated-password-storage-scheme:Salted SHA-1
+        - allow-user-password-changes:true
+        - expire-passwords-without-warning:true
+        - password-expiration-warning-interval:7 days
+        - force-change-on-add:true
+        - force-change-on-reset:true
+        - grace-login-count:2
+        - idle-lockout-interval:45 days
+        - last-login-time-attribute:ds-pwp-last-login-time
+        - last-login-time-format:yyyyMMddHHmmss
+        - lockout-duration:0 minutes
+        - lockout-failure-expiration-interval:0 minutes
+        - lockout-failure-count:5
+        - max-password-age:56 days
+        - max-password-reset-age:14 days
+        - min-password-age:24 hours
+        - password-change-requires-current-password:true
+        - password-history-count:10
+        - password-history-duration:0 seconds
+        - skip-validation-for-administrators:true
+        - require-secure-authentication:true
+        - require-secure-password-changes:true
+      add:
+        - password-validator:Length-Based Password Validator
+        - password-validator:Similarity-Based Password Validator
+        - password-validator:Attribute Value
+        - password-validator:Unique Characters
+        - password-validator:Character Set
+  password-policy_remove:
+    - policy-name: Default Password Policy
+      remove: password-validator:At least 8 characters
+    - policy-name: Default Password Policy
+      remove: password-validator:Common passwords
+    - policy-name: Default Password Policy
+      remove: password-validator:Dictionary
+    - policy-name: Default Password Policy
+      remove: password-validator:Repeated Characters
+  password-policy_service-accounts-create:
+    - policy-name: Password Policy Service Accounts
+      type: password-policy
+      set: 
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+  password-policy_service-accounts:
+    - policy-name: Password Policy Service Accounts
+      set:         
+        - default-password-storage-scheme:Salted SHA-512
+        - deprecated-password-storage-scheme:Salted SHA-1
+        - expire-passwords-without-warning:false
+        - password-expiration-warning-interval:"7 days"
+        - force-change-on-add:false
+        - force-change-on-reset:false
+        - grace-login-count:10
+        - idle-lockout-interval:2000 days
+        - last-login-time-attribute:ds-pwp-last-login-time
+        - last-login-time-format:yyyyMMddHHmmss
+        - lockout-duration:1 s
+        - lockout-failure-expiration-interval:1 s
+        - lockout-failure-count:10000
+        - max-password-age:2000 days
+        - max-password-reset-age:8 hours
+        - min-password-age:24 hours
+        - password-attribute:userPassword
+        - password-change-requires-current-password:true
+        - password-history-count:5
+        - password-history-duration:0 seconds
+        - skip-validation-for-administrators:true
+        - require-secure-authentication:true
+        - require-secure-password-changes:true
+  password-policy_service-accounts-jmx-create:
+    - policy-name: Password Policy JMX Service Accounts
+      type: password-policy
+      set: 
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+  password-policy_service-accounts-jmx:
+    - policy-name: Password Policy JMX Service Accounts
+      set:         
+        - default-password-storage-scheme:Salted SHA-512
+        - deprecated-password-storage-scheme:Salted SHA-1
+        - expire-passwords-without-warning:false
+        - password-expiration-warning-interval:7 days
+        - force-change-on-add:false
+        - force-change-on-reset:false
+        - grace-login-count:10
+        - idle-lockout-interval:2000 days
+        - last-login-time-attribute:ds-pwp-last-login-time
+        - last-login-time-format:yyyyMMddHHmmss
+        - lockout-duration:480 s
+        - lockout-failure-expiration-interval:600 s
+        - lockout-failure-count:5
+        - max-password-age:2000 days
+        - max-password-reset-age:8 hours
+        - min-password-age:24 hours
+        - password-attribute:userPassword
+        - password-change-requires-current-password:true
+        - password-history-count:5
+        - password-history-duration:0 seconds
+        - skip-validation-for-administrators:true
+        - require-secure-authentication:true
   password-validator:
     - validator-name: '"Length-Based Password Validator"'
       set:
@@ -463,14 +234,40 @@ ds_config:
       set:
         - enabled:true
         - allow-unclassified-characters:true
+#  password-validator_add:
+#    - validator-name: '"Attribute Value"'
+#      set: enabled:true
+#      add:
+#        - match-attribute:cn
+#        - match-attribute:sn
+#        - match-attribute:givenName
+#        - match-attribute:uid
+#      #remove: 
+#      #  - match-attribute:sn
 
 ds_config_components:
   - connection-handler
   - global-configuration
+  - log-publisher
+  # - password-policy_create
+  - password-policy
+  - password-policy_service-accounts-create  
+  - password-policy_service-accounts
+  - password-policy_service-accounts-jmx-create 
+  - password-policy_service-accounts-jmx
   - password-validator
+  - password-policy_remove
+  #- password-validator_add
 
 # Components that require use of a fingerpint to detect
 # changes between current and desired state
 ds_config_components_fingerprint:
   - connection-handler
-  - password-validator
+  #- password-validator_add
+  #- password-policy_create
+  - password-policy
+  - password-policy_service-accounts-create 
+  - password-policy_service-accounts  
+  - password-policy_service-accounts-jmx-create 
+  - password-policy_service-accounts-jmx
+  - password-policy_remove
