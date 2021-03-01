@@ -4,9 +4,7 @@ ds_home: /opt/ds
 
 ds_owner: forgerock
 ds_group: forgerock
-# ds_rootpw: 4NnJLdVq9oxqUcVixWP4
-# (tmp for EdR, Michael is finding out the standard)
-ds_rootpw: supersecret
+ds_rootpw: supersecure
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically
