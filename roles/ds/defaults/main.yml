@@ -43,12 +43,11 @@ ds_setup_config:
   set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
   acceptLicense: ""
 
-
-  dsc_ustore_sroot_inquire:
+dsc_ustore_sroot_inquire:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
+  bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
   baseDn: '"c=NL"'
@@ -58,7 +57,7 @@ dsc_ustore_uroot_inquire:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
+  bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
   baseDn: '"c=bkwi,dc=nl"'
@@ -69,7 +68,7 @@ dsc_ustore_createbackend_sroot:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
+  bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   no-prompt: ""
   set:
@@ -83,7 +82,7 @@ dsc_ustore_createbackend_uroot:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
+  bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   no-prompt: ""
   set:
@@ -118,7 +117,7 @@ dsc_ustore_special_inquire:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
+  bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
   baseDn: '"o=special,c=NL"'
@@ -128,7 +127,7 @@ dsc_ustore_suwi_inquire:
   hostname: "{{ ds_hostname }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}  "
+  bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
   baseDn: '"o=suwi,c=NL"'
