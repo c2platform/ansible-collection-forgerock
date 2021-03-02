@@ -18,7 +18,7 @@ This role downloads and installs ForgeRock Directory Services CLI. ForgeRock doe
 
 ## Requirements
 
-This role is basically only an include of the [ds](../ds) role.
+This role is basically only an include of the [install](../ds/tasks/install.yml) tasks of the [ds](../ds) role.
 
 ```yaml
 - include: ../../ds/tasks/install.yml
