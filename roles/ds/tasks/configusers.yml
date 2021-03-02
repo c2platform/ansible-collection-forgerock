@@ -10,3 +10,123 @@
     group: "{{ ds_group }}"
     mode: '0640'
   with_items: "{{ ds_specialusers_ldifs }}"
+
+
+- name: Special user sa_reports exists already ?
+# The actual check on the result is in the 'when' clause for the ldap tool, see below.
+# Last parameter is dashless hence hardcoded here
+  shell:  "./ldapsearch  {{ dsc_user_reports_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: user_reports_inquire
+  ignore_errors: yes
+
+- name: modify DS with sa_reports
+  shell:  "./ldapmodify  {{ dsc_user_reports_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: user_reports_inquire is search("No Such Entry")
+
+- name: modify DS pw for sa_reports
+  shell:  "./ldappasswordmodify  {{ dsc_user_reports_pw|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: user_reports_inquire is search("No Such Entry")
+
+- name: Special user sa_useradmin exists already ?
+# The actual check on the result is in the 'when' clause for the ldap tool, see below.
+# Last parameter is dashless hence hardcoded here
+  shell:  "./ldapsearch  {{ dsc_user_monitor_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: user_monitor_inquire
+  ignore_errors: yes
+
+- name: modify DS with sa_monitor
+  shell:  "./ldapmodify  {{ dsc_user_monitor_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: user_monitor_inquire is search("No Such Entry")
+
+- name: modify DS pw for sa_monitor
+  shell:  "./ldappasswordmodify  {{ dsc_user_monitor_pw|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: user_monitor_inquire is search("No Such Entry")
+
+- name: Special user sa_useradmin exists already ?
+# The actual check on the result is in the 'when' clause for the ldap tool, see below.
+# Last parameter is dashless hence hardcoded here
+  shell:  "./ldapsearch  {{ dsc_user_useradmin_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: user_useradmin_inquire
+  ignore_errors: yes
+
+- name: modify DS with sa_useradmin
+  shell:  "./ldapmodify  {{ dsc_user_useradmin_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: user_useradmin_inquire is search("No Such Entry")
+
+- name: modify DS pw for sa_useradmin
+  shell:  "./ldappasswordmodify  {{ dsc_user_useradmin_pw|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: user_useradmin_inquire is search("No Such Entry")
+
+
+- name: Create password policy ldif(s)
+  copy:
+    content: "{{ ds_passwordpolicy_ldifs[item] }}"
+    remote_src: yes
+    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/./{{ item }}.ldif"
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: '0640'
+  with_items: "{{ ds_passwordpolicy_ldifs }}"
+
+
+
+- name: PW policy am-config exists already ?
+# The actual check on the result is in the 'when' clause for the ldapmodify, see below.
+# Last parameter is dashless hence hardcoded here.
+  shell:  "./ldapsearch  {{ dsc_amconfigpw_inquire|c2platform.forgerock.ds_cmd }} objectclass=top"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: amconfigpw_inquire
+  ignore_errors: yes
+# Note for testing: strangely enough the am-config policy exists already. Hence according to the logic
+# the ldapmodify should not be run and is not run. Michael agrees this is strange, best to debiug in BTO
+# as the error seems to be in the Chef code already.
+
+
+- name: Modify DS with PW policy  am-config
+  shell:  "./ldapmodify  {{ dsc_amconfigpw_modify|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  when: amconfigpw_inquire is search("No Such Entry")
+
+
