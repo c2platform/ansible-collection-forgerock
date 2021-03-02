@@ -22,11 +22,11 @@ After: opt/ds/[ds-version]. Almost all relevant activity happens in the [ds-vers
 # Systemd services changed
 A service added: ds-config. It is a 2-layer wrapper around /bin/start-ds and stop-ds scripts. See the URL given on why this is needed.
 
-# Code samples and variable usage 
+# Role Variables 
 TODO if needed
+Note that the main dsconfig part(4.)  is highly parametrised, you could call it 'normalised' in SQL terms with no copypasting of elements. Parts 5 and 6 are not parametrised and hence have quite some copypasting. For the tiny bit of dsconfig usage there it would not be too hard to piggyback this on the parametrised framework. For the rest of the code (nontrivial, but still a lot shorter than dsconfig used to be) parametrising is for sure doable but the return-on-investment is debatable. One reason is that we talk not about 1 'shelled' command but three different, each with slightly different syntax; ldapsearch, ldapmodify and ldappasswordmodify.
 
-
-# All dependencies/requirements to other parts
+# Requirements (to other parts)
 The role currently runs requiring the Common and Java roles of the underlying Ansible ecosystem.
 Requirements configured (now as group_vars on play level, but it could be done at role level too) are JDK/Java version,
 java_home directory, expose java_home set to Yes.
@@ -41,6 +41,7 @@ this also makes the chance less that in AM and IG rollout errors are found relat
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
 * [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
+* Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
 
 # TODO
 
