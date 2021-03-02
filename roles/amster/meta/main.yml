@@ -1,0 +1,3 @@
+---
+dependencies:
+  - {role: c2platform.forgerock.ds_cli }
