@@ -1,82 +1,61 @@
 ---
+- name: Stat home folder # e.g. /opt/ds/ds-6.5.4
+  stat:
+    path: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+  register: home_folder
 
-- name:  Unzip  DS
-  unarchive:
-    src:  "{{ ds_home }}/downloads/{{ ds_versions[ds_version]['url']|basename }}"
-    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-    owner: "{{ ds_owner }}"
-    group: "{{ ds_group }}"
-    remote_src: yes
+- block:
+    - name: Download zip
+      get_url:
+        url: "{{ ds_versions[ds_version]['url'] }}"
+        dest: "/tmp/{{ ds_versions[ds_version]['url']|basename }}"
+        checksum: "{{ ds_versions[ds_version]['checksum'] }}"
+        timeout: 300
+        mode: 1373
+      register: get_url_result
+      until: get_url_result is succeeded
 
-- name: remove opendj layer coming from unpacked zip
-  shell: "mv {{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/opendj/* {{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-  become: yes
-  become_user: forgerock
-  ignore_errors: yes
+    - name:  Unzip
+      unarchive:
+        src:  "/tmp/{{ ds_versions[ds_version]['url']|basename }}"
+        dest: /tmp/
+        remote_src: yes
 
-- name: erase opendj dir even if filled due to failed mv (double run)
-  file:
-    path:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/opendj"
-    state: absent
+    - name: Create group
+      group:
+        name: "{{ ds_group }}"
+        state: present
 
-- name: Check whether DS setup already run # noqa 305
-  shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"
-  become: yes
-  become_user: forgerock
-  register: ds_status
-  ignore_errors: yes
+    - name: Create owner
+      user:
+        name: "{{ ds_owner }}"
+        group: "{{ ds_group }}"
+        home: "{{ ds_home }}"
+        shell: /bin/bash
+        system: true
 
-- name: DS setup fact
-  set_fact:
-    ds_setup: '{{ ds_status is search("The server has not been configured") }}'
+    - name: Create home
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ ds_owner }}"
+        group: "{{ ds_group }}"
+        mode: 0755
+        recurse: yes
+      with_items:
+        - "{{ ds_home }}"
+        - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+        - "{{ ds_home|c2platform.forgerock.ds_config_fingerprint_folder(ds_version) }}"
 
-- name: Setup ds config
-  command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
-  args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-  when:  ds_setup
-  become: yes
-  become_user: "{{ ds_owner }}"
+    - synchronize:
+        src: /tmp/opendj/
+        dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/"
+      delegate_to: "{{ inventory_hostname }}"
 
-- name: chown recursive (hardly needed)
-  file:
-    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
-    owner: "{{ ds_owner }}"
-    group: "{{ ds_group }}"
-    recurse: yes
-
-- name: Systemd DS config 2-step level
-  template:
-    src: dsconfig-init.j2
-    dest:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/dsconfig-init.sh"
-    owner: root
-    group: root
-    mode: 0755
-
-
-# For explanation of the rather crazy model needed, see https://backstage.forgerock.com/knowledge/kb/article/a56766667
-# We do it bottoms-up. First the init script, then the service that calls the init script, and finally the enabling
-# Note that  we deviate from Chef, but result (from our MVP) is same
-
-- name: Systemd DS config service
-  template:
-    src: dsconfig.service.j2
-    dest: /etc/systemd/system/ds-config.service
-    owner: root
-    group: root
-    mode: 0755
-  notify: systemctl-daemon-reload
-
-- name: ensure config service (running and) set to start on boot
-  service:
-    name: ds-config
-    enabled: yes
-
-
-# As during install through the setup command the service gets started, we cannot require 'started' here. Error would be "unable to start service ds-config" :-( 
-# The whole two-step install
-# mainly accomplishes that start-ds shell script is run upon boot. The perils of running an init.d era startup script in the syemctl Unix era.
-
-
-
-
+    - name: Chown
+      file:
+        path: "{{ ds_home }}"
+        owner: "{{ ds_owner }}"
+        group: "{{ ds_group }}"
+        recurse: yes
+  when: not home_folder.stat.exists
