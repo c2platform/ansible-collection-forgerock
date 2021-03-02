@@ -76,7 +76,7 @@
 - name: Userstore special exists already ?
 # The actual check on the result is in the 'when' clause for the dsconfig etc, see below.
 # Last parameter is dashless hence hardcoded here
-  shell:  "./ldapsearch  {{ dsc_ustore_special_inquire|c2platform.forgerock.ds_cmd }} objectclass=top"
+  shell:  "./ldapsearch  {{ dsc_ustore_special_inquire|c2platform.forgerock.ds_cmd }} objectclass=organization"
   become: yes
   become_user: forgerock
   args:
@@ -95,7 +95,7 @@
 - name: Userstore suwi exists already ?
 # The actual check on the result is in the 'when' clause for the dsconfig etc, see below.
 # Last parameter is dashless hence hardcoded here
-  shell:  "./ldapsearch  {{ dsc_ustore_suwi_inquire|c2platform.forgerock.ds_cmd }} objectclass=top"
+  shell:  "./ldapsearch  {{ dsc_ustore_suwi_inquire|c2platform.forgerock.ds_cmd }} objectclass=organization"
   become: yes
   become_user: forgerock
   args:

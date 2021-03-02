@@ -142,8 +142,6 @@ dsc_ustore_special_modify:
   useSsl: ""
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.special.ldif"
 
-
-
 dsc_ustore_suwi_modify:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -152,6 +150,108 @@ dsc_ustore_suwi_modify:
   trustAll: ""
   useSsl: ""
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.suwi.ldif"
+
+dsc_user_reports_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"cn=sa_reports,o=special,c=NL"'
+
+dsc_user_reports_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/special.sa_reports.ldif"
+
+dsc_user_reports_pw:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  authzId: "cn=sa_reports,o=special,c=NL"
+  newPassword: opends
+
+dsc_user_monitor_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"cn=sa_monitor,o=special,c=NL"'
+
+dsc_user_monitor_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/special.sa_monitor.ldif"
+
+dsc_user_monitor_pw:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  authzId: "cn=sa_monitor,o=special,c=NL"
+  newPassword: opends
+
+dsc_user_useradmin_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"cn=sa_useradmin,o=special,c=NL"'
+
+dsc_user_useradmin_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/special.sa_useradmin.ldif"
+
+dsc_user_useradmin_pw:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  authzId: "cn=sa_useradmin,o=special,c=NL"
+  newPassword: opends
+
+dsc_amconfigpw_inquire:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"uid=am-config,ou=admins,ou=am-config"'
+
+dsc_amconfigpw_modify:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/passwordpolicy.am-config.ldif"
 
 
 # Password policy settings
