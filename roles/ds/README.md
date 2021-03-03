@@ -18,6 +18,10 @@ This Ansible role is used to install, upgrade and remove [ForgeRock Directory Se
 # Filesystem before and after situation
 Before: no /opt/ds and anything below it
 After: opt/ds/[ds-version]. Almost all relevant activity happens in the [ds-version]/bin directory.
+Note that the configbase module (running dsconfig command) for some parts uses 'fingerprints': signatures of the last result stored on disk, to prevent unnecessary calls to dsconfig. This however assumes that Ansible is in full control of the file system.
+
+If in some testing situation it is needed to make changes in DS, e.g. using dsconfig but also commands like ldapmodify, manually (outside Ansible), beware that the next Ansible run could not work as intended due to it relying on now outdated fingerprints.
+The solution if you really needed to make manual changes in DS: manually remove the related fingerprint file, or simply all fingerprints, in /opt/ds/.fingerprint/6.5.4 directory. It causes Ansible to run a bit slower than it should, but it guarantees that it works as intended even in this 'manual' scenario.
 
 # Systemd services changed
 A service added: ds-config. It is a 2-layer wrapper around /bin/start-ds and stop-ds scripts. See the URL given on why this is needed.
