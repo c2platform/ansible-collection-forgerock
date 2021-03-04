@@ -58,7 +58,7 @@
 # mainly accomplishes that start-ds shell script is run upon boot. The perils of running an init.d era startup script in the syemctl Unix era.
 
 - name: Add pam limits # /etc/security/limits.conf
-  community.general.pam_limits:
+  pam_limits:
     domain: "{{ ds_owner }}"
     limit_type: "{{ item['limit_type'] }}"
     limit_item: nofile
