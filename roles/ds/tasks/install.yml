@@ -47,7 +47,8 @@
         - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
         - "{{ ds_home|c2platform.forgerock.ds_config_fingerprint_folder(ds_version) }}"
 
-    - synchronize:
+    - name: Make sure zip is on target
+      synchronize:
         src: /tmp/opendj/
         dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/"
       delegate_to: "{{ inventory_hostname }}"

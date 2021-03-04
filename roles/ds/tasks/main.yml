@@ -4,4 +4,8 @@
 - include: configbase.yml
 - include: configuserstore.yml
 - include: configusers.yml
-#- include: dsreplicate.yml
+- include: dsreplicate.yml
+# Note the README.md and wiki: due to the specific scenario building up a 2-node cluster,
+# this replicate part will  be skipped if the node is not config_master.
+# And it's strongly recommended to provision the not_config_master node BEFORE provisioning the config_master node.
+# (There is a sanity check on board to handle human errors here.)
