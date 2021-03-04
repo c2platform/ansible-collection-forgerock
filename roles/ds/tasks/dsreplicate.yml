@@ -5,19 +5,15 @@
   fail: msg="Provisioning finished, replication is configured from the other node"
   when: not dsrepl_is_config_master
 
-
 - name:  Create replication settings
   shell:  "./dsreplication configure {{ dsr_config|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  with_items:
-      - ou=am-config
-      - c=NL
-      - dc=bkwi,dc=nl
+  with_items: "{{ dsr_baseDNlist }}"
   ignore_errors: yes #to be removed
-  #  Parameter dsr_baseDNlist[item] is a part of the passed arrray
+
 
 - name:  Initialize replication
   shell:  "./dsreplication initialize-all {{ dsr_init|c2platform.forgerock.ds_cmd }}"
@@ -25,8 +21,5 @@
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  with_items:
-      - ou=am-config
-      - c=NL
-      - dc=bkwi,dc=nl
+  with_items: "{{ dsr_baseDNlist }}"
   ignore_errors: yes #to be removed
