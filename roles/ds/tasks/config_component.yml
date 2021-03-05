@@ -36,3 +36,4 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   become: yes
   become_user: forgerock
+  # ignore_errors: yes

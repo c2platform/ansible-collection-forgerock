@@ -60,3 +60,16 @@
         group: "{{ ds_group }}"
         recurse: yes
   when: not home_folder.stat.exists
+
+
+- name: host file workaround for slow wifi dev environments
+  lineinfile:
+    dest=/etc/hosts
+    line="1.1.1.51      51.host.io"
+
+
+- name: host file workaround for slow wifi dev  2
+  lineinfile:
+    dest=/etc/hosts
+    line="1.1.1.58      58.host.io"
+

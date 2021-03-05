@@ -281,6 +281,14 @@ dsr_init:
   trustAll: ""
   no-prompt: ""
 
+dsr_inquire:
+  hostname: "{{ dsrepl_nodename_source }}"
+  port: 4444
+  adminUid: admin
+  adminPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+
+
 
 
 # Password policy settings

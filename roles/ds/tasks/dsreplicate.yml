@@ -1,17 +1,32 @@
 ---
 
-
 - name: Exit if the  host is not config_master (but the config slave)
   fail: msg="Provisioning finished, replication is configured from the other node"
   when: not dsrepl_is_config_master
 
-- name:  Create replication settings
+# Placeholder: here the ldapsearch check on "dsrepl_nodename_target"  (1.1.1.58 in DEV),
+# exit with meaningful error if DS cannot be reached there
+
+- name:  Inquire replication  status (solely the 'true' lines)
+  shell:  "./dsreplication status {{ dsr_inquire|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: dsr_statusclob
+# This way we do not need to get status per line, we simply get the DN's with status true and then the Create task checks
+# for each DN whether there is something in the clob.
+# The filtering based on grep ' : true                :' (exact number of spaces essential!)
+# was easier to get working that an awk to find the 4th column, as the Chef code does. Effect is 100% same.
+
+- name:  Create replication settings for not yet replicated DNs
   shell:  "./dsreplication configure {{ dsr_config|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   with_items: "{{ dsr_baseDNlist }}"
+  when: not dsr_statusclob is search(item)
   ignore_errors: yes #to be removed
 
 
@@ -22,4 +37,4 @@
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   with_items: "{{ dsr_baseDNlist }}"
-  ignore_errors: yes #to be removed
+  when: not dsr_statusclob is search(item)
