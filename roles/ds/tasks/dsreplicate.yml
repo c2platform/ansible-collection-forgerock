@@ -5,9 +5,54 @@
   when: not dsrepl_is_config_master
 
 # Placeholder: here the ldapsearch check on "dsrepl_nodename_target"  (1.1.1.58 in DEV),
-# exit with meaningful error if DS cannot be reached there
+# exit with meaningful error if DS cannot be reached 
 
-- name:  Inquire replication  status (solely the 'true' lines)
+- name:  Inquire replication status to detect fresh install
+  shell:  "./dsreplication status {{ dsr_inquire|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: dsr_statusfresh
+  ignore_errors: yes
+
+
+- name:  Get stat of the replication log
+  stat:
+    path:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/logs/replication"
+  register: dsr_log
+
+- name: Fail if size of log is >0 and Invalid Credentials, as this means it is a real error
+  fail:
+    msg: "DSR gives Invalid Credentials but replication log indicates it's not a fresh install" 
+  when:
+    - dsr_statusfresh.stderr is search("Invalid Credentials")
+    - dsr_log.stat.size > 0
+# These are the Chef specs and rightly so. Invalid credentials message is used to see whether this
+# is a fresh install (false positive) but if there is a non-empty replication log file it means something fishy (true positive).
+
+- name:  Create replication settings, fresh install, for all DNs
+  shell:  "./dsreplication configure {{ dsr_config|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  with_items: "{{ dsr_baseDNlist }}"
+  when: dsr_statusfresh.stderr is search("Invalid Credentials")
+
+
+- name:  Initialize replication, fresh install
+  shell:  "./dsreplication initialize-all {{ dsr_init|c2platform.forgerock.ds_cmd }}"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  with_items: "{{ dsr_baseDNlist }}"
+  when:  dsr_statusfresh is search("Invalid Credentials")
+
+# In the fresh install scenario the next 3 tasks would be skipped, as the status will report that all (3) DNs are done
+
+- name:  Inquire replication status (solely the 'true' lines) for existing install
   shell:  "./dsreplication status {{ dsr_inquire|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
   become: yes
   become_user: forgerock
@@ -17,9 +62,14 @@
 # This way we do not need to get status per line, we simply get the DN's with status true and then the Create task checks
 # for each DN whether there is something in the clob.
 # The filtering based on grep ' : true                :' (exact number of spaces essential!)
-# was easier to get working that an awk to find the 4th column, as the Chef code does. Effect is 100% same.
+# was easier to get working that an awk to find the 4th column, as the Chef code does but then with -s flag to
+# suppress the column markers. Effect is 100% same.
+# Note that this check would yield an error (and hanging Ansible) if run on a fresh install, hence we first have the fresh-install
+# check, plus supplementary logfile check, and the create/initialize in case of fresh install.
+# After that it _is_ an existing install and these 3 tasks can run safely, without finding anything to do ;-)
+# So they are useful if the item list expands and an existing install needs to be modified.
 
-- name:  Create replication settings for not yet replicated DNs
+- name:  Create replication settings, existing install, for not yet replicated DNs
   shell:  "./dsreplication configure {{ dsr_config|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
@@ -27,10 +77,9 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   with_items: "{{ dsr_baseDNlist }}"
   when: not dsr_statusclob is search(item)
-  ignore_errors: yes #to be removed
 
 
-- name:  Initialize replication
+- name:  Initialize replication, existing install
   shell:  "./dsreplication initialize-all {{ dsr_init|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
