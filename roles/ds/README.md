@@ -35,6 +35,12 @@ The role currently runs requiring the Common and Java roles of the underlying An
 Requirements configured (now as group_vars on play level, but it could be done at role level too) are JDK/Java version,
 java_home directory, expose java_home set to Yes.
 So if the Java role would need to be replaced by different ones, these requirements would need to be translated for the new underlying roles.
+For installing a cluster, mind the sequence:
+1. First install the node which is NOT the config master. In DEV we call this DS2.
+2. Then install the config master. It is this one that will have the step to configure the replication process, for both nodes. It also before configuring replication, does a check (ldapsearch) on whether the not-config-master node is up and running.
+
+
+
 
 # Definition of Done
 There are limited checks in the role, e.g. to see whether the DS service was already installed and configured. However more checks could be helpful,
