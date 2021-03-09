@@ -1,5 +1,4 @@
 ---
-- include: local_stuff.yml
 - include: install.yml
 - include: setup.yml
 - include: configbase.yml
