@@ -1,14 +1,6 @@
 # Ansible Role ForgeRock Directory Services (DS)
 
-This Ansible role is used to install and configure upgrade [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip).
-
-1. Download and unzip.
-2. Run setup 
-3. Create systemd service and enable it
-4. Configure using [dsconfig](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface)
-5. Configure userstore
-6. Configure off-the-shelf (technical) users. 
-7. Configure replication
+This Ansible role is used to install and configure upgrade [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role will download and setup DS. Furthermore the role can be used to configure DS using `dsconfig`, create user stores, users and configure replication.
 
 <!-- MarkdownTOC levels="2,3" autolink="true" -->
 
