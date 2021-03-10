@@ -58,6 +58,7 @@ Note that the main dsconfig part(4.)  is highly parametrised, you could call it 
 ## Links
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
+Note that we deviate at two points from  this pattern. Firstly we do not use the create-rc-script tool everytime in Ansible, but generate the same script from a template. One of the reasons for this is to avoid another Ansible 'shell' external action. Secondly we do not enable the systemctl service immediately after the install, as the DS is already running from the setup. Hence using 'systemctl status ds-config' in that stage will tell 'loaded' not 'active', and systemctl also cannot be used to restart. But upon a reboot of the VM all is fully running as a systemctl service.
 * [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
 * Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
 
