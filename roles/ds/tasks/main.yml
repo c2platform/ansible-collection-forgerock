@@ -2,7 +2,7 @@
 - include: install.yml
 - include: setup.yml
 - include: service.yml
-- include: configbase.yml
+- include: config.yml
 - include: configuserstore.yml
 - include: configusers.yml
 - include: setup_replication.yml
