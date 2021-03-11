@@ -54,6 +54,8 @@ Note that the configbase module (running dsconfig command) for some parts uses '
 TODO if needed
 Note that the main dsconfig part(4.)  is highly parametrised, you could call it 'normalised' in SQL terms with no copypasting of elements. Parts 5 and 6 are not parametrised and hence have quite some copypasting. For the tiny bit of dsconfig usage there it would not be too hard to piggyback this on the parametrised framework. For the rest of the code (nontrivial, but still a lot shorter than dsconfig used to be) parametrising is for sure doable but the return-on-investment is debatable. One reason is that we talk not about 1 'shelled' command but three different, each with slightly different syntax; ldapsearch, ldapmodify and ldappasswordmodify.
 
+The host_vars variable dsrepl_is_config_master defines whether this is a clustered environment and if so which is the 'master' (the machine where dsreplication command will be run). If that variable is set to NO on the sole node of a non-clustered environment, replication won't be installed.
+
 ## Dependencies
 
 <!--A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.-->
@@ -63,8 +65,9 @@ Note that the main dsconfig part(4.)  is highly parametrised, you could call it 
 ## Links
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
-* [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command. Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
-* [DS 6.5 > Administration Guide](https://backstage.forgerock.com/docs/ds/6.5/admin-guide/#chap-replication)
+Note that we deviate at two points from  this pattern. Firstly we do not use the create-rc-script tool everytime in Ansible, but generate the same script from a template. One of the reasons for this is to avoid another Ansible 'shell' external action. Secondly we do not enable the systemctl service immediately after the install, as the DS is already running from the setup. Hence using 'systemctl status ds-config' in that stage will tell 'loaded' not 'active', and systemctl also cannot be used to restart. But upon a reboot of the VM all is fully running as a systemctl service.
+* [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
+* Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
 
 ## Notes
 
