@@ -8,6 +8,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Java](#java)
   - [Replication](#replication)
 - [Role Variables](#role-variables)
+  - [Setup config](#setup-config)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
 - [Links](#links)
@@ -43,6 +44,10 @@ For installing a cluster, mind the sequence:
 
 <!--A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.-->
 
+### Setup config
+
+ds_setup_config
+
 `ds_config`
 Note that the configbase module (running dsconfig command) for some parts uses 'fingerprints': signatures of the last result stored on disk, to prevent unnecessary calls to dsconfig. This however assumes that Ansible is in full control of the file system.
 
@@ -58,8 +63,8 @@ Note that the main dsconfig part(4.)  is highly parametrised, you could call it 
 ## Links
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
-* [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
-* Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
+* [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command. Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
+* [DS 6.5 > Administration Guide](https://backstage.forgerock.com/docs/ds/6.5/admin-guide/#chap-replication)
 
 ## Notes
 
