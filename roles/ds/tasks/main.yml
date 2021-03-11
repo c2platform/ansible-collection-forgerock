@@ -1,6 +1,7 @@
 ---
 - include: install.yml
 - include: setup.yml
+- include: service.yml
 - include: configbase.yml
 - include: configuserstore.yml
 - include: configusers.yml
