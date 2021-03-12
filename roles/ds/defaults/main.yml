@@ -260,6 +260,17 @@ dsc_amconfigpw_modify:
   useSsl: ""
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/passwordpolicy.am-config.ldif"
 
+
+dsc_targetnode_inquire:
+  hostname: "{{ dsrepl_nodename_target }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"cn=sa_reports,o=special,c=NL"'
+
+
 # Password policy settings
 ds_config_pps:
   generic:
@@ -484,3 +495,9 @@ ds_config_components_fingerprint:
   - password-policy_service-accounts-jmx-create
   - password-policy_service-accounts-jmx
   - backend_create
+
+
+ds_replication: 
+  replication-server:
+    hostname: "1.1.1.51.nip.io"
+  host2: 

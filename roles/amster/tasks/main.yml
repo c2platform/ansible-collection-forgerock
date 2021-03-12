@@ -63,10 +63,8 @@
   when: not amster_has_run.stat.exists
 #  This is a waitloop until AM web interface, assumed needed for the Amster REST calls, is up and running
 
-- name: Name for debug module.
-  debug:
-   msg: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-- name: check ldap connection to ds
+
+- name: check ldap connection to ds (check is more or less a random one from within ds role)
 # The actual check on the result is in the 'when' clause for the ldap tool, see below.
 # Last parameter is dashless hence hardcoded here
   shell:  "./ldapsearch  {{ dsc_user_reports_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
@@ -81,7 +79,7 @@
   when: user_reports_inquire is search("No Such Entry")
   fail: msg="The DS server needed to provision using Amster is not running"
 
-# So this would happen when 5 retries gave the same result which is negative
+
 
 - name: execute amster if not yet done
   command: "./amster config.amster"

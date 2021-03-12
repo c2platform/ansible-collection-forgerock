@@ -1,6 +1,19 @@
 ---
-# Placeholder: here the ldapsearch check on "dsrepl_nodename_target"  (1.1.1.58 in DEV),
-# exit with meaningful error if DS cannot be reached
+
+- name: check ldap connection to ds (check is more or less a random one, modidified to ping target node)
+# The actual check on the result is in the 'when' clause for the ldap tool, see below.
+# Last parameter is dashless hence hardcoded here
+  shell:  "./ldapsearch  {{ dsc_targetnode_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
+  become: yes
+  become_user: forgerock
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: user_reports_inquire
+  ignore_errors: yes
+
+- name: Exit if no running DS service found
+  when: user_reports_inquire is search("No Such Entry")
+  fail: msg="The non-config master DS server is not running, cannot activate the replication now"
 
 - name: Include replications vars
   include_vars: "replication.yml"

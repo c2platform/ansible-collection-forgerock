@@ -5,10 +5,16 @@
 - include: config.yml
 - include: configuserstore.yml
 - include: configusers.yml
+
+
+- name: check
+  debug:
+    msg:  "{{ ds_replication['replication-server']['hostname'] }}"
+
 - include: setup_replication.yml
   when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname
 
 # Note the README.md and wiki: due to the specific scenario building up a 2-node cluster,
-# this replicate part will  be skipped if the node is not config_master.
+# this replicate part will  be skipped if the node is  onfigured as the config master
 # And it's strongly recommended to provision the not_config_master node BEFORE provisioning the config_master node.
 # (There is a sanity check on board to handle human errors here.)
