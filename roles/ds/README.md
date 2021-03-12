@@ -6,9 +6,10 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
 
 - [Requirements](#requirements)
   - [Java](#java)
-  - [Replication](#replication)
 - [Role Variables](#role-variables)
   - [Setup config](#setup-config)
+  - [Backends](#backends)
+  - [Replication](#replication)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
 - [Links](#links)
@@ -34,12 +35,6 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 
 ForgeRock DS requires Java to be installed. `java_home` directory, expose java_home set to Yes.
 
-### Replication
-
-For installing a cluster, mind the sequence:
-1. First install the node which is NOT the config master. In DEV we call this DS2.
-2. Then install the config master. It is this one that will have the step to configure the replication process, for both nodes. It also before configuring replication, does a check (ldapsearch) on whether the not-config-master node is up and running.
-
 ## Role Variables
 
 <!--A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.-->
@@ -56,6 +51,41 @@ Note that the main dsconfig part(4.)  is highly parametrised, you could call it 
 
 The host_vars variable dsrepl_is_config_master defines whether this is a clustered environment and if so which is the 'master' (the machine where dsreplication command will be run). If that variable is set to NO on the sole node of a non-clustered environment, replication won't be installed.
 
+### Backends
+
+[DS backends](https://backstage.forgerock.com/docs/ds/7/config-guide/import-export.html) can be created using config shown below. This config will use [dsconfig create-backend](https://backstage.forgerock.com/docs/ds/7/config-guide/import-export.html#create-database-backend) to create the backend.
+
+```yaml
+ds_config:
+  backend_create:
+    - set:
+        - base-dn:c=NL
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: appRoot
+    - set:
+        - base-dn:dc=example,dc=com
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: userRoot
+```
+
+### Replication
+
+To create a two node cluster with [replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1) you can add `ds_replication` var similar to shown below:
+
+```yaml
+ds_replication: 
+```
+Note: default off course ds_replication 
+
+For installing a cluster, mind the sequence:
+1. First install the node which is NOT the config master. In DEV we call this DS2.
+2. Then install the config master. It is this one that will have the step to configure the replication process, for both nodes. It also before configuring replication, does a check (ldapsearch) on whether the not-config-master node is up and running.
+
+
 ## Dependencies
 
 <!--A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.-->
@@ -68,6 +98,7 @@ The host_vars variable dsrepl_is_config_master defines whether this is a cluster
 Note that we deviate at two points from  this pattern. Firstly we do not use the create-rc-script tool everytime in Ansible, but generate the same script from a template. One of the reasons for this is to avoid another Ansible 'shell' external action. Secondly we do not enable the systemctl service immediately after the install, as the DS is already running from the setup. Hence using 'systemctl status ds-config' in that stage will tell 'loaded' not 'active', and systemctl also cannot be used to restart. But upon a reboot of the VM all is fully running as a systemctl service.
 * [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
 * Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
+* [DS 6 > Reference | Replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1)
 
 ## Notes
 
