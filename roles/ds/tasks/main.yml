@@ -6,7 +6,7 @@
 - include: configuserstore.yml
 - include: configusers.yml
 - include: setup_replication.yml
-  when: dsrepl_is_config_master
+  when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname
 
 # Note the README.md and wiki: due to the specific scenario building up a 2-node cluster,
 # this replicate part will  be skipped if the node is not config_master.

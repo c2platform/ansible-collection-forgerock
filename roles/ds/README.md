@@ -6,9 +6,10 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
 
 - [Requirements](#requirements)
   - [Java](#java)
-  - [Replication](#replication)
 - [Role Variables](#role-variables)
   - [Setup config](#setup-config)
+  - [Backends](#backends)
+  - [Replication](#replication)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
 - [Links](#links)
@@ -18,7 +19,6 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [DS service checks](#ds-service-checks)
   - [Upgrade](#upgrade)
   - [Backup / restore](#backup--restore)
-  - [Replication](#replication-1)
   - [dsconfig add](#dsconfig-add)
   - [Global configuration](#global-configuration)
   - [Password validators](#password-validators)
@@ -33,12 +33,6 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 ### Java
 
 ForgeRock DS requires Java to be installed. `java_home` directory, expose java_home set to Yes.
-
-### Replication
-
-For installing a cluster, mind the sequence:
-1. First install the node which is NOT the config master. In DEV we call this DS2.
-2. Then install the config master. It is this one that will have the step to configure the replication process, for both nodes. It also before configuring replication, does a check (ldapsearch) on whether the not-config-master node is up and running.
 
 ## Role Variables
 
@@ -56,6 +50,90 @@ Note that the main dsconfig part(4.)  is highly parametrised, you could call it 
 
 The host_vars variable dsrepl_is_config_master defines whether this is a clustered environment and if so which is the 'master' (the machine where dsreplication command will be run). If that variable is set to NO on the sole node of a non-clustered environment, replication won't be installed.
 
+### Backends
+
+[DS backends](https://backstage.forgerock.com/docs/ds/7/config-guide/import-export.html) can be created using config shown below. This config will use [dsconfig create-backend](https://backstage.forgerock.com/docs/ds/7/config-guide/import-export.html#create-database-backend) to create the backend.
+
+```yaml
+ds_config:
+  backend_create:
+    - set:
+        - base-dn:c=NL
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: appRoot
+    - set:
+        - base-dn:dc=example,dc=com
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: userRoot
+```
+
+### Replication
+
+To create a two node cluster with [replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1) you can add `ds_replication` var similar to shown below:
+
+```yaml
+ds_replication_global_admin: admin
+ds_replication_global_admin_password: supersecure
+ds_replication_port: 8989
+
+ds_replication: 
+  replication-server:
+    hostname: "1.1.1.51.nip.io"
+    port: 4444
+    bindDN:  cn=Directory Manager
+    bindPassword: supersecret
+    trustAll: ""
+    no-prompt: ""
+  host1:
+    replication_port: 8990 # optional if != ds_replication_port  
+    # same as replication-server
+  host2: 
+    replication_port: 8990 # optional if != ds_replication_port  
+    # same as replication-server
+  baseDNs:
+    - dc=app,dc=nl
+```
+
+If one of the servers is unavailable, the setup will fail of course.
+
+The possible settings under `replication-server`, `host1` and `host2` are mostly optional they will default to `ds_connect`. To setup replication at a minimum you need to configure:
+
+```yaml
+ds_replication: 
+  replication-server:
+    hostname: "1.1.1.51.nip.io"
+  host2: 
+    hostname: "1.1.1.58.nip.io"
+  baseDNs:
+    - dc=app,dc=nl
+```
+Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc.  
+
+Configuration above will result in command being executed similar to 
+
+```bash
+./dsreplication configure  \
+--host1 1.1.1.51.nip.io --port1 4444 --bindDn1 "cn=Directory Manager" \
+--bindPassword1 supersecret --secureReplication1 --replicationPort1 8989 \
+--host2 1.1.1.58.nip.io --port2 4444 --bindDn2 "cn=Directory Manager" \
+--bindPassword2 supersecret --secureReplication2 --replicationPort2 8989 \
+--baseDN dc=bkwi,dc=nl \
+--adminUid admin --adminPassword Su12perSec34retIt5Is \
+--trustAll  --no-prompt
+```
+
+To check the replication status
+
+```bash
+./dsreplication status --hostname 1.1.1.51.nip.io --port 4444 \
+--adminUID admin --adminPassword Su12perSec34retIt5Is  \
+--trustAll --no-prompt
+```
+
 ## Dependencies
 
 <!--A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.-->
@@ -65,9 +143,9 @@ The host_vars variable dsrepl_is_config_master defines whether this is a cluster
 ## Links
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
-Note that we deviate at two points from  this pattern. Firstly we do not use the create-rc-script tool everytime in Ansible, but generate the same script from a template. One of the reasons for this is to avoid another Ansible 'shell' external action. Secondly we do not enable the systemctl service immediately after the install, as the DS is already running from the setup. Hence using 'systemctl status ds-config' in that stage will tell 'loaded' not 'active', and systemctl also cannot be used to restart. But upon a reboot of the VM all is fully running as a systemctl service.
 * [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
 * Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
+* [DS 6 > Reference | Replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1)
 
 ## Notes
 
@@ -87,12 +165,6 @@ this also makes the chance less that in AM and IG rollout errors are found relat
 ### Upgrade
 
 ### Backup / restore
-
-### Replication
-
-```bash
-./dsreplication status --adminUID admin --adminPassword --hostname 1.1.1.51.nip.io --port 4444 --trustAll --no-prompt
-```
 
 ### dsconfig add
 

@@ -5,6 +5,9 @@ ds_home: /opt/ds
 ds_owner: forgerock
 ds_group: forgerock
 ds_rootpw: supersecure
+ds_replication_global_admin: admin
+ds_replication_global_admin_password: supersecure
+ds_replication_port: 8989
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically
@@ -15,8 +18,7 @@ ds_versions:
     checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
 
 ds_versions_sequence: [6.5.4]
-ds_hostname: fr1.example.com
-# Probably overwritten in the group_vars for a specific play, eg. with a nip.io adress
+ds_hostname: "{{ ansible_hostname }}"
 
 # ds_db_schema_ldifs:
 #  appPerson: | # /opt/ds/ds-6.5.4/db/schema/appPerson.ldif
@@ -28,6 +30,14 @@ ds_hostname: fr1.example.com
 #    changetype: modify
 #    add: objectClasses
 #    objectClasses: ( AppPerson-oid NAME 'appPerson' DESC 'Extra properties for a app user' SUP top AUXILIARY MAY ( app-account-expiration-time ) )
+
+ds_connect:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  cn=Directory Manager
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  no-prompt: ""
 
 ds_setup_config:
   instancePath:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
@@ -52,7 +62,6 @@ dsc_ustore_sroot_inquire:
   useSsl: ""
   baseDn: '"c=NL"'
 
-
 dsc_ustore_uroot_inquire:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -62,35 +71,33 @@ dsc_ustore_uroot_inquire:
   useSsl: ""
   baseDn: '"dc=bkwi,dc=nl"'
 
+#dsc_ustore_createbackend_sroot:
+#  hostname: "{{ ds_hostname }}"
+#  port: 4444
+#  bindDN:  '"cn=Directory Manager"'
+#  bindPassword: "{{ ds_rootpw }}"
+#  trustAll: ""
+#  no-prompt: ""
+#  set:
+#    - "base-dn:'c=NL'"
+#    - enabled:true
+#    - db-cache-percent:5
+#  type: je
+#  backend-name: suwiRoot
 
-
-dsc_ustore_createbackend_sroot:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  no-prompt: ""
-  set:
-    - "base-dn:'c=NL'"
-    - enabled:true
-    - db-cache-percent:5
-  type: je
-  backend-name: suwiRoot
-
-dsc_ustore_createbackend_uroot:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  no-prompt: ""
-  set:
-    - "base-dn:'dc=bkwi,dc=nl'"
-    - enabled:true
-    - db-cache-percent:5
-  type: je 
-  backend-name: userRoot
+#dsc_ustore_createbackend_uroot:
+#  hostname: "{{ ds_hostname }}"
+#  port: 4444
+#  bindDN:  '"cn=Directory Manager"'
+#  bindPassword: "{{ ds_rootpw }}"
+#  trustAll: ""
+#  no-prompt: ""
+#  set:
+#    - "base-dn:'dc=bkwi,dc=nl'"
+#    - enabled:true
+#    - db-cache-percent:5
+#  type: je 
+#  backend-name: userRoot
 
 
 dsc_ustore_sroot_modify:
@@ -253,45 +260,6 @@ dsc_amconfigpw_modify:
   useSsl: ""
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/passwordpolicy.am-config.ldif"
 
-dsr_config:
-  host1: "{{ dsrepl_nodename_source }}"
-  port1: 4444
-  bindDn1:  '"cn=Directory Manager"'
-  bindPassword1: "{{ ds_rootpw }}"
-  secureReplication1: ""
-  host2: "{{ dsrepl_nodename_target }}"
-  port2: 4444
-  bindDn2:  '"cn=Directory Manager"'
-  bindPassword2: "{{ ds_rootpw }}"
-  secureReplication2: ""
-  replicationPort1: 8989
-  replicationPort2: 8989
-  baseDN: "{{ item }}"
-  adminUid: admin
-  adminPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  no-prompt: ""
-
-dsr_init:
-  hostname: "{{ dsrepl_nodename_source }}"
-  port: 4444
-  baseDN: "{{ item }}"
-  adminUid: admin
-  adminPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  no-prompt: ""
-
-dsr_inquire:
-  hostname: "{{ dsrepl_nodename_source }}"
-  port: 4444
-  adminUid: admin
-  adminPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  no-prompt: ""
-
-
-
-
 # Password policy settings
 ds_config_pps:
   generic:
@@ -349,13 +317,6 @@ ds_config_pps:
     - password-history-duration:0 seconds
 
 ds_config:
-  connection:
-    hostname: "{{ ds_hostname }}"
-    port: 4444
-    bindDN:  cn=Directory Manager
-    bindPassword: "{{ ds_rootpw }}"
-    trustAll: ""
-    no-prompt: ""
   connection-handler_set_cert: # note underscore → connection-handler component
     - handler-name: LDAPS
       add: ssl-cert-nickname:config-server-cert
@@ -472,6 +433,19 @@ ds_config:
       set:
         - enabled:true
         - allow-unclassified-characters:true
+  backend_create:
+    - set:
+        - base-dn:c=NL
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: suwiRoot
+    - set:
+        - base-dn:dc=bkwi,dc=nl
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: userRoot
 #  password-validator_add:
 #    - validator-name: '"Attribute Value"'
 #      set: enabled:true
@@ -495,6 +469,7 @@ ds_config_components:
   - password-policy_service-accounts-jmx
   - password-validator
   - password-policy_remove
+  - backend_create
   #- password-validator_add
 
 # Components that require use of a fingerpint to detect
@@ -508,3 +483,4 @@ ds_config_components_fingerprint:
   - password-policy_service-accounts
   - password-policy_service-accounts-jmx-create
   - password-policy_service-accounts-jmx
+  - backend_create

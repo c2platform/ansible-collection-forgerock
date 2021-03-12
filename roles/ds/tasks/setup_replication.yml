@@ -1,16 +1,18 @@
 ---
 # Placeholder: here the ldapsearch check on "dsrepl_nodename_target"  (1.1.1.58 in DEV),
-# exit with meaningful error if DS cannot be reached 
+# exit with meaningful error if DS cannot be reached
+
+- name: Include replications vars
+  include_vars: "replication.yml"
 
 - name:  Inquire replication status to detect fresh install
-  shell:  "./dsreplication status {{ dsr_inquire|c2platform.forgerock.ds_cmd }}"
+  shell:  "./dsreplication status {{ _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   register: dsr_statusfresh
   ignore_errors: yes
-
 
 - name:  Get stat of the replication log
   stat:
@@ -19,36 +21,36 @@
 
 - name: Fail if size of log is >0 and Invalid Credentials, as this means it is a real error
   fail:
-    msg: "DSR gives Invalid Credentials but replication log indicates it's not a fresh install" 
+    msg: "DSR gives Invalid Credentials but replication log indicates it's not a fresh install"
   when:
     - dsr_statusfresh.stderr is search("Invalid Credentials")
     - dsr_log.stat.size > 0
 # These are the Chef specs and rightly so. Invalid credentials message is used to see whether this
 # is a fresh install (false positive) but if there is a non-empty replication log file it means something fishy (true positive).
 
+# Create also global replication admin
 - name:  Create replication settings, fresh install, for all DNs
-  shell:  "./dsreplication configure {{ dsr_config|c2platform.forgerock.ds_cmd }}"
+  shell:  "./dsreplication configure {{ _ds_replication['configure']|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  with_items: "{{ dsr_baseDNlist }}"
+  with_items: "{{ ds_replication['baseDNs'] }}"
   when: dsr_statusfresh.stderr is search("Invalid Credentials")
 
-
 - name:  Initialize replication, fresh install
-  shell:  "./dsreplication initialize-all {{ dsr_init|c2platform.forgerock.ds_cmd }}"
+  shell:  "./dsreplication initialize-all {{ _ds_replication['connect']|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  with_items: "{{ dsr_baseDNlist }}"
+  with_items: "{{ ds_replication['baseDNs'] }}"
   when:  dsr_statusfresh is search("Invalid Credentials")
 
 # In the fresh install scenario the next 3 tasks would be skipped, as the status will report that all (3) DNs are done
 
 - name:  Inquire replication status (solely the 'true' lines) for existing install
-  shell:  "./dsreplication status {{ dsr_inquire|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
+  shell:  "./dsreplication status {{ _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
   become: yes
   become_user: forgerock
   args:
@@ -65,20 +67,19 @@
 # So they are useful if the item list expands and an existing install needs to be modified.
 
 - name:  Create replication settings, existing install, for not yet replicated DNs
-  shell:  "./dsreplication configure {{ dsr_config|c2platform.forgerock.ds_cmd }}"
+  shell:  "./dsreplication configure {{ _ds_replication['configure']|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  with_items: "{{ dsr_baseDNlist }}"
+  with_items: "{{ ds_replication['baseDNs'] }}"
   when: not dsr_statusclob is search(item)
 
-
 - name:  Initialize replication, existing install
-  shell:  "./dsreplication initialize-all {{ dsr_init|c2platform.forgerock.ds_cmd }}"
+  shell:  "./dsreplication initialize-all {{ _ds_replication['connect']|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  with_items: "{{ dsr_baseDNlist }}"
+  with_items: "{{ ds_replication['baseDNs'] }}"
   when: not dsr_statusclob is search(item)

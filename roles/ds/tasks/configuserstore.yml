@@ -27,15 +27,6 @@
 # the organization.suwi and .special schemas as these have a baseDN with c=NL as _sub_string
 # Not clear yet whether this is  a real bug or just an irrelevant detail.
 
-- name: DSC Userstore suwiRoot
-  command: "./dsconfig create-backend {{ dsc_ustore_createbackend_sroot|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  when: ustore_sroot_inquire is search("No Such Entry")
-
-
 - name: Modify DS with suwiRoot
   shell:  "./ldapmodify  {{ dsc_ustore_sroot_modify|c2platform.forgerock.ds_cmd }}"
   become: yes
@@ -54,15 +45,6 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   register: ustore_uroot_inquire
   ignore_errors: yes
-
-- name: DSC Userstore  userRoot
-  command: "./dsconfig create-backend {{ dsc_ustore_createbackend_uroot|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  when: ustore_uroot_inquire is search("No Such Entry")
-
 
 - name: Modify DS with userRoot
   shell:  "./ldapmodify  {{ dsc_ustore_uroot_modify|c2platform.forgerock.ds_cmd }}"

@@ -190,6 +190,13 @@ def ds_config_fingerprint_component_path(component, ds_home, ds_version):
                         component)
 
 
+# Return path for fingerprint for component
+def ds_pop(settings, k):
+    if k in settings:
+        settings.pop(k)
+    return settings
+
+
 class FilterModule(object):
     """ansible filters."""
 
@@ -205,5 +212,6 @@ class FilterModule(object):
             'ds_config_fingerprint': ds_config_fingerprint,
             'ds_config_fingerprint_folder': ds_config_fingerprint_folder,
             'ds_config_fingerprint_component_path':
-            ds_config_fingerprint_component_path
+            ds_config_fingerprint_component_path,
+            'ds_pop': ds_pop
         }
