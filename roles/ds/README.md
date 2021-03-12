@@ -77,14 +77,63 @@ ds_config:
 To create a two node cluster with [replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1) you can add `ds_replication` var similar to shown below:
 
 ```yaml
+ds_replication_global_admin: admin
+ds_replication_global_admin_password: supersecure
+ds_replication_port: 8989
+
 ds_replication: 
+  replication-server:
+    hostname: "1.1.1.51.nip.io"
+    port: 4444
+    bindDN:  cn=Directory Manager
+    bindPassword: supersecret
+    trustAll: ""
+    no-prompt: ""
+  host1:
+    replication_port: 8990 # optional if != ds_replication_port  
+    # same as replication-server
+  host2: 
+    replication_port: 8990 # optional if != ds_replication_port  
+    # same as replication-server
+  baseDNs:
+    - dc=app,dc=nl
 ```
-Note: default off course ds_replication 
 
-For installing a cluster, mind the sequence:
-1. First install the node which is NOT the config master. In DEV we call this DS2.
-2. Then install the config master. It is this one that will have the step to configure the replication process, for both nodes. It also before configuring replication, does a check (ldapsearch) on whether the not-config-master node is up and running.
+If one of the servers is unavailable, the setup will fail of course.
 
+The possible settings under `replication-server`, `host1` and `host2` are mostly optional they will default to `ds_connect`. To setup replication at a minimum you need to configure:
+
+```yaml
+ds_replication: 
+  replication-server:
+    hostname: "1.1.1.51.nip.io"
+  host2: 
+    hostname: "1.1.1.58.nip.io"
+  baseDNs:
+    - dc=app,dc=nl
+```
+Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc.  
+
+Configuration above will result in command being executed similar to 
+
+```bash
+./dsreplication configure  \
+--host1 1.1.1.51.nip.io --port1 4444 --bindDn1 "cn=Directory Manager" \
+--bindPassword1 supersecret --secureReplication1 --replicationPort1 8989 \
+--host2 1.1.1.58.nip.io --port2 4444 --bindDn2 "cn=Directory Manager" \
+--bindPassword2 supersecret --secureReplication2 --replicationPort2 8989 \
+--baseDN dc=bkwi,dc=nl \
+--adminUid admin --adminPassword Su12perSec34retIt5Is \
+--trustAll  --no-prompt
+```
+
+To check the replication status
+
+```bash
+./dsreplication status --hostname 1.1.1.51.nip.io --port 4444 \
+--adminUID admin --adminPassword Su12perSec34retIt5Is  \
+--trustAll --no-prompt
+```
 
 ## Dependencies
 
