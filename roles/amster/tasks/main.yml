@@ -63,39 +63,27 @@
   when: not amster_has_run.stat.exists
 #  This is a waitloop until AM web interface, assumed needed for the Amster REST calls, is up and running
 
-- name: Create DSping bash script file
-  template:
-    src: DSping.sh.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/DSping.sh"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
-    mode:  a+rwx
-# The outcome if ldapsearch cannot reach DS node is "ldap_sasl_bind(SIMPLE): Can't contact LDAP server (-1)"
-# But as that is an error, that even came after grepping it; a known limitation of ldapsearch
-# Hence at start of  the .sh we dispose of all error, now it's either empty grep or success 
-
-
-- name: Check connection to DS server
-  shell: if ./DSping.sh | grep -q "alive"; then echo "yes"; else echo "no" ;fi  
-  register: ldapresult
-  until: ldapresult.stdout == "yes" 
-  retries: 5
+- name: Name for debug module.
+  debug:
+   msg: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+- name: check ldap connection to ds
+# The actual check on the result is in the 'when' clause for the ldap tool, see below.
+# Last parameter is dashless hence hardcoded here
+  shell:  "./ldapsearch  {{ dsc_user_reports_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
   become: yes
-  ignore_errors: yes
-  become_user: "{{ am_owner }}"
+  become_user: forgerock
   args:
-    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
-
-# Ignore_errors is needed otherwise the fail makes the execution stop here already
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: user_reports_inquire
+  ignore_errors: yes
 
 - name: Exit if no running DS service found
+  when: user_reports_inquire is search("No Such Entry")
   fail: msg="The DS server needed to provision using Amster is not running"
-  when: ldapresult.stdout == "no"  
 
 # So this would happen when 5 retries gave the same result which is negative
 
-
-- name: execute amster if not yet done 
+- name: execute amster if not yet done
   command: "./amster config.amster"
   register: task_register_var
   become: yes

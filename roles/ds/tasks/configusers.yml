@@ -1,6 +1,4 @@
 ---
-
-
 - name: Create special users ldifs
   copy:
     content: "{{ ds_specialusers_ldifs[item] }}"
@@ -10,7 +8,6 @@
     group: "{{ ds_group }}"
     mode: '0640'
   with_items: "{{ ds_specialusers_ldifs }}"
-
 
 - name: Special user sa_reports exists already ?
 # The actual check on the result is in the 'when' clause for the ldap tool, see below.

@@ -2,6 +2,9 @@
 amster_version: 6.5.3
 amster_home: /opt/amster
 
+amster_ds_hostname: 1.1.1.51.nip.io
+amster_ds_rootpw: Su12perSec34retIt5Is
+
 amster_versions:
   6.5.3:
     url: file:///vagrant/downloads/Amster-6.5.3.zip
@@ -17,3 +20,11 @@ amster_install_am:
 
 amster_install_dsnode:  1.1.1.57.nip.io
 
+dsc_user_reports_inquire:
+  hostname: "{{ amster_ds_hostname }}"
+  port: 4444
+  bindDN:  '"cn=Directory Manager"'
+  bindPassword: "{{ amster_ds_rootpw }}"
+  trustAll: ""
+  useSsl: ""
+  baseDn: '"cn=sa_reports,o=special,c=NL"'
