@@ -52,7 +52,6 @@ dsc_ustore_sroot_inquire:
   useSsl: ""
   baseDn: '"c=NL"'
 
-
 dsc_ustore_uroot_inquire:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -62,35 +61,33 @@ dsc_ustore_uroot_inquire:
   useSsl: ""
   baseDn: '"dc=bkwi,dc=nl"'
 
+#dsc_ustore_createbackend_sroot:
+#  hostname: "{{ ds_hostname }}"
+#  port: 4444
+#  bindDN:  '"cn=Directory Manager"'
+#  bindPassword: "{{ ds_rootpw }}"
+#  trustAll: ""
+#  no-prompt: ""
+#  set:
+#    - "base-dn:'c=NL'"
+#    - enabled:true
+#    - db-cache-percent:5
+#  type: je
+#  backend-name: suwiRoot
 
-
-dsc_ustore_createbackend_sroot:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  no-prompt: ""
-  set:
-    - "base-dn:'c=NL'"
-    - enabled:true
-    - db-cache-percent:5
-  type: je
-  backend-name: suwiRoot
-
-dsc_ustore_createbackend_uroot:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  no-prompt: ""
-  set:
-    - "base-dn:'dc=bkwi,dc=nl'"
-    - enabled:true
-    - db-cache-percent:5
-  type: je 
-  backend-name: userRoot
+#dsc_ustore_createbackend_uroot:
+#  hostname: "{{ ds_hostname }}"
+#  port: 4444
+#  bindDN:  '"cn=Directory Manager"'
+#  bindPassword: "{{ ds_rootpw }}"
+#  trustAll: ""
+#  no-prompt: ""
+#  set:
+#    - "base-dn:'dc=bkwi,dc=nl'"
+#    - enabled:true
+#    - db-cache-percent:5
+#  type: je 
+#  backend-name: userRoot
 
 
 dsc_ustore_sroot_modify:
@@ -472,6 +469,19 @@ ds_config:
       set:
         - enabled:true
         - allow-unclassified-characters:true
+  backend_create:
+    - set:
+        - base-dn:c=NL
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: suwiRoot
+    - set:
+        - base-dn:dc=bkwi,dc=nl
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: userRoot
 #  password-validator_add:
 #    - validator-name: '"Attribute Value"'
 #      set: enabled:true
@@ -495,6 +505,7 @@ ds_config_components:
   - password-policy_service-accounts-jmx
   - password-validator
   - password-policy_remove
+  - backend_create
   #- password-validator_add
 
 # Components that require use of a fingerpint to detect
@@ -508,3 +519,4 @@ ds_config_components_fingerprint:
   - password-policy_service-accounts
   - password-policy_service-accounts-jmx-create
   - password-policy_service-accounts-jmx
+  - backend_create
