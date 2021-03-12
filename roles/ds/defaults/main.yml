@@ -7,6 +7,7 @@ ds_group: forgerock
 ds_rootpw: supersecure
 ds_replication_global_admin: admin
 ds_replication_global_admin_password: supersecure
+ds_replication_port: 8989
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically

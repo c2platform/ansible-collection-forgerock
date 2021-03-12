@@ -19,7 +19,6 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [DS service checks](#ds-service-checks)
   - [Upgrade](#upgrade)
   - [Backup / restore](#backup--restore)
-  - [Replication](#replication-1)
   - [dsconfig add](#dsconfig-add)
   - [Global configuration](#global-configuration)
   - [Password validators](#password-validators)
@@ -166,12 +165,6 @@ this also makes the chance less that in AM and IG rollout errors are found relat
 ### Upgrade
 
 ### Backup / restore
-
-### Replication
-
-```bash
-./dsreplication status --adminUID admin --adminPassword --hostname 1.1.1.51.nip.io --port 4444 --trustAll --no-prompt
-```
 
 ### dsconfig add
 
