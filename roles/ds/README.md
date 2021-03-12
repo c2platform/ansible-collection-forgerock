@@ -95,7 +95,6 @@ For installing a cluster, mind the sequence:
 ## Links
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
-Note that we deviate at a few points from  this pattern. E.g. we do not use the create-rc-script tool everytime in Ansible, but bypass this script and immediately call the ds-start and ds-stop from the service config. One of the reasons for this is to avoid another Ansible 'shell' external action.
 * [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
 * Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
 * [DS 6 > Reference | Replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1)
