@@ -5,6 +5,8 @@ ds_home: /opt/ds
 ds_owner: forgerock
 ds_group: forgerock
 ds_rootpw: supersecure
+ds_replication_global_admin: admin
+ds_replication_global_admin_password: supersecure
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically
@@ -264,8 +266,8 @@ dsr_config:
   replicationPort1: 8989
   replicationPort2: 8989
   baseDN: "{{ item }}"
-  adminUid: admin
-  adminPassword: "{{ ds_rootpw }}"
+  adminUid: "{{ ds_replication_global_admin }}"
+  adminPassword: "{{ ds_replication_global_admin_password }}"
   trustAll: ""
   no-prompt: ""
 
@@ -273,16 +275,16 @@ dsr_init:
   hostname: "{{ dsrepl_nodename_source }}"
   port: 4444
   baseDN: "{{ item }}"
-  adminUid: admin
-  adminPassword: "{{ ds_rootpw }}"
+  adminUid: "{{ ds_replication_global_admin }}"
+  adminPassword: "{{ ds_replication_global_admin_password }}"
   trustAll: ""
   no-prompt: ""
 
 dsr_inquire:
   hostname: "{{ dsrepl_nodename_source }}"
   port: 4444
-  adminUid: admin
-  adminPassword: "{{ ds_rootpw }}"
+  adminUid: "{{ ds_replication_global_admin }}"
+  adminPassword: "{{ ds_replication_global_admin_password }}"
   trustAll: ""
   no-prompt: ""
 
