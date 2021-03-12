@@ -30,6 +30,14 @@ ds_hostname: "{{ ansible_hostname }}"
 #    add: objectClasses
 #    objectClasses: ( AppPerson-oid NAME 'appPerson' DESC 'Extra properties for a app user' SUP top AUXILIARY MAY ( app-account-expiration-time ) )
 
+ds_connect:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  bindDN:  cn=Directory Manager
+  bindPassword: "{{ ds_rootpw }}"
+  trustAll: ""
+  no-prompt: ""
+
 ds_setup_config:
   instancePath:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
   rootUserDN: '"cn=Directory Manager"'
@@ -251,45 +259,6 @@ dsc_amconfigpw_modify:
   useSsl: ""
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/passwordpolicy.am-config.ldif"
 
-dsr_config:
-  host1: "{{ dsrepl_nodename_source }}"
-  port1: 4444
-  bindDn1:  '"cn=Directory Manager"'
-  bindPassword1: "{{ ds_rootpw }}"
-  secureReplication1: ""
-  host2: "{{ dsrepl_nodename_target }}"
-  port2: 4444
-  bindDn2:  '"cn=Directory Manager"'
-  bindPassword2: "{{ ds_rootpw }}"
-  secureReplication2: ""
-  replicationPort1: 8989
-  replicationPort2: 8989
-  baseDN: "{{ item }}"
-  adminUid: "{{ ds_replication_global_admin }}"
-  adminPassword: "{{ ds_replication_global_admin_password }}"
-  trustAll: ""
-  no-prompt: ""
-
-dsr_init:
-  hostname: "{{ dsrepl_nodename_source }}"
-  port: 4444
-  baseDN: "{{ item }}"
-  adminUid: "{{ ds_replication_global_admin }}"
-  adminPassword: "{{ ds_replication_global_admin_password }}"
-  trustAll: ""
-  no-prompt: ""
-
-dsr_inquire:
-  hostname: "{{ dsrepl_nodename_source }}"
-  port: 4444
-  adminUid: "{{ ds_replication_global_admin }}"
-  adminPassword: "{{ ds_replication_global_admin_password }}"
-  trustAll: ""
-  no-prompt: ""
-
-
-
-
 # Password policy settings
 ds_config_pps:
   generic:
@@ -347,13 +316,6 @@ ds_config_pps:
     - password-history-duration:0 seconds
 
 ds_config:
-  connection:
-    hostname: "{{ ds_hostname }}"
-    port: 4444
-    bindDN:  cn=Directory Manager
-    bindPassword: "{{ ds_rootpw }}"
-    trustAll: ""
-    no-prompt: ""
   connection-handler_set_cert: # note underscore → connection-handler component
     - handler-name: LDAPS
       add: ssl-cert-nickname:config-server-cert

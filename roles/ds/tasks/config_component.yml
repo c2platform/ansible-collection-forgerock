@@ -12,7 +12,7 @@
     - name: "Get current configuration {{ component }}"
       shell: >
         ./dsconfig {{ component|c2platform.forgerock.ds_config_method(item,'get') }}
-        {{ ds_config['connection']|c2platform.forgerock.ds_cmd }}
+        {{ ds_connect|c2platform.forgerock.ds_cmd }}
         {{ item|c2platform.forgerock.ds_cmd_get(component) }}
       with_items: "{{ ds_config[component] }}"
       args:
@@ -27,7 +27,7 @@
 - name: "Set component {{ component }}"
   shell: >
     ./dsconfig {{ component|c2platform.forgerock.ds_config_method }}
-    {{ ds_config['connection']|c2platform.forgerock.ds_cmd }}
+    {{ ds_connect|c2platform.forgerock.ds_cmd }}
     {{ item|c2platform.forgerock.ds_cmd }}
   with_items: "{{ ds_config[component] }}"
   when:
