@@ -48,7 +48,6 @@ Note that the configbase module (running dsconfig command) for some parts uses '
 TODO if needed
 Note that the main dsconfig part(4.)  is highly parametrised, you could call it 'normalised' in SQL terms with no copypasting of elements. Parts 5 and 6 are not parametrised and hence have quite some copypasting. For the tiny bit of dsconfig usage there it would not be too hard to piggyback this on the parametrised framework. For the rest of the code (nontrivial, but still a lot shorter than dsconfig used to be) parametrising is for sure doable but the return-on-investment is debatable. One reason is that we talk not about 1 'shelled' command but three different, each with slightly different syntax; ldapsearch, ldapmodify and ldappasswordmodify.
 
-The host_vars variable dsrepl_is_config_master defines whether this is a clustered environment and if so which is the 'master' (the machine where dsreplication command will be run). If that variable is set to NO on the sole node of a non-clustered environment, replication won't be installed.
 
 ### Backends
 
