@@ -39,6 +39,10 @@
     path: "{{ am_home }}/{{ am_version }}/openamcfg"
   register: amster_has_run
 
+# To be replaced by running an export_stat.amster script and then inspecting its output for proper content
+# However ' proper'  will be known later, it's the setup after the 20+ good Amster files
+# Maybe we can first dummuy with old config.amster, otherwise the wrong stat stays for soome time....
+
 - name: Create config.amster script file
   template:
     src: config.amster.j2
@@ -66,19 +70,18 @@
 
 - name: check ldap connection to ds (check is more or less a random one from within ds role)
 # The actual check on the result is in the 'when' clause for the ldap tool, see below.
-# Last parameter is dashless hence hardcoded here
+# Last parameter is dashless hence hardcoded here.
   shell:  "./ldapsearch  {{ dsc_user_reports_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
   become: yes
-  become_user: forgerock
+  become_user: tomcat
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   register: user_reports_inquire
   ignore_errors: yes
 
 - name: Exit if no running DS service found
-  when: user_reports_inquire is search("No Such Entry")
+  when: not user_reports_inquire is search("Service Account")
   fail: msg="The DS server needed to provision using Amster is not running"
-
 
 
 - name: execute amster if not yet done

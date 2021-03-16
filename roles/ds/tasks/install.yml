@@ -21,19 +21,6 @@
         dest: /tmp/
         remote_src: yes
 
-    - name: Create group
-      group:
-        name: "{{ ds_group }}"
-        state: present
-
-    - name: Create owner
-      user:
-        name: "{{ ds_owner }}"
-        group: "{{ ds_group }}"
-        home: "{{ ds_home }}"
-        shell: /bin/bash
-        system: true
-
     - name: Create home
       file:
         path: "{{ item }}"

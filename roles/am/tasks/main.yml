@@ -17,7 +17,6 @@
     - "{{ am_home }}/{{ am_version }}"
     - "{{ am_home }}/{{ am_version }}/downloads"
 
-- include: download.yml
 - include: install.yml
 
 #- name: Home link

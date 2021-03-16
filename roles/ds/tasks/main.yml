@@ -1,4 +1,17 @@
 ---
+- name: Create group
+  group:
+    name: "{{ ds_group }}"
+    state: present
+
+- name: Create owner
+  user:
+    name: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    home: "{{ ds_home }}"
+    shell: /bin/bash
+    system: true#
+# These could not be in install.yml as that is reused for ds_cli (where username is tomcat)
 
 - include: install.yml
 - include: setup.yml
