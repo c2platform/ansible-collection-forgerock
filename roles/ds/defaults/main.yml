@@ -4,9 +4,10 @@ ds_home: /opt/ds
 
 ds_owner: forgerock
 ds_group: forgerock
-ds_rootpw: supersecure
+ds_rootpw:  supersecret
 ds_replication_global_admin: admin
-ds_replication_global_admin_password: supersecure
+ds_replication_global_admin_password: supersecret
+# Global admin PW is a nonworking example, requirements are more strict.
 ds_replication_port: 8989
 ds_packages: []
 
@@ -18,7 +19,10 @@ ds_versions:
     checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
 
 ds_versions_sequence: [6.5.4]
-ds_hostname: "{{ ansible_hostname }}"
+#ds_hostname: "{{ ansible_hostname }}"
+# Line above causes trouble in DEV, as it delivers bkd_ds(2) while we need the 1.1.1.5x.nip.io name
+# Now done in host_vars per node
+
 
 # ds_db_schema_ldifs:
 #  appPerson: | # /opt/ds/ds-6.5.4/db/schema/appPerson.ldif
@@ -38,6 +42,14 @@ ds_connect:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   no-prompt: ""
+
+ds_replconnect:
+  hostname: "{{ ds_hostname }}"
+  port: 4444
+  trustAll: ""
+  no-prompt: ""
+  baseDn: "{{ ds_replication['baseDNs'] }}"
+
 
 ds_setup_config:
   instancePath:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
@@ -262,7 +274,7 @@ dsc_amconfigpw_modify:
 
 
 dsc_targetnode_inquire:
-  hostname: "{{ dsrepl_nodename_target }}"
+  hostname: "{{ ds_replication['host2']['hostname'] }}"
   port: 4444
   bindDN:  '"cn=Directory Manager"'
   bindPassword: "{{ ds_rootpw }}"
@@ -497,7 +509,3 @@ ds_config_components_fingerprint:
   - backend_create
 
 
-ds_replication: 
-  replication-server:
-    hostname: "1.1.1.51.nip.io"
-  host2: 

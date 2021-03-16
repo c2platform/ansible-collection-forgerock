@@ -1,6 +1,6 @@
 ---
 _ds_replication:
-  connect: "{{ ds_connect|combine(ds_replication['replication-server']) }}"
+  replconnect: "{{ ds_replconnect|combine(ds_replication['replication-server']) }}"
   connect_admin:
     adminUid: "{{ ds_replication_global_admin }}"
     adminPassword: "{{ ds_replication_global_admin_password }}"
@@ -24,4 +24,4 @@ _ds_replication:
     no-prompt: ""
 
 _ds_replication_connect_admin: >
-  {{ _ds_replication['connect']|c2platform.forgerock.ds_pop('bindDN')|c2platform.forgerock.ds_pop('bindPassword')|combine(_ds_replication['connect_admin']) }}
+  {{ _ds_replication['replconnect']|combine(_ds_replication['connect_admin']) }}

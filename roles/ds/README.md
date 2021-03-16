@@ -46,7 +46,7 @@ ds_setup_config
 Note that the configbase module (running dsconfig command) for some parts uses 'fingerprints': signatures of the last result stored on disk, to prevent unnecessary calls to dsconfig. This however assumes that Ansible is in full control of the file system.
 
 TODO if needed
-Note that the main dsconfig part(4.)  is highly parametrised, you could call it 'normalised' in SQL terms with no copypasting of elements. Parts 5 and 6 are not parametrised and hence have quite some copypasting. For the tiny bit of dsconfig usage there it would not be too hard to piggyback this on the parametrised framework. For the rest of the code (nontrivial, but still a lot shorter than dsconfig used to be) parametrising is for sure doable but the return-on-investment is debatable. One reason is that we talk not about 1 'shelled' command but three different, each with slightly different syntax; ldapsearch, ldapmodify and ldappasswordmodify.
+Note that the main dsconfig part(4.)  is highly parametrised, you could call it 'normalised' in SQL terms with no copypasting of elements. Parts 5 and 6 are not parametrised, except a small dsconfig part, and hence have quite some copypasting. For the code (nontrivial, but still a lot shorter than dsconfig used to be) parametrising is for sure doable but the return-on-investment is debatable. One reason is that we talk not about 1 'shelled' command but three different, each with slightly different syntax; ldapsearch, ldapmodify and ldappasswordmodify.
 
 The host_vars variable dsrepl_is_config_master defines whether this is a clustered environment and if so which is the 'master' (the machine where dsreplication command will be run). If that variable is set to NO on the sole node of a non-clustered environment, replication won't be installed.
 
@@ -95,7 +95,9 @@ ds_replication:
     replication_port: 8990 # optional if != ds_replication_port  
     # same as replication-server
   baseDNs:
-    - dc=app,dc=nl
+    - ou=am-config
+    - c=NL
+    - dc=bkwi,dc=nl
 ```
 
 If one of the servers is unavailable, the setup will fail of course.
@@ -109,7 +111,9 @@ ds_replication:
   host2: 
     hostname: "1.1.1.58.nip.io"
   baseDNs:
-    - dc=app,dc=nl
+    - ou=am-config
+    - c=NL
+    - dc=bkwi,dc=nl
 ```
 Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc.  
 
@@ -134,6 +138,13 @@ To check the replication status
 --trustAll --no-prompt
 ```
 
+The required arguments for the different dsreplication scenarios differ quite a bit, hence below the scenarios, where used
+in the code (and the requirements in the XLS) and unique arguments. These also help explaining the refactoring/normalisation
+of the dsreplication arguments.
+* status: _used_  for initial check and for listing the configured dn's if already something is running. _arguments_ adminUID and adminPassword.
+* configure: _used_ for creating (--baseDN is already an itemised list hence no loop needed), again for intial and for delta. _arguments_ basically all, notably bind and admin.
+* initialize-all: _used_ as a follow-up of configure, it activates the replication config. _arguments_ adminUID and adminPassword, baseDN
+
 ## Dependencies
 
 <!--A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.-->
@@ -150,7 +161,7 @@ To check the replication status
 ## Notes
 
 ### Systemd services changed
-A service added: ds-config. It is a 2-layer wrapper around /bin/start-ds and stop-ds scripts. See the URL given on why this is needed.
+A service added: ds-config. It is a wrapper around /bin/start-ds and stop-ds scripts. See the URL given on why this is needed.
 
 ### Fingerprint
 

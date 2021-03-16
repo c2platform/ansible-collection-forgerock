@@ -12,13 +12,15 @@
   ignore_errors: yes
 
 - name: Exit if no running DS service found
-  when: user_reports_inquire is search("No Such Entry")
+  when: not user_reports_inquire is search("Service Account")
   fail: msg="The non-config master DS server is not running, cannot activate the replication now"
 
 - name: Include replications vars
   include_vars: "replication.yml"
 
-- name:  Inquire replication status to detect fresh install
+
+
+- name:  Inquire replication Status to detect fresh install
   shell:  "./dsreplication status {{ _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
@@ -48,16 +50,17 @@
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  with_items: "{{ ds_replication['baseDNs'] }}"
+# Do not use with_items here as the whole list of dn's is already payload of the single configure command above
   when: dsr_statusfresh.stderr is search("Invalid Credentials")
 
 - name:  Initialize replication, fresh install
-  shell:  "./dsreplication initialize-all {{ _ds_replication['connect']|c2platform.forgerock.ds_cmd }}"
+  shell:  "./dsreplication initialize-all {{ _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   with_items: "{{ ds_replication['baseDNs'] }}"
+# It's not really needed, again the whole list is already in initial payload. But the command is harmless repeating.
   when:  dsr_statusfresh is search("Invalid Credentials")
 
 # In the fresh install scenario the next 3 tasks would be skipped, as the status will report that all (3) DNs are done
@@ -89,7 +92,7 @@
   when: not dsr_statusclob is search(item)
 
 - name:  Initialize replication, existing install
-  shell:  "./dsreplication initialize-all {{ _ds_replication['connect']|c2platform.forgerock.ds_cmd }}"
+  shell:  "./dsreplication initialize-all {{  _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
   become: yes
   become_user: forgerock
   args:
