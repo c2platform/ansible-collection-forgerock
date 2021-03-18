@@ -80,35 +80,6 @@ dsc_ustore_uroot_inquire:
   useSsl: ""
   baseDn: '"dc=bkwi,dc=nl"'
 
-#dsc_ustore_createbackend_sroot:
-#  hostname: "{{ ds_hostname }}"
-#  port: 4444
-#  bindDN:  '"cn=Directory Manager"'
-#  bindPassword: "{{ ds_rootpw }}"
-#  trustAll: ""
-#  no-prompt: ""
-#  set:
-#    - "base-dn:'c=NL'"
-#    - enabled:true
-#    - db-cache-percent:5
-#  type: je
-#  backend-name: suwiRoot
-
-#dsc_ustore_createbackend_uroot:
-#  hostname: "{{ ds_hostname }}"
-#  port: 4444
-#  bindDN:  '"cn=Directory Manager"'
-#  bindPassword: "{{ ds_rootpw }}"
-#  trustAll: ""
-#  no-prompt: ""
-#  set:
-#    - "base-dn:'dc=bkwi,dc=nl'"
-#    - enabled:true
-#    - db-cache-percent:5
-#  type: je 
-#  backend-name: userRoot
-
-
 dsc_ustore_sroot_modify:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -117,7 +88,6 @@ dsc_ustore_sroot_modify:
   trustAll: ""
   useSsl: ""
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.suwiRoot.ldif"
-
 
 dsc_ustore_uroot_modify:
   hostname: "{{ ds_hostname }}"
