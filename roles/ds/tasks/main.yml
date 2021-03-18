@@ -23,6 +23,9 @@
 - include: setup_replication.yml
   when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname
 
+- debug:
+    var: ds_hostname
+
 # Note the README.md and wiki: due to the specific scenario building up a 2-node cluster,
 # this replicate part will  be skipped if the node is not configured as the config master
 # And it's strongly recommended to provision the not_config_master node BEFORE provisioning the config_master node.
