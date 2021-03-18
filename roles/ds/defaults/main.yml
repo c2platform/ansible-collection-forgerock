@@ -19,21 +19,7 @@ ds_versions:
     checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
 
 ds_versions_sequence: [6.5.4]
-#ds_hostname: "{{ ansible_hostname }}"
-# Line above causes trouble in DEV, as it delivers bkd_ds(2) while we need the 1.1.1.5x.nip.io name
-# Now done in host_vars per node
-
-
-# ds_db_schema_ldifs:
-#  appPerson: | # /opt/ds/ds-6.5.4/db/schema/appPerson.ldif
-#    dn: cn=schema
-#    changetype: modify
-#    add: attributeTypes
-#    attributeTypes: ( app-account-expiration-time-oid NAME 'app-account-expiration-time' DESC 'The time the account becomes disabled' EQUALITY generalizedTimeMatch ORDERING generalizedTimeOrderingMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE USAGE userApplications )
-#    dn: cn=schema
-#    changetype: modify
-#    add: objectClasses
-#    objectClasses: ( AppPerson-oid NAME 'appPerson' DESC 'Extra properties for a app user' SUP top AUXILIARY MAY ( app-account-expiration-time ) )
+ds_hostname: "{{ ansible_hostname }}"
 
 ds_connect:
   hostname: "{{ ds_hostname }}"
@@ -83,35 +69,6 @@ dsc_ustore_uroot_inquire:
   useSsl: ""
   baseDn: '"dc=bkwi,dc=nl"'
 
-#dsc_ustore_createbackend_sroot:
-#  hostname: "{{ ds_hostname }}"
-#  port: 4444
-#  bindDN:  '"cn=Directory Manager"'
-#  bindPassword: "{{ ds_rootpw }}"
-#  trustAll: ""
-#  no-prompt: ""
-#  set:
-#    - "base-dn:'c=NL'"
-#    - enabled:true
-#    - db-cache-percent:5
-#  type: je
-#  backend-name: suwiRoot
-
-#dsc_ustore_createbackend_uroot:
-#  hostname: "{{ ds_hostname }}"
-#  port: 4444
-#  bindDN:  '"cn=Directory Manager"'
-#  bindPassword: "{{ ds_rootpw }}"
-#  trustAll: ""
-#  no-prompt: ""
-#  set:
-#    - "base-dn:'dc=bkwi,dc=nl'"
-#    - enabled:true
-#    - db-cache-percent:5
-#  type: je 
-#  backend-name: userRoot
-
-
 dsc_ustore_sroot_modify:
   hostname: "{{ ds_hostname }}"
   port: 4444
@@ -120,7 +77,6 @@ dsc_ustore_sroot_modify:
   trustAll: ""
   useSsl: ""
   filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.suwiRoot.ldif"
-
 
 dsc_ustore_uroot_modify:
   hostname: "{{ ds_hostname }}"

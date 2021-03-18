@@ -1,7 +1,5 @@
 ---
-# (Open)AM won't start without home directory
-# and even our new tomcat does not create tomcat home directory
-
+# AM won't start without home directory
 - name: Create home directory for tomcat
   file:
     path: /home/tomcat
@@ -9,7 +7,6 @@
     owner: tomcat
     group: tomcat
     mode: 0755
-
 
 - name: Download AM war, put it in Tomcat webapps directory.
 # Note the new specs: this is all, we do not do anything with the war outside of Tomcat

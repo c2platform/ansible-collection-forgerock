@@ -90,6 +90,7 @@
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   with_items: "{{ ds_replication['baseDNs'] }}"
   when: not dsr_statusclob is search(item)
+# TODO fails when ds_replication['baseDNs'] changes
 
 - name:  Initialize replication, existing install
   shell:  "./dsreplication initialize-all {{  _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
