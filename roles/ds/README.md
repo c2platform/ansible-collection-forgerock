@@ -51,7 +51,7 @@ Note that the main dsconfig part(4.)  is highly parametrised, you could call it 
 
 ### DB Schema ldifs
 
-Using `ds_db_schema_ldifs` ldifs files can be created in `db/schema`. For example configuration below will create file `/opt/ds/ds-6.5.4/db/schema/appPerson.ldif`.
+Using `ds_db_schema_ldifs` ldifs files can be created in `db/schema`. For example configuration below will create file `/opt/ds/ds-6.5.4/db/schema/appPerson.ldif` to create a new __appPerson__ object class. 
 
 ```yaml
 ds_db_schema_ldifs:
