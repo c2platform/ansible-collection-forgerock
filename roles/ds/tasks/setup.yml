@@ -1,8 +1,6 @@
 ---
 - name: Check whether DS setup already run # noqa 305
   shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"
-  become: yes
-  become_user: forgerock
   register: ds_status
   ignore_errors: yes
 
