@@ -19,7 +19,7 @@ ds_versions:
     checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
 
 ds_versions_sequence: [6.5.4]
-ds_hostname: "{{ ansible_hostname }}"
+ds_hostname: "{{ ansible_fqdn }}"
 
 ds_connect:
   hostname: "{{ ds_hostname }}"
