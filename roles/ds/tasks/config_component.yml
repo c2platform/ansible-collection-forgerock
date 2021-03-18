@@ -16,7 +16,7 @@
         {{ item|c2platform.forgerock.ds_cmd_get(component) }}
       with_items: "{{ ds_config[component] }}"
       args:
-        chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+        chdir: "{{ ds_home_version }}/bin"
       register: current_config
       when: not use_fingerprint
       changed_when: False
@@ -33,7 +33,7 @@
   when:
     - item|c2platform.forgerock.ds_config_state_diff(current_config,component_fingerprint,use_fingerprint,skip_state_check|default(False))
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   become: yes
   become_user: forgerock
   # ignore_errors: yes

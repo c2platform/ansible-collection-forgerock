@@ -38,7 +38,7 @@ ds_replconnect:
 
 
 ds_setup_config:
-  instancePath:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+  instancePath:  "{{ ds_home_version }}"
   rootUserDN: '"cn=Directory Manager"'
   rootUserPassword: "{{ ds_rootpw }}"
   hostname: "{{ ds_hostname }}"
@@ -76,7 +76,7 @@ dsc_ustore_sroot_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.suwiRoot.ldif"
+  filename: "{{ ds_home_version }}/bkwi/userstore.suwiRoot.ldif"
 
 dsc_ustore_uroot_modify:
   hostname: "{{ ds_hostname }}"
@@ -85,7 +85,7 @@ dsc_ustore_uroot_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/userstore.userRoot.ldif"
+  filename: "{{ ds_home_version }}/bkwi/userstore.userRoot.ldif"
 
 
 dsc_ustore_special_inquire:
@@ -115,7 +115,7 @@ dsc_ustore_special_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.special.ldif"
+  filename: "{{ ds_home_version }}/bkwi/organization.special.ldif"
 
 dsc_ustore_suwi_modify:
   hostname: "{{ ds_hostname }}"
@@ -124,7 +124,7 @@ dsc_ustore_suwi_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/organization.suwi.ldif"
+  filename: "{{ ds_home_version }}/bkwi/organization.suwi.ldif"
 
 dsc_user_reports_inquire:
   hostname: "{{ ds_hostname }}"
@@ -142,7 +142,7 @@ dsc_user_reports_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/special.sa_reports.ldif"
+  filename: "{{ ds_home_version }}/bkwi/special.sa_reports.ldif"
 
 dsc_user_reports_pw:
   hostname: "{{ ds_hostname }}"
@@ -170,7 +170,7 @@ dsc_user_monitor_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/special.sa_monitor.ldif"
+  filename: "{{ ds_home_version }}/bkwi/special.sa_monitor.ldif"
 
 dsc_user_monitor_pw:
   hostname: "{{ ds_hostname }}"
@@ -198,7 +198,7 @@ dsc_user_useradmin_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/special.sa_useradmin.ldif"
+  filename: "{{ ds_home_version }}/bkwi/special.sa_useradmin.ldif"
 
 dsc_user_useradmin_pw:
   hostname: "{{ ds_hostname }}"
@@ -226,7 +226,7 @@ dsc_amconfigpw_modify:
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""
   useSsl: ""
-  filename: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/passwordpolicy.am-config.ldif"
+  filename: "{{ ds_home_version }}/bkwi/passwordpolicy.am-config.ldif"
 
 
 dsc_targetnode_inquire:

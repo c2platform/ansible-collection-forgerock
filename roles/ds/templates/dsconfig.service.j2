@@ -1,5 +1,5 @@
 [Unit]
-SourcePath={{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin
+SourcePath={{ ds_home_version }}/bin
 Description=Config DS server
 Before=runlevel5.target shutdown.target
 After=
@@ -16,8 +16,8 @@ KillMode=process
 GuessMainPID=no
 RemainAfterExit=yes
 Environment=OPENDJ_JAVA_HOME={{ adoptopenjdk_java_home }}
-ExecStart={{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/start-ds
-ExecStop={{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/stop-ds
+ExecStart={{ ds_home_version }}/bin/start-ds
+ExecStop={{ ds_home_version }}/bin/stop-ds
 
 [Install]
 WantedBy=multi-user.target

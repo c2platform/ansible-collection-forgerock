@@ -7,7 +7,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   register: user_reports_inquire
   ignore_errors: yes
 
@@ -25,13 +25,13 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   register: dsr_statusfresh
   ignore_errors: yes
 
 - name:  Get stat of the replication log
   stat:
-    path:  "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/logs/replication"
+    path:  "{{ ds_home_version }}/logs/replication"
   register: dsr_log
 
 - name: Fail if size of log is >0 and Invalid Credentials, as this means it is a real error
@@ -49,7 +49,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
 # Do not use with_items here as the whole list of dn's is already payload of the single configure command above
   when: dsr_statusfresh.stderr is search("Invalid Credentials")
 
@@ -58,7 +58,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   with_items: "{{ ds_replication['baseDNs'] }}"
 # It's not really needed, again the whole list is already in initial payload. But the command is harmless repeating.
   when:  dsr_statusfresh is search("Invalid Credentials")
@@ -70,7 +70,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   register: dsr_statusclob
 # This way we do not need to get status per line, we simply get the DN's with status true and then the Create task checks
 # for each DN whether there is something in the clob.
@@ -87,7 +87,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   with_items: "{{ ds_replication['baseDNs'] }}"
   when: not dsr_statusclob is search(item)
 # TODO fails when ds_replication['baseDNs'] changes
@@ -97,6 +97,6 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   with_items: "{{ ds_replication['baseDNs'] }}"
   when: not dsr_statusclob is search(item)

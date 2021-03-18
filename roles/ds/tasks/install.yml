@@ -1,7 +1,7 @@
 ---
 - name: Stat home folder # e.g. /opt/ds/ds-6.5.4
   stat:
-    path: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+    path: "{{ ds_home_version }}"
   register: home_folder
 
 - block:
@@ -31,13 +31,13 @@
         recurse: yes
       with_items:
         - "{{ ds_home }}"
-        - "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+        - "{{ ds_home_version }}"
         - "{{ ds_home|c2platform.forgerock.ds_config_fingerprint_folder(ds_version) }}"
 
     - name: Make sure zip is on target
       synchronize:
         src: /tmp/opendj/
-        dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/"
+        dest: "{{ ds_home_version }}/"
       delegate_to: "{{ inventory_hostname }}"
 
     - name: Chown

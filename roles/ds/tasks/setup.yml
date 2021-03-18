@@ -1,6 +1,6 @@
 ---
 - name: Check whether DS setup already run # noqa 305
-  shell: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin/status --offline"
+  shell: "{{ ds_home_version }}/bin/status --offline"
   become: yes
   become_user: forgerock
   register: ds_status
@@ -13,7 +13,7 @@
 - name: Setup
   command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+    chdir: "{{ ds_home_version }}"
   become: yes
   become_user: "{{ ds_owner }}"
   when:  ds_setup
@@ -21,14 +21,14 @@
 - name: Stop DS
   command: "./stop-ds"
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   become: yes
   become_user: "{{ ds_owner }}"
   when:  ds_setup
 
 - name: Chown recursive
   file:
-    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}"
+    dest: "{{ ds_home_version }}"
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     recurse: yes

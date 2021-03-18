@@ -3,7 +3,7 @@
   copy:
     content: "{{ ds_specialusers_ldifs[item] }}"
     remote_src: yes
-    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/./{{ item }}.ldif"
+    dest: "{{ ds_home_version }}/bkwi/./{{ item }}.ldif"
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     mode: '0640'
@@ -16,7 +16,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   register: user_reports_inquire
   ignore_errors: yes
 
@@ -25,7 +25,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   when: user_reports_inquire is search("No Such Entry")
 
 - name: modify DS pw for sa_reports
@@ -33,7 +33,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   when: user_reports_inquire is search("No Such Entry")
 
 - name: Special user sa_useradmin exists already ?
@@ -43,7 +43,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   register: user_monitor_inquire
   ignore_errors: yes
 
@@ -52,7 +52,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   when: user_monitor_inquire is search("No Such Entry")
 
 - name: modify DS pw for sa_monitor
@@ -60,7 +60,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   when: user_monitor_inquire is search("No Such Entry")
 
 - name: Special user sa_useradmin exists already ?
@@ -70,7 +70,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   register: user_useradmin_inquire
   ignore_errors: yes
 
@@ -79,7 +79,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   when: user_useradmin_inquire is search("No Such Entry")
 
 - name: modify DS pw for sa_useradmin
@@ -87,7 +87,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   when: user_useradmin_inquire is search("No Such Entry")
 
 
@@ -95,7 +95,7 @@
   copy:
     content: "{{ ds_passwordpolicy_ldifs[item] }}"
     remote_src: yes
-    dest: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bkwi/./{{ item }}.ldif"
+    dest: "{{ ds_home_version }}/bkwi/./{{ item }}.ldif"
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     mode: '0640'
@@ -110,7 +110,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   register: amconfigpw_inquire
   ignore_errors: yes
 # Note for testing: strangely enough the am-config policy exists already. Hence according to the logic
@@ -123,7 +123,7 @@
   become: yes
   become_user: forgerock
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+    chdir: "{{ ds_home_version }}/bin"
   when: amconfigpw_inquire is search("No Such Entry")
 
 
