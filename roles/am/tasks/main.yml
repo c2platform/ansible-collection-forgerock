@@ -15,7 +15,7 @@
   with_items:
     - "{{ am_home }}"
     - "{{ am_home }}/{{ am_version }}"
-    - "{{ am_home }}/{{ am_version }}/downloads"
+
 
 - include: install.yml
 
