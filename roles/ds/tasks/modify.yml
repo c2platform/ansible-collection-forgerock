@@ -1,12 +1,10 @@
 ---
 - name: "Check {{ item['ldif']|c2platform.forgerock.dn_from_ldif }}"
-  shell:  "./ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --baseDn {{ item['ldif']|c2platform.forgerock.dn_from_ldif }} objectclass=top"
+  shell:  "./ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --baseDn {{ item['ldif']|c2platform.forgerock.dn_from_ldif }} objectclass=top || true"
   args:
     chdir: "{{ ds_home_version }}/bin"
   register: ldapsearch_result
   changed_when: false
-  ignore_errors: yes
-  no_log: true
 
 - block:
     - name: "{{ item['name'] }}.ldif"

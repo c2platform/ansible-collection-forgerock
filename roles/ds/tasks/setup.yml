@@ -1,13 +1,12 @@
 ---
-- name: Check whether DS setup already run # noqa 305
-  shell: "{{ ds_home_version }}/bin/status --offline"
+- name: Check setup
+  shell: "{{ ds_home_version }}/bin/status --offline || true"
   become: yes
   become_user: forgerock
   register: ds_status
-  ignore_errors: yes
   changed_when: False
 
-- name: DS setup fact
+- name: Setup fact
   set_fact:
     ds_setup: '{{ ds_status is search("The server has not been configured") }}'
 
