@@ -1,0 +1,25 @@
+---
+- name: "Check {{ item['ldif']|c2platform.forgerock.dn_from_ldif }}"
+  shell:  "./ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --baseDn {{ item['ldif']|c2platform.forgerock.dn_from_ldif }} objectclass=top"
+  args:
+    chdir: "{{ ds_home_version }}/bin"
+  register: ldapsearch_result
+  changed_when: false
+  ignore_errors: yes
+  no_log: true
+
+- block:
+    - name: "{{ item['name'] }}.ldif"
+      copy:
+        content: "{{ item['ldif'] }}"
+        remote_src: yes
+        dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+        owner: "{{ ds_owner }}"
+        group: "{{ ds_group }}"
+        mode: '0640'
+
+    - name: "item {{ item['ldif']|c2platform.forgerock.dn_from_ldif }}"
+      shell:  "./ldapmodify {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --filename {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+  when: ldapsearch_result is search("No Such Entry")
