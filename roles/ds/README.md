@@ -10,6 +10,8 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Setup config](#setup-config)
   - [DB Schema ldifs](#db-schema-ldifs)
   - [Backends](#backends)
+  - [Modify](#modify)
+  - [Passwords](#passwords)
   - [Replication](#replication)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
@@ -85,6 +87,43 @@ ds_config:
         - db-cache-percent:5
       type: je
       backend-name: userRoot
+```
+
+### Modify
+
+Modify the directory using [ldif](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldif to be used to modify DS using `./ldapmodify`.
+
+```yaml
+ds_modify:
+  - name: userstore.orgRoot
+    ldif: |
+      dn: c=NL
+      objectClass: country
+      objectClass: top
+      c: NL
+  - name: userstore.userRoot
+    ldif: |
+      dn: dc=org,dc=nl
+      objectClass: domain
+      objectClass: top
+      dc: org
+```
+
+### Passwords
+
+To configure passwords use `ds_passwords`. 
+
+```yaml
+ds_passwords: # see also secrets.yml
+    sa_reports:
+      authzId: cn=sa_reports,o=special,c=NL
+      newPassword: supersecure
+    sa_monitor:
+      authzId: cn=sa_monitor,o=special,c=NL
+      newPassword: supersecure
+    sa_useradmin:
+      authzId: cn=sa_useradmin,o=special,c=NL
+      newPassword: supersecure
 ```
 
 ### Replication
