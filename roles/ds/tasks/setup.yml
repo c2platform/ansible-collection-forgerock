@@ -5,6 +5,7 @@
   become_user: forgerock
   register: ds_status
   ignore_errors: yes
+  changed_when: False
 
 - name: DS setup fact
   set_fact:
