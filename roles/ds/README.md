@@ -91,7 +91,7 @@ ds_config:
 
 ### Modify
 
-Modify the directory using [ldif](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldif to be used to modify DS using `./ldapmodify`.
+Modify the directory using [LDIF](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldif to be used to modify DS using `./ldapmodify`.
 
 ```yaml
 ds_modify:
