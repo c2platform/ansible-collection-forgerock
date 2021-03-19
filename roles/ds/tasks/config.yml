@@ -6,14 +6,6 @@
     skip_state_check: yes
   when: ds_setup # first / setup run
 
-- name: Create BKWI subdir
-  file:
-    path: "{{ ds_home_version }}/bkwi"
-    state: directory
-    owner: "{{ ds_owner }}"
-    group: "{{ ds_group }}"
-    mode: 0755
-
 - include_tasks: config_component.yml
   with_items: "{{ ds_config_components }}"
   vars:
