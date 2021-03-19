@@ -17,8 +17,13 @@
 - include: setup.yml
 - include: service.yml
 - include: config.yml
-- include: configuserstore.yml
-- include: configusers.yml
+
+- include_tasks: modify.yml
+  when: ds_modify|default(False)
+  with_items: "{{ ds_modify }}"
+
+- include_tasks: modify_pw.yml
+  when: ds_passwords|default(False)
 
 - include: setup_replication.yml
   when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname
