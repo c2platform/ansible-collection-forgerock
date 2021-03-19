@@ -29,13 +29,14 @@ ds_connect:
   trustAll: ""
   no-prompt: ""
 
+ds_connect_ssl: '{{ ds_connect|combine({"useSsl":""}) }}'
+
 ds_replconnect:
   hostname: "{{ ds_hostname }}"
   port: 4444
   trustAll: ""
   no-prompt: ""
   baseDn: "{{ ds_replication['baseDNs'] }}"
-
 
 ds_setup_config:
   instancePath:  "{{ ds_home_version }}"
