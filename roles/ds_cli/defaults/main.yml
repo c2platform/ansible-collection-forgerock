@@ -1,8 +1,8 @@
 ---
 ds_version: 6.5.4
 ds_home: /opt/ds
-ds_owner: tomcat
-ds_group: tomcat
+ds_owner: forgerock
+ds_group: forgerock
 
 ds_versions:
   6.5.4:
