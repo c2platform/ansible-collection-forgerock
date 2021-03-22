@@ -1,102 +1,82 @@
 ---
-
-- name: check ldap connection to ds (check is more or less a random one, modidified to ping target node)
-# The actual check on the result is in the 'when' clause for the ldap tool, see below.
-# Last parameter is dashless hence hardcoded here
-  shell:  "./ldapsearch  {{ dsc_targetnode_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home_version }}/bin"
-  register: user_reports_inquire
-  ignore_errors: yes
-
-- name: Exit if no running DS service found
-  when: not user_reports_inquire is search("Service Account")
-  fail: msg="The non-config master DS server is not running, cannot activate the replication now"
-
 - name: Include replications vars
   include_vars: "replication.yml"
 
-
-
-- name:  Inquire replication Status to detect fresh install
-  shell:  "./dsreplication status {{ _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
+- name: Check replicas alive
+  shell:  './ldapsearch {{ item|c2platform.forgerock.ds_cmd }} --baseDn "" --searchScope base "(&)" alive'
   args:
     chdir: "{{ ds_home_version }}/bin"
-  register: dsr_statusfresh
+  register: alive_check
   ignore_errors: yes
+  with_items:
+    - "{{ _ds_replication.connect_host1 }}"
+    - "{{ _ds_replication.connect_host2 }}"
+  changed_when: False
+  no_log: True
 
-- name:  Get stat of the replication log
+- name: Fail if not alive
+  when: 'not item is search("alive: true")'
+  fail:
+    msg: "Alive check failed for item {{ item }}"
+  with_items: "{{ alive_check.results }}"
+  no_log: True
+
+- name:  Check replication Status
+  shell:  "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }}"
+  args:
+    chdir: "{{ ds_home_version }}/bin"
+  register: replication_status
+  ignore_errors: yes
+  changed_when: False
+  no_log: True
+
+- name:  Check replication log
   stat:
     path:  "{{ ds_home_version }}/logs/replication"
-  register: dsr_log
+  register: replication_log
 
 - name: Fail if size of log is >0 and Invalid Credentials, as this means it is a real error
   fail:
     msg: "DSR gives Invalid Credentials but replication log indicates it's not a fresh install"
   when:
-    - dsr_statusfresh.stderr is search("Invalid Credentials")
-    - dsr_log.stat.size > 0
-# These are the Chef specs and rightly so. Invalid credentials message is used to see whether this
-# is a fresh install (false positive) but if there is a non-empty replication log file it means something fishy (true positive).
+    - replication_status.stderr is search("Invalid Credentials")
+    - replication_log.stat.size > 0
+# Invalid credentials message and empty replication log indicates a fresh install
+# If there is a non-empty replication log something is wrong.
 
-# Create also global replication admin
-- name:  Create replication settings, fresh install, for all DNs
+- name:  Configure replication for fresh install # for all DNs, creates also global replication admin
   shell:  "./dsreplication configure {{ _ds_replication['configure']|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
   args:
     chdir: "{{ ds_home_version }}/bin"
-# Do not use with_items here as the whole list of dn's is already payload of the single configure command above
-  when: dsr_statusfresh.stderr is search("Invalid Credentials")
+  when: replication_status.stderr is search("Invalid Credentials")
 
-- name:  Initialize replication, fresh install
-  shell:  "./dsreplication initialize-all {{ _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
+- name:  Initialize replication for fresh install
+  shell:  "./dsreplication initialize-all {{ _ds_replication['connect_global']|combine({'baseDn':ds_replication['baseDNs']})|c2platform.forgerock.ds_cmd }}"
+  args:
+    chdir: "{{ ds_home_version }}/bin"
+  when:  replication_status is search("Invalid Credentials")
+
+# In the fresh install scenario the next tasks would be skipped
+# These tasks are executed when a replication DN is added to ds_replication['baseDNs']
+
+- name:  Check replication status for existing install # solely the 'true' lines
+  shell:  "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
+  args:
+    chdir: "{{ ds_home_version }}/bin"
+  register: replication_status_existing
+  changed_when: False
+  no_log: True
+
+- name:  Configure replication for existing install for new DNs
+  shell:  "./dsreplication configure {{ _ds_replication['configure']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   with_items: "{{ ds_replication['baseDNs'] }}"
-# It's not really needed, again the whole list is already in initial payload. But the command is harmless repeating.
-  when:  dsr_statusfresh is search("Invalid Credentials")
-
-# In the fresh install scenario the next 3 tasks would be skipped, as the status will report that all (3) DNs are done
-
-- name:  Inquire replication status (solely the 'true' lines) for existing install
-  shell:  "./dsreplication status {{ _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home_version }}/bin"
-  register: dsr_statusclob
-# This way we do not need to get status per line, we simply get the DN's with status true and then the Create task checks
-# for each DN whether there is something in the clob.
-# The filtering based on grep ' : true                :' (exact number of spaces essential!)
-# was easier to get working that an awk to find the 4th column, as the Chef code does but then with -s flag to
-# suppress the column markers. Effect is 100% same.
-# Note that this check would yield an error (and hanging Ansible) if run on a fresh install, hence we first have the fresh-install
-# check, plus supplementary logfile check, and the create/initialize in case of fresh install.
-# After that it _is_ an existing install and these 3 tasks can run safely, without finding anything to do ;-)
-# So they are useful if the item list expands and an existing install needs to be modified.
-
-- name:  Create replication settings, existing install, for not yet replicated DNs
-  shell:  "./dsreplication configure {{ _ds_replication['configure']|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
-  args:
-    chdir: "{{ ds_home_version }}/bin"
-  with_items: "{{ ds_replication['baseDNs'] }}"
-  when: not dsr_statusclob is search(item)
-# TODO fails when ds_replication['baseDNs'] changes
+  when: not replication_status_existing is search(item)
 
 - name:  Initialize replication, existing install
-  shell:  "./dsreplication initialize-all {{  _ds_replication_connect_admin|c2platform.forgerock.ds_cmd }}"
-  become: yes
-  become_user: forgerock
+  shell:  "./dsreplication initialize-all {{  _ds_replication['connect_global']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   with_items: "{{ ds_replication['baseDNs'] }}"
-  when: not dsr_statusclob is search(item)
+  when: not replication_status_existing is search(item)

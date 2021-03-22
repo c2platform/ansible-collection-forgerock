@@ -1,13 +1,14 @@
 ---
 ds_version: 6.5.4
 ds_home: /opt/ds
+ds_home_version: "{{ ds_home  }}/{{ ds_home|basename }}-{{ ds_version }}"
+ds_home_link: "{{ ds_home  }}/{{ ds_home|basename }}"
 
 ds_owner: forgerock
 ds_group: forgerock
 ds_rootpw:  supersecret
 ds_replication_global_admin: admin
-ds_replication_global_admin_password: supersecret
-# Global admin PW is a nonworking example, requirements are more strict.
+ds_replication_global_admin_password: supersecret # requires better password e.g Su12perSec34retIt5Is
 ds_replication_port: 8989
 ds_packages: []
 
@@ -17,6 +18,9 @@ ds_versions:
   6.5.4:
     url: https://backstage.forgerock.com/downloads/
     checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
+  4.4.10:
+    url: https://github.com/OpenIdentityPlatform/OpenDJ/releases/download/4.4.10/opendj-4.4.10.zip
+    checksum: "sha256: 6c608d4ff8234401b1b5baf1fd7cfc9b56128dc7ec3f657cdce441df94f6d434"
 
 ds_versions_sequence: [6.5.4]
 ds_hostname: "{{ ansible_fqdn }}"
@@ -31,13 +35,6 @@ ds_connect:
 
 ds_connect_ssl: '{{ ds_connect|combine({"useSsl":""}) }}'
 
-ds_replconnect:
-  hostname: "{{ ds_hostname }}"
-  port: 4444
-  trustAll: ""
-  no-prompt: ""
-  baseDn: "{{ ds_replication['baseDNs'] }}"
-
 ds_setup_config:
   instancePath:  "{{ ds_home_version }}"
   rootUserDN: '"cn=Directory Manager"'
@@ -51,15 +48,6 @@ ds_setup_config:
   profile: am-config:6.5
   set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
   acceptLicense: ""
-
-dsc_targetnode_inquire:
-  hostname: "{{ ds_replication['host2']['hostname'] }}"
-  port: 4444
-  bindDN:  '"cn=Directory Manager"'
-  bindPassword: "{{ ds_rootpw }}"
-  trustAll: ""
-  useSsl: ""
-  baseDn: '"cn=sa_reports,o=special,c=NL"'
 
 # Password policy settings
 ds_config_pps:

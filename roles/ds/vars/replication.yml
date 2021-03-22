@@ -1,9 +1,15 @@
 ---
 _ds_replication:
-  replconnect: "{{ ds_replconnect|combine(ds_replication['replication-server']) }}"
-  connect_admin:
+  connect_global:
+    hostname: "{{ ds_replication['replication-server']['hostname'] }}"
     adminUid: "{{ ds_replication_global_admin }}"
     adminPassword: "{{ ds_replication_global_admin_password }}"
+    port: "{{ ds_replication['replication-server']['port']|default(ds_connect['port']) }}"
+    trustAll: ""
+    no-prompt: ""
+  connect_admin:
+  connect_host1: "{{ ds_connect_ssl|combine({'hostname': ds_replication['host1']['hostname']|default(ds_connect['hostname'])}) }}"
+  connect_host2: "{{ ds_connect_ssl|combine({'hostname': ds_replication['host2']['hostname']}) }}"
   configure:
     host1: "{{ ds_replication['host1']['hostname']|default(ds_connect['hostname']) }}"
     port1: "{{ ds_replication['host1']['port']|default(ds_connect['port']) }}"
@@ -25,3 +31,4 @@ _ds_replication:
 
 _ds_replication_connect_admin: >
   {{ _ds_replication['replconnect']|combine(_ds_replication['connect_admin']) }}
+
