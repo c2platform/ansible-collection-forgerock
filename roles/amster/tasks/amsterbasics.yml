@@ -1,0 +1,41 @@
+---
+- name: Create owner
+  user:
+    name: "{{ amster_owner }}"
+    shell: /bin/bash
+    system: true
+
+- name: Create home
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+  with_items:
+    - "{{ amster_home }}"
+    - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
+    - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config"
+    - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/amsterFiles"
+    - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation"
+# As for chmod rights, Chef/XLS has a mixture of 700-becoming-755, 500 and 644. We'll try with this
+# highest/unsafest level first, if any tool requires a lower/safer level we'll adjust.
+
+- name: Download zip file
+  get_url:
+    url: "{{ amster_versions[amster_version]['url'] }}"
+    dest: "{{ amster_download_dir }}/{{ amster_versions[amster_version]['url']|basename }}"
+    checksum: "{{ amster_versions[amster_version]['checksum'] }}"
+    timeout: 600
+    mode: 1373
+  register: get_url_result
+  until: get_url_result is succeeded
+
+- name: Unzip the zipfile
+  unarchive:
+    dest:  "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    remote_src: yes
+    src: "{{ amster_download_dir }}/{{ amster_versions[amster_version]['url']|basename }}"
+
