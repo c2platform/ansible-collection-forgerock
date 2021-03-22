@@ -1,7 +1,7 @@
 ---
 
 - name: Get cot.json in place
-  file:
+  copy:
     dest:  "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation/cot.json"
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"

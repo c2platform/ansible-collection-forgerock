@@ -18,7 +18,7 @@ amster_download_dir: /tmp
 amster_install_am:
   serverURL: 1.1.1.52.nip.io
 
-
+amster_code_location: /vagrant/downloads
 
 dsc_user_reports_inquire:
   hostname: "{{ amster_ds_hostname }}"
