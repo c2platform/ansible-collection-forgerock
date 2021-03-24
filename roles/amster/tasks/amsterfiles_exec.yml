@@ -14,21 +14,28 @@
     path: "{{ am_home }}/{{ am_version }}/openamcfg"
   register: amster_has_run
 
-# To be replaced by running an export_stat.amster script and then inspecting its output for proper content
+# To be replaced by running an export_config.amster script and then inspecting its output for proper content
 # However ' proper'  will be known later, it's the setup after the 20+ good Amster files
-# Maybe we can first dummuy with old config.amster, otherwise the wrong stat stays for soome time....
+# Maybe we can first dummy with the initial 100-installAM_1.amster, otherwise the wrong stat stays for soome time....
+# Also note that this is a coarse-grained all-or-nothing idempotency approach. Most likely we'll have to build a more
+# fine-grained model: if the export-config gives 'nothing installed'  we have to run the 100 and all subsequent Amsters,
+# but if it gives a valid config that misses the json string we check for (of the 19th and last Amster) then at least
+# we must skip running the 100 Amster again (it would give an error 'already installed' anyway).
 
-- name: Create config.amster script file
+- name: Create 100-installAM_1.amster script file
   template:
-    src: config.amster.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/config.amster"
+    src: 100-installAM_1.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/100-installAM_1.amster"
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0755
-# Note that we preferred having config.amster in a muli-line readable format with \ concatenation, but even without Ansible
-# this proved too buggy in Amster 6.5. Hence the looooong line :-(
+# Note that we preferred having config.amster in a multi-line readable format with \ concatenation, but even without Ansible
+# this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
+# This applies to the high-level Amster commands like install--openam and export-config; for the lower-level 'Groovy code'
+# we'll try multi-line again as that would be almost essential for readability.
+
 # Also note that --cookieDomain  is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
-# for post-MVP but the whole .amster file logistics change then, with part input from BKWI git (file which are part of a CI-CD Java release)
+# for post-MVP but the whole .amster file logistics change then, with part input from either BKWI git or group_var.
 # Hence we left out making an extra Ansible variable for it.
 
 - name: Confirm AM up
@@ -58,9 +65,16 @@
   when: not user_reports_inquire is search("Service Account")
   fail: msg="The DS server needed to provision using Amster is not running"
 
+# Known issue: will fail as long as we don't have the cert trust between  DS and AM  automated.
+# Workaround is to do this trust manually (keytool) after the fail then run the amster manually
+# Unless one wants to experiment with having a 'break' just before this point and run keytool import there.
+# We tried a break between AM and amster roles and running keytool import there, but sadly the next run of
+# the play somehow overwrites the cert registry ;-)
 
-- name: execute amster if not yet done
-  command: "./amster config.amster"
+
+
+ - name: execute 100-installAM_1 amster if not yet done
+  command: "./amster 100-installAM_1.amster"
   register: task_register_var
   become: yes
   become_user: "{{ am_owner }}"
