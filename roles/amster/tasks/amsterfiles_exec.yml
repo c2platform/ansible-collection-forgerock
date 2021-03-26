@@ -45,7 +45,7 @@
 - name: Create 102 amster
   template:
     src: 102-set-common-functions.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}102-set-common-functions.amster"
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/102-set-common-functions.amster"
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0755
