@@ -9,18 +9,14 @@
     remote_src: yes
     src: "{{ amster_code_location }}/cot.json"
 
-- name: Stat openamcfg dir  (in /opt/am, not /opt/amster!) to prevent running twice
-  stat:
-    path: "{{ am_home }}/{{ am_version }}/openamcfg"
-  register: amster_has_run
 
-# To be replaced by running an export_config.amster script and then inspecting its output for proper content
-# However ' proper'  will be known later, it's the setup after the 20+ good Amster files
-# Maybe we can first dummy with the initial 100-installAM_1.amster, otherwise the wrong stat stays for soome time....
-# Also note that this is a coarse-grained all-or-nothing idempotency approach. Most likely we'll have to build a more
-# fine-grained model: if the export-config gives 'nothing installed'  we have to run the 100 and all subsequent Amsters,
-# but if it gives a valid config that misses the json string we check for (of the 19th and last Amster) then at least
-# we must skip running the 100 Amster again (it would give an error 'already installed' anyway).
+- name: Create 090-connect-to-openam.amster script file
+  template:
+    src: 090-connect-to-openam.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/090-connect-to-openam.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
 
 - name: Create 100-installAM_1.amster script file
   template:
@@ -38,6 +34,31 @@
 # for post-MVP but the whole .amster file logistics change then, with part input from either BKWI git or group_var.
 # Hence we left out making an extra Ansible variable for it.
 
+- name: Create 101 amster 
+  template:
+    src: 101-connect_To_AM.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/101-connect_To_AM.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+
+- name: Create 102 amster
+  template:
+    src: 102-set-common-functions.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}102-set-common-functions.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+
+- name: Create 400 amster
+  template:
+    src: 400-set-global-security-settings.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/400-set-global-security-settings.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+
+
 - name: Confirm AM up
   uri:
     url: "http://{{ amster_install_am['serverURL']  }}:8080/am"
@@ -46,7 +67,6 @@
   until: am_up_result.status == 200
   retries: 10
   delay: 10 # seconds
-  when: not amster_has_run.stat.exists
 #  This is a waitloop until AM web interface, assumed needed for the Amster REST calls, is up and running
 
 
@@ -65,23 +85,61 @@
   when: not user_reports_inquire is search("Service Account")
   fail: msg="The DS server needed to provision using Amster is not running"
 
-# Known issue: will fail as long as we don't have the cert trust between  DS and AM  automated.
-# Workaround is to do this trust manually (keytool) after the fail then run the amster manually
-# Unless one wants to experiment with having a 'break' just before this point and run keytool import there.
-# We tried a break between AM and amster roles and running keytool import there, but sadly the next run of
-# the play somehow overwrites the cert registry ;-)
 
 
+# If Amster is not configured, it will give an error message when trying to use :connect on the Amster command line
+# When Amster is configured (100 file, install-openam method), this error message is gone.
+# This is increment 1 of the check. Increment 2 will add another scenario: Amster (100 file) configured
+# but the outcome of the 090 check modified for a export-config following the connect is proving that not all
+# 3 amster-decks (400, 100, 201) were processed.
+# So the idempotency model then will become: if 100 file not run, run 100 install deck and all 3 update decks.
+# If 100 file run but export-config result is not the SOLL after the 3 update decks, run the 3 update decks.
 
- - name: execute 100-installAM_1 amster if not yet done
+- name: Check if Amster is configured
+  shell: "./amster 090-connect-to-openam.amster"
+  register: amster_connect_var
+  become: yes
+  become_user: "{{ am_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+
+#- name: Debug
+#  debug:
+#    msg: "{{ amster_connect_var }}"
+
+- name: execute 100-installAM_1 amster if not yet done
   command: "./amster 100-installAM_1.amster"
   register: task_register_var
   become: yes
   become_user: "{{ am_owner }}"
   args:
     chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
-  when: not amster_has_run.stat.exists
+  when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
+    and amster_connect_var['stderr'] is search("Unexpected character")
 
-- name: debug task_register_var
+
+- name: Fix the bug in the trust between AM and Amster (after the 100 script creates the buggy config)
+# See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause in Authorized keys fails for our setup
+  replace:
+    path: "{{ am_home }}/{{ am_version }}/openamcfg/amster_rsa.pub"
+    regexp: "127.0.0.0"
+    replace: "{{ amster_install_am['serveraddress'] }}"
+
+- name: Fix the trust bug part 2
+  replace:
+    path: "{{ am_home }}/{{ am_version }}/openamcfg/authorized_keys"
+    regexp: "127.0.0.0"
+    replace: "{{ amster_install_am['serveraddress'] }}"
+
+- name: execute 400 amster deck (with 101 and 102); for now unconditional, increment 2 of idempotency to change this
+  command: "./amster 400-set-global-security-settings.amster"
+  register: task_register_var
+  become: yes
+  become_user: "{{ am_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+
+
+- name: Debug
   debug:
     msg: "{{ task_register_var }}"
