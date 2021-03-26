@@ -1,0 +1,19 @@
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/102-set-common-functions.amster'
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/101-connect_To_AM.amster'
+
+println blue("400: setting the global security settings")
+BODY="""
+{
+"amconfig.header.cookie":{
+"com.iplanet.am.cookie.name":"samb",
+"com.iplanet.am.cookie.secure":true}
+}
+""";
+
+if(isNull(eval("update DefaultSecurityProperties --global --body '$BODY'"))){
+        println red("Error changing the security settings")
+} else {
+        println green("Changed the security settings to the correct values")
+
+//Added to Chef code on suggestion of Michael
+:exit

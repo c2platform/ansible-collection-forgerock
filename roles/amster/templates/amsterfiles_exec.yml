@@ -1,0 +1,98 @@
+---
+
+- name: Get cot.json in place
+  copy:
+    dest:  "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation/cot.json"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0644
+    remote_src: yes
+    src: "{{ amster_code_location }}/cot.json"
+
+# To be replaced by running an export_config.amster script and then inspecting its output for proper content
+# However ' proper'  will be known later, it's the setup after the 20+ good Amster files
+# Maybe we can first dummy with the initial 100-installAM_1.amster, otherwise the wrong stat stays for soome time....
+# Also note that this is a coarse-grained all-or-nothing idempotency approach. Most likely we'll have to build a more
+# fine-grained model: if the export-config gives 'nothing installed'  we have to run the 100 and all subsequent Amsters,
+# but if it gives a valid config that misses the json string we check for (of the 19th and last Amster) then at least
+# we must skip running the 100 Amster again (it would give an error 'already installed' anyway).
+
+- name: Create 090-connect-to-openam.amster script file
+  template:
+    src: 090-connect-to-openam.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/090-connect-to-openam.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+
+- name: Create 100-installAM_1.amster script file
+  template:
+    src: 100-installAM_1.j2
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/100-installAM_1.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+# Note that we preferred having config.amster in a multi-line readable format with \ concatenation, but even without Ansible
+# this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
+# This applies to the high-level Amster commands like install--openam and export-config; for the lower-level 'Groovy code'
+# we'll try multi-line again as that would be almost essential for readability.
+
+# Also note that --cookieDomain  is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
+# for post-MVP but the whole .amster file logistics change then, with part input from either BKWI git or group_var.
+# Hence we left out making an extra Ansible variable for it.
+
+- name: Confirm AM up
+  uri:
+    url: "http://{{ amster_install_am['serverURL']  }}:8080/am"
+    status_code: 200
+  register: am_up_result
+  until: am_up_result.status == 200
+  retries: 10
+  delay: 10 # seconds
+#  This is a waitloop until AM web interface, assumed needed for the Amster REST calls, is up and running
+
+
+- name: check ldap connection to ds (check is more or less a random one from within ds role)
+# The actual check on the result is in the 'when' clause for the ldap tool, see below.
+# Last parameter is dashless hence hardcoded here.
+  shell:  "./ldapsearch  {{ dsc_user_reports_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
+  become: yes
+  become_user: tomcat
+  args:
+    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
+  register: user_reports_inquire
+  ignore_errors: yes
+
+- name: Exit if no running DS service found
+  when: not user_reports_inquire is search("Service Account")
+  fail: msg="The DS server needed to provision using Amster is not running"
+
+# Known issue: will fail as long as we don't have the cert trust between  DS and AM  automated.
+# Workaround is to do this trust manually (keytool) after the fail then run the amster manually
+# Unless one wants to experiment with having a 'break' just before this point and run keytool import there.
+# We tried a break between AM and amster roles and running keytool import there, but sadly the next run of
+# the play somehow overwrites the cert registry ;-)
+
+# If Amster is not configured, it will give an error message when trying to use :connect on the Amster command line
+# When Amster is configured, this error message is gone.
+- name: Check if Amster is configured
+  shell: "./amster 090-connect-to-openam.amster"
+  register: amster_connect_var
+  become: yes
+  become_user: "{{ am_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+
+#- name: Debug
+#  debug:
+#    msg: "{{ amster_connect_var }}"
+
+- name: execute 100-installAM_1 amster if not yet done
+  command: "./amster 100-installAM_1.amster"
+  register: task_register_var
+  become: yes
+  become_user: "{{ am_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+  when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
+    and amster_connect_var['stderr'] is search("Unexpected character")
