@@ -13,7 +13,7 @@
   get_url:
     url: "{{ am_versions[am_version]['url'] }}"
     checksum: "{{ am_versions[am_version]['checksum'] }}"
-    dest: /opt/tomcat/webapps/am.war
+    dest: "{{ tomcat_home_version }}/webapps/am.war"
     mode: "755"
   notify: restart tomcat instance
 

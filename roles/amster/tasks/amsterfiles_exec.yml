@@ -10,53 +10,29 @@
     src: "{{ amster_code_location }}/cot.json"
 
 
-- name: Create 090-connect-to-openam.amster script file
+- name: Create the Amster scripts
   template:
-    src: 090-connect-to-openam.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/090-connect-to-openam.amster"
+    src: "{{ item }}.j2"
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{ item }}.amster"
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0755
+  with_items:
+     - 090-connect-to-openam
+     - 100-installAM_1
+     - 101-connect_To_AM
+     - 102-set-common-functions
+     - 400-set-global-security-settings
 
-- name: Create 100-installAM_1.amster script file
-  template:
-    src: 100-installAM_1.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/100-installAM_1.amster"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
-    mode: 0755
-# Note that we preferred having config.amster in a multi-line readable format with \ concatenation, but even without Ansible
-# this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
+
+# Note for 100-install: we preferred having 100-installAM_1.amster in a multi-line readable format with \ concatenation, but even
+# without Ansible this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
 # This applies to the high-level Amster commands like install--openam and export-config; for the lower-level 'Groovy code'
-# we'll try multi-line again as that would be almost essential for readability.
+# we'll use multi-line again as that is almost essential for readability.
 
 # Also note that --cookieDomain  is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
 # for post-MVP but the whole .amster file logistics change then, with part input from either BKWI git or group_var.
 # Hence we left out making an extra Ansible variable for it.
-
-- name: Create 101 amster 
-  template:
-    src: 101-connect_To_AM.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/101-connect_To_AM.amster"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
-    mode: 0755
-
-- name: Create 102 amster
-  template:
-    src: 102-set-common-functions.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/102-set-common-functions.amster"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
-    mode: 0755
-
-- name: Create 400 amster
-  template:
-    src: 400-set-global-security-settings.j2
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/400-set-global-security-settings.amster"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
-    mode: 0755
 
 
 - name: Confirm AM up
@@ -107,7 +83,7 @@
 #  debug:
 #    msg: "{{ amster_connect_var }}"
 
-- name: execute 100-installAM_1 amster if not yet done
+- name: execute 100-installAM_1 amster (don't confuse with 100-configure_AM) if not yet done
   command: "./amster 100-installAM_1.amster"
   register: task_register_var
   become: yes
