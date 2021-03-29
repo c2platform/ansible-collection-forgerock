@@ -24,7 +24,6 @@
      - 102-set-common-functions
      - 400-set-global-security-settings
 
-
 # Note for 100-install: we preferred having 100-installAM_1.amster in a multi-line readable format with \ concatenation, but even
 # without Ansible this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
 # This applies to the high-level Amster commands like install--openam and export-config; for the lower-level 'Groovy code'
@@ -50,8 +49,6 @@
 # The actual check on the result is in the 'when' clause for the ldap tool, see below.
 # Last parameter is dashless hence hardcoded here.
   shell:  "./ldapsearch  {{ dsc_user_reports_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
-  become: yes
-  become_user: tomcat
   args:
     chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
   register: user_reports_inquire
