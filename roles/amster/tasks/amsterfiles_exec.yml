@@ -10,7 +10,7 @@
     src: "{{ amster_code_location }}/cot.json"
 
 
-- name: Create the Amster scripts
+- name: Create the single-realm Amster scripts
   template:
     src: "{{ item }}.j2"
     dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{ item }}.amster"
@@ -20,18 +20,66 @@
   with_items:
      - 090-connect-to-openam
      - 100-installAM_1
+     - 100-configure_AM
      - 101-connect_To_AM
      - 102-set-common-functions
+     - 104-create-J2EE_Agent
+     - 105-create-policy-set
+     - 106-create-policy
+     - 110-create-authentication-LdapTree
+     - 110-function-create-authentication-tree
+     - 110-function-delete-authentication-tree
+     - 110-function-load-authentication-service
+     - 111-configure-global-validation-service
+     - 201-configure-SAML
+     - 209-function_load_all_saml
+     - 210-function-load-authentication-settings
      - 400-set-global-security-settings
+
 
 # Note for 100-install: we preferred having 100-installAM_1.amster in a multi-line readable format with \ concatenation, but even
 # without Ansible this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
 # This applies to the high-level Amster commands like install--openam and export-config; for the lower-level 'Groovy code'
 # we'll use multi-line again as that is almost essential for readability.
-
-# Also note that --cookieDomain  is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
+# Also note that --cookieDomain in 100-install is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
 # for post-MVP but the whole .amster file logistics change then, with part input from either BKWI git or group_var.
 # Hence we left out making an extra Ansible variable for it.
+
+# Note for 111: though part of the '100-deck' it's called separately from Ansible, not as part of the deck-amsterscript-chain
+
+- name: Create the 3 multi-realm Amster scripts for uwv realm
+  vars:
+    amster_realmname: "uwv"
+    amster_realmfqdn: "{{ amster_uwv_fqdn }}"
+  template:
+    src: "{{ item.templname }}.j2"
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{item.amstername }}.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+  with_items:
+     - { templname: 103-configure_realm, amstername: uwv-103-configure_realm }
+     - { templname: 107-update-identity-store, amstername: uwv-107-update-identity-store }
+     - { templname: 108-set-sessionproperties, amstername: uwv-108-set-sessionproperties }
+
+
+- name: Create the 6 multi-realm Amster scripts for suwinet realm
+  vars:
+    amster_realmname: "suwinet"
+    amster_realmfqdn: "{{ amster_suwi_fqdn }}"
+  template:
+    src: "{{ item.templname }}.j2"
+    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{item.amstername }}.amster"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+  with_items:
+     - { templname: 103-configure_realm, amstername: suwinet-103-configure_realm }
+     - { templname: 104-create-J2EE_Agent, amstername: suwinet-104-create-J2EE_Agent }
+     - { templname: 105-create-policy-set, amstername: suwinet-105-create-policy-set }
+     - { templname: 106-create-policy, amstername: suwinet-106-create-policy }
+     - { templname: 107-update-identity-store, amstername: suwinet-107-update-identity-store }
+     - { templname: 108-set-sessionproperties, amstername: suwinet-108-set-sessionproperties }
 
 
 - name: Confirm AM up
@@ -62,9 +110,13 @@
 
 # If Amster is not configured, it will give an error message when trying to use :connect on the Amster command line
 # When Amster is configured (100 file, install-openam method), this error message is gone.
-# This is increment 1 of the check. Increment 2 will add another scenario: Amster (100 file) configured
+# This is increment 1 of the check. Increment 2 might add another scenario: Amster (100 file) configured
 # but the outcome of the 090 check modified for a export-config following the connect is proving that not all
-# 3 amster-decks (400, 100, 201) were processed.
+# 3 amster-decks (400, 100, 201) were processed. TODO: as e.g. (SBP) 104 is now (SBP) run when settings
+# have changed, which could be var values or template hardcoded values, make sure that this SOLL-check
+# (using export-config method) not only detects 'not all 3 decks were run fully according to the _then_ desired
+# state', but same according to the _now_ desired state. Challenging, hence this is an ongoing VIPS team discussion.
+
 # So the idempotency model then will become: if 100 file not run, run 100 install deck and all 3 update decks.
 # If 100 file run but export-config result is not the SOLL after the 3 update decks, run the 3 update decks.
 
@@ -104,7 +156,7 @@
     regexp: "127.0.0.0"
     replace: "{{ amster_install_am['serveraddress'] }}"
 
-- name: execute 400 amster deck (with 101 and 102); for now unconditional, increment 2 of idempotency to change this
+- name: execute 400 amster deck (with 101 and 102); for now unconditional pending further idempotency discussions
   command: "./amster 400-set-global-security-settings.amster"
   register: task_register_var
   become: yes
@@ -116,3 +168,28 @@
 - name: Debug
   debug:
     msg: "{{ task_register_var }}"
+
+#- name: execute 100-configure amster deck (a chain of 10+ others); for now unconditional pending further idempotency discussions
+#  command: "./amster 100-configure_AM.amster"
+#  register: task_register_var
+#  become: yes
+#  become_user: "{{ am_owner }}"
+#  args:
+#    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+
+
+#- name: execute 111-configure amster (a separate part of the 100-deck); for now unconditional pending further idempotency  discussions
+#  command: "./amster 111-configure-global-validation-service.amster"
+#  register: task_register_var
+#  become: yes
+#  become_user: "{{ am_owner }}"
+#  args:
+#    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+
+#- name: execute 201 amster deck; for now unconditional pending further idempotency  discussions
+#  command: "./amster 201-configure-SAML.amster"
+#  register: task_register_var
+#  become: yes
+#  become_user: "{{ am_owner }}"
+#  args:
+#    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"

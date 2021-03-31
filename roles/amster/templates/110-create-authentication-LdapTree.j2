@@ -1,0 +1,71 @@
+// deletion Flag -> set to true, if tree should be deleted
+deleteTree = true
+
+// SET all variables needed for Authentication Tree
+realmName='suwinet'
+defaultTreeName='suwinetLogin'
+defaultAuthenticationService = "ldapService"
+
+// LDAP
+primaryLDAPServer='{{ amster_ds_hostname }}:10636'
+secondaryLDAPServer=''
+bindUserPassword='{{ amster_bindusrpwd }}''
+startDN="cn=Directory Manager"
+dnToStartUserSearch='o=suwi,c=NL'
+bindUserDN="cn=Directory Manager"
+attributeUsedtoRetrieveUserProfile='uid'
+attributeUsedtoSearchForAUserToBeAuthenticated='uid'
+
+// Check if variables set
+if (!binding.hasVariable("realmName")) { println red ("ERROR: missing variable. expecting 'realmName'");           eval (":quit") }
+if (!binding.hasVariable("defaultTreeName")) { println red ("ERROR: missing variable. expecting 'defaultTreeName'");           eval (":quit") }
+if (!binding.hasVariable("primaryLDAPServer")) { println red ("ERROR: missing variable. expecting 'primaryLDAPServer'");   eval (":quit") }
+if (!binding.hasVariable("secondaryLDAPServer")) { println red ("ERROR: missing variable. expecting 'secondaryLDAPServer'"); eval (":quit") }
+if (!binding.hasVariable("bindUserPassword")) { println red ("ERROR: missing variable. expecting 'bindUserPassword'");    eval (":quit") }
+if (!binding.hasVariable("startDN")) { println red ("ERROR: missing variable. expecting 'startDN'");              eval (":quit") }
+if (!binding.hasVariable("dnToStartUserSearch")) { println red ("ERROR: missing variable. expecting 'dnToStartUserSearch'");              eval (":quit") }
+if (!binding.hasVariable("bindUserDN")) { println red ("ERROR: missing variable. expecting 'bindUserDN'");              eval (":quit") }
+if (!binding.hasVariable("attributeUsedtoRetrieveUserProfile")) { println red ("ERROR: missing variable. expecting 'attributeUsedtoRetrieveUserProfile'");              eval (":quit") }
+if (!binding.hasVariable("attributeUsedtoSearchForAUserToBeAuthenticated")) { println red ("ERROR: missing variable. expecting 'attributeUsedtoSearchForAUserToBeAuthenticated'");              eval (":quit") }
+
+//static variables:
+// Nodes
+authenticationNodeGUID = "a86b4416-f11e-4ca5-900a-af200ee2229a"
+usernameCollectorGUID = "a86b4416-f12e-4ca5-900a-af200ee2229a"
+passwordCollectorGUID = "a86b4416-f13e-4ca5-900a-af200ee2229a"
+ldapSuwinetNodeGUID = "a86b4416-f14e-4ca5-900a-af200ee2229a"
+// LDAP
+nodeName='LDAP Decision'
+// searchScope one of SUBTREE, OBJECT, ONE_LEVEL
+searchScope='SUBTREE'
+//ldapConnectioMode one of LDAP, LDAPS, START_TLS
+ldapConnectionMode= 'LDAPS'
+//one of
+returnUserDn=true
+userCreationAttrs=''
+minPwdLength=8
+beheraEnabled=true
+trustAllServerCerts=true
+heartBeatInterval=10
+// timunit on of SECONDS, MINUTES, HOURS
+heartBeatTimeUnit='SECONDS'
+// time out 0 means disabled
+ldapOperationTimeOutMilliSeconds=0
+
+//these guids are hardcoded
+successNode = "70e691a5-1e33-4ac3-a356-e7b6d60d92e0"
+failureNode = 'e301438c-0bd0-429c-ab0c-66126501069a'
+
+println cyan("Entered realm = '$realmName' to set ldap tree")
+
+// Delete authentication tree and its nodes
+:load  '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/110-function-delete-authentication-tree.amster'
+
+// Create authentication tree
+:load  '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/110-function-create-authentication-tree.amster' 
+
+// Set tree as default service
+// TODO: Remove uncomment once password reset works
+//:load  '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/110-function-load-authentication-service.amster'
+
+eval(":exit")

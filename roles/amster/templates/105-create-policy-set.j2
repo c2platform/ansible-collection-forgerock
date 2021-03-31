@@ -1,0 +1,35 @@
+println 105
+
+policySetName = 'suwinet-policy-set'
+policyName = 'suwinet-inkijk-policy
+// Note $realmName is already set in 103, which is executed prior to this
+
+
+BODY="""{
+        "name": "$policySetName",
+        "displayName": "$policySetName",
+        "applicationType": "iPlanetAMWebAgentService",
+        "conditions": [ "LEAuthLevel","Policy","Script","AuthenticateToService","SimpleTime","AMIdentityMembership","OR","IPv6","IPv4","SessionProperty","AuthScheme","AuthLevel","NOT","Transaction","AuthenticateToRealm","AND","ResourceEnvIP","LDAPFilter","OAuth2Scope","Session" ],
+        "subjects": [ "Policy","NOT","OR","JwtClaim","AuthenticatedUsers","AND","Identity","NONE" ],
+        "resourceTypeUuids": ["76656a38-5f8e-401b-83aa-4ccb74ce88d2"],
+        "entitlementCombiner": "DenyOverride",
+        "attributeNames": [ ],
+        "editable": true,
+        "_id": "$policySetName"}"""
+
+// SBP situation: Chef runs this script only when something is changed, so simply create the Application when it doesn't exist and otherwise update it
+// VIPS situation: basically same, see template 104 for details
+
+if(isNull(eval("read Applications --realm $realmName --id $policySetName"))){
+      if(isNull(eval("create Applications --realm $realmName --body '$BODY'"))) {
+            println red("Error creating Application $policySetName in realm $realmName");
+      } else {
+            println green("Application $policySetName in realm $realmName created");
+      }
+} else {
+      if(isNull(eval("update Applications --realm $realmName --id $policySetName --body '$BODY'"))) {
+            println red("Error updating Application $policySetName in realm $realmName");
+      } else {
+            println green("Application $policySetName in realm $realmName updated");
+      }
+}

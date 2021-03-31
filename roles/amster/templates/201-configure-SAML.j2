@@ -1,0 +1,22 @@
+// SET all variables needed for SAML
+amsterVersion=System.getenv("AMSTER_VERSION")
+realmName=System.getenv("OPENAM_REALM")
+cotName=System.getenv("OPENAM_COT")
+
+// SET all variables for file and dir names
+fileCot=System.getenv("AMSTER_COT_FILE")
+dirSaml=System.getenv("SAML_DIR")
+
+// Load utils for amster
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/102-set-common-functions.amster'
+
+// Connect to AM via amster
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/101-connect_To_AM.amster'
+
+// Start working on SAML
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/209-function_load_all_saml.amster'
+
+// Work on authentication settings
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/210-function-load-authentication-settings.amster'
+
+eval(":exit")

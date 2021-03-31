@@ -1,0 +1,26 @@
+println("Configure global validation service")
+validationURLs = ["https://suwinet-inkijk.bto.suwinet.nl/*?*"]
+
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/102-set-common-functions.amster'
+
+:load '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/101-connect_To_AM.amster'
+
+// GET Realm
+currentValidation = eval("read ValidationService --global".toString())
+if (isNull(currentValidation)) {
+    println("Unable to update validation service as it cannot be read")
+} else {
+    println("Update Validation Service with the following URLs: ${validationURLs}")
+    slurped = new groovy.json.JsonSlurper().parseText(currentValidation)
+    if (slurped.defaults.validGotoDestinations.contains(validationURLs)) {
+        println cyan("Nothing to do")
+    } else {
+        slurped.defaults.validGotoDestinations = validationURLs
+        bodyBuilder = new groovy.json.JsonBuilder();
+        bodyBuilder 'defaults': slurped.defaults
+        eval("update ValidationService --global --body '$bodyBuilder'")
+    }
+
+}
+
+eval(":exit")

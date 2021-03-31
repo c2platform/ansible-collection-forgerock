@@ -14,6 +14,7 @@ if(isNull(eval("update DefaultSecurityProperties --global --body '$BODY'"))){
         println red("Error changing the security settings")
 } else {
         println green("Changed the security settings to the correct values")
+}
 
 //Added to Chef code on suggestion of Michael
 :exit

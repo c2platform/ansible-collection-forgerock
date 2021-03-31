@@ -1,0 +1,43 @@
+println green ("=========================================================" )
+println green ("INFO: Setting all the variables" )
+
+println green ("INFO: Realm parameters")
+realmName = '{{ amster_realmname }}'
+realmFQDN = '{{ amster_realmfqdn }}'
+
+
+println green ("=========================================================" )
+println green ("INFO: Creating the realm if it not yet exists" )
+
+//if (!binding.hasVariable("samlPath"))        { println red ("ERROR: missing variable. expecting 'samlPath' in script 330");     eval (":quit") }
+//if (!binding.hasVariable("realmName"))       { println red ("ERROR: missing variable. expecting 'realmName' in script 330");    eval (":quit") }
+//if (!binding.hasVariable("realmFQDN"))       { println red ("ERROR: missing variable. expecting 'realmFQDN' in script 330");    eval (":quit") }
+
+if (!binding.hasVariable("realmFQDN")) { println red ("ERROR: missing variable. expecting 'realmFQDN' in script 401");    eval (":quit") }
+realmAliases="[\"$realmFQDN\"]"
+
+println "Checking the realm" 
+
+haltOnError=false
+cur = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'") 
+if (isNull(cur)) {
+  if (isNull( eval ("create Realms --global --id '$realmName' --body '{\"name\":\"$realmName\",\"active\":true,\"parentPath\":\"/\",\"aliases\":$realmAliases}'")) ){
+    println red ("Error creating realm $realmName")
+    haltOnError=true
+  } else {
+    println green ("Created realm $realmName")
+  } 
+} else{
+  slurped = new groovy.json.JsonSlurper().parseText(cur)
+  if (!( slurped.name.equals(realmName) &&
+         slurped.aliases.size() == 1 &&
+         slurped.aliases.equals(Eval.me(realmAliases)) &&
+         slurped.parentPath.equals("/") &&
+         slurped.active == true
+ )){
+    if (isNull(eval ("update Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}' --body '{\"name\":\"$realmName\",\"active\":true,\"parentPath\":\"/\",\"aliases\":$realmAliases}'"))) {println red("updating Realm config failed")} else { print green ("Updated realm $realmName")}
+  } else {
+    println blue("no delta, skipping realm creation/update")
+  }
+}
+if (haltOnError){ println red("Error in 103 script"); eval (":quit")}

@@ -1,0 +1,56 @@
+println 106
+
+backendPROTO = 'http'
+backendFQDN = 'inkijk.local'
+backendPORT = '80'
+backendURI1 = '*'
+backendURI2 = '*?'
+backendURI3 = '*?*'
+// Note $realmName is already set in 103, which is executed prior to this
+
+
+BODY="""{
+    "name" : "$policyName",
+    "active" : true,
+    "description" : "",
+    "resources" : [ "$backendPROTO://$backendFQDN:$backendPORT/$backendURI1","$backendPROTO://$backendFQDN:$backendPORT/$backendURI2","$backendPROTO://$backendFQDN:$backendPORT/$backendURI3" ],
+    "applicationName" : "$policySetName",
+    "actionValues": { "GET":true,"POST":true },
+    "subject": { "type":"AuthenticatedUsers" },
+    "resourceTypeUuid" : "76656a38-5f8e-401b-83aa-4ccb74ce88d2",
+    "condition" : {
+                "type": "OR",
+                "conditions": [
+                    {
+                        "authenticateToRealm": "/uwv",
+                        "type": "AuthenticateToRealm"
+                    },
+                    {
+                        "authenticateToRealm": "/suwinet",
+                        "type": "AuthenticateToRealm"
+                    },
+                    {
+                        "type" : "SessionProperty",
+                        "ignoreValueCase" : true,
+                        "properties" : {
+                            "am.protected.uidIdentifier" : ["frankbtotest"]
+                        }
+                    }
+                ]}}"""
+
+// SBP situation: Chef runs this script only when something is changed, so simply create the Policy when it doesn't exist and otherwise update it
+// VIPS situation: basically same, see template 104 for details
+
+if(isNull(eval("read Policies --realm $realmName --id $policyName"))){
+      if(isNull(eval("create Policies --realm $realmName --id $policyName --body '$BODY'"))) {
+            println red("Error creating Policy $policyName in realm $realmName");
+      } else {
+            println green("Policy $policyName in realm $realmName created");
+      }
+} else {
+      if(isNull(eval("update Policies --realm $realmName --id $policyName --body '$BODY'"))) {
+            println red("Error updating Policy $policyName in realm $realmName");
+      } else {
+            println green("Policy $policyName in realm $realmName updated");
+      }
+}

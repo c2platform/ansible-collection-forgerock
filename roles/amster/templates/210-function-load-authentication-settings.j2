@@ -1,0 +1,25 @@
+println("Configure authentication settings for SAML")
+
+ignoreProfile = "ignore"
+
+// GET Realm
+currentRealm = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'".toString())
+if (isNull(currentRealm)) {
+    println("Unable to update COT as the realm $realmName is unknown")
+} else {
+    currentAuthenticationSettings = eval("read Authentication --realm $realmName")
+    if (isNull(currentAuthenticationSettings)) {
+        println("Error: there should be authentication settings already present!")
+    } else {
+        println("Update Authentication Settings")
+        slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
+        if (slurped.userprofile.dynamicProfileCreation.contains(ignoreProfile)) {
+            println("Do nothing")
+        } else {
+            slurped.userprofile.dynamicProfileCreation = ignoreProfile
+            bodyBuilder = new groovy.json.JsonBuilder();
+            bodyBuilder 'userprofile': slurped.userprofile
+            eval("update Authentication --realm $realmName --body '$bodyBuilder'")
+        }
+    }
+}

@@ -1,0 +1,48 @@
+realmName = '{{ amster_realmname }}'
+
+println ("108-set-custom-session-properties")
+println ("Set the whitelist first")
+BODY="""{"sessionPropertyWhitelist":["am.protected.uidIdentifier","am.protected.dnIdentifier","am.protected.roleIdentifier"]}"""
+
+if(isNull(eval("read SessionPropertyWhiteList --realm $realmName"))){
+  if(isNull(eval("create SessionPropertyWhiteList --realm $realmName --body '$BODY'"))) {
+    println red("Error creating SessionPropertyWhiteList in realm $realmName");
+  } else {
+    println green("SessionPropertyWhiteList in realm $realmName created");
+  }
+} else {
+  if(isNull(eval("update SessionPropertyWhiteList --realm $realmName --body '$BODY'"))) {
+    println red("Error updating SessionPropertyWhiteList in realm $realmName");
+  } else {
+    println green("SessionPropertyWhiteList in realm $realmName updated");
+  }
+}
+
+//=================================
+
+println ("Now add the custom session properties to the realm authentication settings")
+
+BODY="""{
+	"security" : {
+      "moduleBasedAuthEnabled" : false,
+      "zeroPageLoginAllowedWithoutReferrer" : false,
+      "sharedSecret: {{ amster_realmsecret }}",
+      "keyAlias" : "test",
+      "zeroPageLoginEnabled" : false,
+      "zeroPageLoginReferrerWhiteList" : [ ]
+      },
+      "postauthprocess" : {
+      "usernameGeneratorClass" : "com.sun.identity.authentication.spi.DefaultUserIDGenerator",
+      "loginFailureUrl" : [  ], 
+      "userAttributeSessionMapping" : [ "uid|uidIdentifier", "dn|dnIdentifier", "businessCategory|roleIdentifier" ],
+      "loginPostProcessClass" : [ ],
+      "usernameGeneratorEnabled" : true,
+      "loginSuccessUrl" : [ "/acs/console" ]
+    }
+}"""
+
+if(isNull(eval("update Authentication --realm $realmName --body '$BODY'"))) {
+  println red("Error updating authentication settings in realm $realmName")
+} else {
+  println green("Authentication settings in realm $realmName updated")
+}

@@ -1,0 +1,110 @@
+println("Start authentication tree creation")
+
+if (isNull(eval("read AuthTree --realm $realmName --id $defaultTreeName"))) {
+
+    if (isNull(eval("read UsernameCollector --realm $realmName --id $usernameCollectorGUID"))) {
+        eval("create UsernameCollector --realm $realmName --id $usernameCollectorGUID --body '{}'")
+    }
+
+    if (isNull(eval("read PasswordCollector --realm $realmName --id $passwordCollectorGUID"))) {
+        eval("create PasswordCollector --realm $realmName --id $passwordCollectorGUID --body '{}'")
+    }
+
+    if (isNull(eval("read PageNode --realm $realmName --id $authenticationNodeGUID"))) {
+        authNodebuilder = new groovy.json.JsonBuilder()
+        authNodebuilder 'nodes': [
+                [
+                        'displayName': 'Username Collector',
+                        'nodeType'   : 'UsernameCollectorNode',
+                        '_id'        : "$usernameCollectorGUID"
+                ],
+                [
+                        'displayName': 'Password Collector',
+                        'nodeType'   : 'PasswordCollectorNode',
+                        '_id'        : "$passwordCollectorGUID"
+                ]
+        ]
+
+        eval("create PageNode --realm $realmName --id $authenticationNodeGUID --body '$authNodebuilder'")
+    }
+
+    if (isNull(eval("read PageNode --realm $realmName --id $ldapSuwinetNodeGUID"))) {
+        // first create a LDAP Decision node
+        builder = new groovy.json.JsonBuilder()
+        builder 'primaryServers': [
+                primaryLDAPServer
+        ],
+                'secondaryServers': [
+                        secondaryLDAPServer
+                ],
+                'accountSearchBaseDn': [
+                        dnToStartUserSearch
+                ],
+                'adminDn':
+        bindUserDN ,
+        'userProfileAttribute' :
+        attributeUsedtoRetrieveUserProfile ,
+        'searchFilterAttributes' : [
+                attributeUsedtoSearchForAUserToBeAuthenticated,
+        ] ,
+        'searchScope' :
+        searchScope ,
+        'ldapConnectionMode' :
+        ldapConnectionMode ,
+        'returnUserDn' :
+        returnUserDn ,
+        'userCreationAttrs' : [
+                userCreationAttrs
+        ] ,
+        'minimumPasswordLength' :
+        minPwdLength ,
+        'beheraEnabled' :
+        beheraEnabled ,
+        'trustAllServerCertificates' :
+        trustAllServerCerts ,
+        'heartbeatInterval' :
+        heartBeatInterval ,
+        'heartbeatTimeUnit' :
+        heartBeatTimeUnit ,
+        'ldapOperationsTimeout' :
+        ldapOperationTimeOutMilliSeconds ,
+        'adminPassword' :
+        bindUserPassword
+
+        eval("create LDAPDecision --realm $realmName --id $ldapSuwinetNodeGUID --body '$builder'")
+    }
+
+
+    builder = new groovy.json.JsonBuilder()
+    builder 'entryNodeId': authenticationNodeGUID,
+            'nodes': [
+                    "$authenticationNodeGUID": [
+                            'displayName': 'Authentication Node',
+                            'nodeType'   : 'PageNode',
+                            'connections': [
+                                    'outcome': ldapSuwinetNodeGUID
+                            ]
+                    ],
+                    "$ldapSuwinetNodeGUID"   : [
+                            'displayName': 'LdapDecision Node',
+                            'nodeType'   : 'LdapDecisionNode',
+                            'connections': [
+                                    'false'    : failureNode,
+                                    'TRUE'     : successNode,
+                                    'FALSE'    : failureNode,
+                                    'LOCKED'   : failureNode,
+                                    'EXPIRED'  : failureNode,
+                                    'CANCELLED': failureNode
+                            ]
+                    ]
+            ]
+
+    if (isNull(eval("create AuthTree --realm $realmName --id '${defaultTreeName}' --body '$builder'"))) {
+        println red("Error creating AuthTree '${defaultTreeName}' in realm '$realmName'. script 110-create-authentication-tree.amster");
+        eval(":exit")
+    }
+} else {
+    println blue("Skipping AuthTree, as it allready exists")
+    println yellow("If you need to overwrite it, delete tree $defaultTreeName in realm $realmName")
+}
+

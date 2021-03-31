@@ -1,0 +1,42 @@
+println("Delete nodes of authentication tree")
+
+if (deleteTree) {
+    println yellow("Flag ist set to true. Remove authentication settings")
+
+    currentAuthenticationSettings = eval("read Authentication --realm $realmName")
+    if (isNull(currentAuthenticationSettings)) {
+        println("Error: there should be authentication settings already present!")
+    } else {
+        println("Update Authentication Settings")
+        slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
+        if (slurped.core.orgConfig.contains(defaultAuthenticationService)) {
+            println cyan("Nothing to do")
+        } else {
+            slurped.core.orgConfig = defaultAuthenticationService
+            bodyBuilder = new groovy.json.JsonBuilder();
+            bodyBuilder 'core': slurped.core
+            eval("update Authentication --realm $realmName --body '$bodyBuilder'")
+        }
+    }
+
+    println yellow("Deleting authentication tree and it's nodes in realm '$realmName'")
+    listWithNodes = [["AuthTree", "$defaultTreeName"],
+                     ["PageNode", "$authenticationNodeGUID"], ["LDAPDecision", "$ldapSuwinetNodeGUID"],
+                     ["UsernameCollector", "$usernameCollectorGUID"], ["PasswordCollector", "$passwordCollectorGUID"]]
+
+    listWithNodes.each {
+        element = it[0]
+        elementName = it[1]
+        if (isNull(eval("read $element --realm $realmName --id $elementName"))) {
+            println yellow("Node'${elementName}' doesn't exist.")
+        } else {
+            if (isNull(eval("delete $element --realm $realmName --id $elementName"))) {
+                println yellow("Node'${elementName}' deleted.")
+            } else {
+                println red("Error deleting Node '${elementName}' in realm '$realmName'. script 110-delete-authentication-tree.amster");
+            }
+        }
+    }
+} else {
+    println yellow("Flag ist set to false - no deletion")
+}

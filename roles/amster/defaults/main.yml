@@ -26,6 +26,29 @@ amster_install_am:
 
 amster_code_location: /vagrant/downloads
 
+# These two not overwritten in host/environment vars. Realmname is either uwv or suwinet and overwritten
+# in amsterfiles_exec.yml. Realmfqdn is an intermediate var, and itself (in the amsterfiles_exec)
+# filled from amster_uwv_fqdn and amster_suwi_fqdn. This way we can use 1 single template
+# for both 103, 107, 108 versions.
+amster_realmname: suwinet
+amster_realmfqdn: suwinet.nl
+
+# These are source values for the intermediate ones above, and normal vars hence can be in host/environment vars.
+amster_suwi_fqdn: suwinet.nl
+amster_uwv_fqdn: uwv.bto.suwinet.nl
+
+
+# Other Amster template vars
+amster_igfqdn: suwinet-inkijk.bto.suwinet.nl
+amster_amfqdn: 1.1.1.52.nip.io
+# Value for BTO: acs.bto.suwinet.nl
+
+# These two to move to the PW vault mechanism chosen
+amster_bindusrpwd: supersecret
+# Looks like being the standard pw for accessing the DS server, then of course point to that variable.
+amster_realmsecret: SBPSECRET
+
+
 dsc_user_reports_inquire:
   hostname: "{{ amster_ds_hostname }}"
   port: 4444
