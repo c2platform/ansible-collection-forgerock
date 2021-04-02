@@ -1,37 +1,56 @@
 ---
-# Install OpenIG 
-# Assumes tomcat openig instance has been previously deployed
+# Install IG 
+# Assumes tomcat instance has been previously deployed, which is done in suwinet_ig play
 # Pass tomcat_instance_dir as a role param
+
+
+- name: Create owner
+  user:
+    name: "{{ ig_owner }}"
+    shell: /bin/bash
+    system: true
+
+- name: Create home
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ig_owner }}"
+    group: "{{ ig_group }}"
+    mode: 0755
+  with_items:
+    - "{{ ig_home }}"
+    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}"
+    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig"
+    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config"
+    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config/routes
+    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/scripts"
+
+# As for chmod rights, Chef/XLS has a mixture of 700-becoming-755, 500 and 644. We'll try with this
+# highest/unsafest level first, if any tool requires a lower/safer level we'll adjust.
+
 
 - name: Download OpenIG war
   get_url:
     url: "{{ ig_download_url }}"
-    dest: "{{ tomcat_instance_dir }}/openig.war"
+    dest: "{{ tomcat_instance_dir }}/ig.war"
     mode: "755"
 
 # in case it is already running...
-- name: Stop OpenIG
+- name: Stop IG
   service: name="{{ ig_service }}" state=stopped
 
 # Remove the ROOT dir so we can install the gateway at the root
 
 - name: Remove ROOT
-  file: path="{{ tomcat_instance_dir }}/webapps/ROOT" state=absent
+  file: path="{{ tomcat_instance_dir }}/webapps/ROOT.war" state=absent
 # create fresh
-- name: Add ROOT
-  file: path="{{ tomcat_instance_dir }}/webapps/ROOT" state=directory mode=0644
 
-- name: Expand the gateway war file
-  unarchive:  src="{{ tomcat_instance_dir }}/openig.war" dest="{{ tomcat_instance_dir }}/webapps/ROOT" copy=no
+- name: Copy the gateway war file as ROOT.war (unpacking is done by Tomcat automatically)
+  copy:
+    src=: "{{ tomcat_instance_dir }}/ig.war"
+    dest: "{{ tomcat_instance_dir }}/webapps/ROOT.war"
 
-- name: Copy web.xml to put in AM filter
-  copy:  src=web.xml dest={{ tomcat_instance_dir }}/webapps/ROOT/WEB-INF/web.xml mode=0644
 
-- name: copy sample config.json for gateway
-  file: path=/home/fr/.ForgeRock/OpenIG/ state=directory mode=0644
-
-- name: copy sample config.json for gateway
-  copy: src=config.json dest=/home/fr/.ForgeRock/OpenIG/config.json mode=0644
 
 - name: restart tomcat
   service: name="{{ ig_service }}" state=restarted
