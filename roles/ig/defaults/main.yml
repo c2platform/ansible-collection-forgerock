@@ -1,17 +1,23 @@
-ig_service: "ig.service"
+#ig_service: "ig.service"
+# Value above comes from an off-the-shelf IG role, for now we have to work with value below.
+ig_service: "tomcat.service"
 
 ig_version: 6.5.4
 ig_home: /opt/ig
+ig_code_location: /vagrant/downloads/igfiles
 
 
 ig_versions:
-  6.5.3:
-    url: file:///vagrant/downloads/ig-6.5.3.zip
-    checksum: "sha256: 933f97cabd60ac37073229729668461993c99db4f56ff7ad02eb055f663ecae8"
+  6.5.4:
+    url: file:///vagrant/downloads/IG-7.0.2.war
+    checksum: "sha256: abeeae3ef83f8bb018d58f90468778f52bffca1b4b5949fde809cb07ea58526e"
 
 ig_owner: tomcat
 ig_group: tomcat
 
+uri_broker: http://broker.local
+uri_inkijk: http://inkijk.local
+uri_xmlgba: http://utils.local
 
 tomcat_instance_dir: "/opt/{{tomcat_instance}}"
 tomcat_instance: ig

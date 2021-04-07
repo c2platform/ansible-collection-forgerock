@@ -22,7 +22,7 @@
     - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}"
     - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig"
     - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config"
-    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config/routes
+    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config/routes"
     - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/scripts"
 
 # As for chmod rights, Chef/XLS has a mixture of 700-becoming-755, 500 and 644. We'll try with this
@@ -31,7 +31,7 @@
 
 - name: Download OpenIG war
   get_url:
-    url: "{{ ig_download_url }}"
+    url: "{{ ig_versions[ig_version]['url'] }}"
     dest: "{{ tomcat_instance_dir }}/ig.war"
     mode: "755"
 
@@ -42,15 +42,27 @@
 # Remove the ROOT dir so we can install the gateway at the root
 
 - name: Remove ROOT
-  file: path="{{ tomcat_instance_dir }}/webapps/ROOT.war" state=absent
+  file: path="{{ tomcat_home_version }}/webapps/ROOT.war" state=absent
 # create fresh
 
 - name: Copy the gateway war file as ROOT.war (unpacking is done by Tomcat automatically)
   copy:
-    src=: "{{ tomcat_instance_dir }}/ig.war"
-    dest: "{{ tomcat_instance_dir }}/webapps/ROOT.war"
-
+    src: "{{ tomcat_instance_dir }}/ig.war"
+    dest: "{{ tomcat_home_version }}/webapps/ROOT.war"
+    remote_src: yes
 
 
 - name: restart tomcat
   service: name="{{ ig_service }}" state=restarted
+
+- name: Get templated configs in place
+  template:
+    src: "{{ item }}.json.j2"
+    dest:  "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config/{{ item }}.json"
+    owner: "{{ ig_owner  }}"
+    group: "{{ ig_group }}"
+    mode: 0755
+  with_items:
+    - config
+    - properties
+
