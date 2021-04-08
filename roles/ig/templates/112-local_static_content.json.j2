@@ -1,0 +1,29 @@
+{
+   "name" : "112-local_static_content",
+   "capture": "all",
+   "condition": "${request.uri.host == '{{ uri_inkijk }}' and matches(request.uri.path, '^/(favicon\\\\.ico|index\\\\.html)$')}",
+   "handler":"NotEnforcedChain",
+   "heap":
+    [
+        {
+                "name":"NotEnforcedChain",
+                "type":"Chain",
+                "config":{
+                        "handler":"ReverseProxyHandler",
+                        "filters":["NotEnforcedRequestFilter"]
+                }
+        },
+        {
+                "name":"ReverseProxyHandler",
+                "type":"ReverseProxyHandler"
+        },
+        {
+                "name":"NotEnforcedRequestFilter",
+                "type":"StaticRequestFilter",
+                "config":{
+                        "method":"GET",
+                        "uri":"http://127.0.0.1${request.uri.path}"
+                }
+        }
+   ]
+}

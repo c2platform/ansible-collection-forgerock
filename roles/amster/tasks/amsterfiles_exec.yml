@@ -1,5 +1,6 @@
 ---
 
+
 - name: Get cot.json in place
   copy:
     dest:  "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation/cot.json"

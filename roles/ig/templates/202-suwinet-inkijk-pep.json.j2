@@ -1,0 +1,73 @@
+{
+  "name" : "202-suwinet-inkijk",
+  "baseURI" : "{{ uri_inkijk }}",
+  "condition" : "${request.uri.host == '<%= {{ uri_inkijk }} %>'}",
+  "capture" : [ "response", "request" ],
+  "handler" : "Chain",
+  "heap" : [ {
+    "name" : "Chain",
+    "type" : "Chain",
+    "config" : {
+      "handler" : "ReverseProxyHandler",
+      "filters" : [ "SSO","Policy Enforcement","SessionInfoFilter", "SetHeadersFilter" ]
+    }
+  }, {
+    "name" : "ReverseProxyHandler",
+    "type" : "ReverseProxyHandler"
+  },{
+            "name" : "AmService-1",
+            "type" : "AmService",
+            "config" : {
+              "url" : "${common.AMURL}",
+              "realm" : "/suwinet",
+              "ssoTokenHeader" : "samb",
+              "version" : "6.5",
+              "agent" : {
+                "username" : "suwinet-agent",
+                "password" : "Passw0rd!"
+              },
+              "sessionCache" : {
+                "enabled" : false
+              }
+            }
+
+        }, {
+    "name" : "SSO",
+    "type" : "SingleSignOnFilter",
+    "capture": "all",
+    "config" : {
+      "amService" : "AmService-1"
+    }
+  },{
+          "name": "SessionInfoFilter",
+          "type": "SessionInfoFilter",
+          "config": {
+            "amService": "AmService-1"
+          }
+  },{
+    "name" : "Policy Enforcement",
+    "type" : "PolicyEnforcementFilter",
+    "_capture":"all",
+    "config" : {
+      "amService" : "AmService-1",
+      "pepRealm" : "/suwinet",
+      "ssoTokenSubject" : "${contexts.ssoToken.value}",
+      "cache" : {
+        "enabled" : false
+      },
+      "application" : "suwinet-policy-set"
+    }
+  },{
+        "name": "SetHeadersFilter",
+        "type": "HeaderFilter",
+        "capture":"all",
+        "config": {
+                 "messageType": "REQUEST",
+                 "add": {
+                        "am_uid": ["${contexts.amSession.properties['am.protected.uidIdentifier']}"],
+                        "am_dn": ["${contexts.amSession.properties['am.protected.dnIdentifier']}"],
+			"am_roles": ["${contexts.amSession.properties['am.protected.roleIdentifier']}"]
+                }
+        }
+    }]
+}

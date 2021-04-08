@@ -1,0 +1,12 @@
+{
+	"name":"900_not_found",
+	"baseURI":"{{ uri_900route }}",
+	"handler": {
+		"type": "StaticResponseHandler",
+		"config": {
+			"status":404,
+			"reason":"Not found",
+			"entity":"<html>Deze pagina kan niet gevonden worden.</html>"
+		}
+	}
+}

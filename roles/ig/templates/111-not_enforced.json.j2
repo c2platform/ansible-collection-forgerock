@@ -1,0 +1,50 @@
+{
+	"condition":"${request.uri.host == '{{ uri_inkijk }}' and matches(request.uri.path, '\\\\.(css|js|jpeg|jpg|gif|png)$')}",
+	"heap": [
+		 {
+	                "name":"ReverseProxyHandler",
+        	        "type":"ReverseProxyHandler"
+        	},
+		{
+	               	"name":"NotEnforcedRequestFilter",
+	               	"type":"StaticRequestFilter",
+			"capture":"all",
+	               	"config":{
+				"headers": {
+					"X-Requested-With":["XmlHttpRequest"]
+				},
+        	        	"method":"GET",
+                	       	"uri":"${attributes.staticURL}"
+                	}
+              	},
+		{
+			"name":"RewritePathFilter",
+			"type":"ScriptableFilter",
+			"_capture":"filtered_request",
+			"config":{
+				"type":"application/x-groovy",
+				"file":"sf_RewritePath.groovy"
+			}
+		}
+	],
+	"handler": {
+		"type":"DispatchHandler",
+		"config": {
+			"bindings": [
+				{
+					"condition": "${contains(request.uri.path, '.css') or contains (request.uri.path,'.js') or contains(request.uri.path, '.jpeg') or contains(request.uri.path, '.gif') or contains(request.uri.path, '.png') or contains(request.uri.path, '.jpg')}",
+					"handler": {
+						"type":"Chain",
+						"config": {
+							"filters":["RewritePathFilter","NotEnforcedRequestFilter"],
+							"handler":"ReverseProxyHandler"
+						}
+					}
+				},
+				{
+					"handler":"ReverseProxyHandler"
+				}
+			]
+		}
+	}	
+}
