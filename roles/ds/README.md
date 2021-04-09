@@ -12,6 +12,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Backends](#backends)
   - [Modify](#modify)
   - [Passwords](#passwords)
+  - [Import](#import)
   - [Replication](#replication)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
@@ -149,6 +150,22 @@ ds_passwords: # see also secrets.yml
     sa_useradmin:
       authzId: cn=sa_useradmin,o=special,c=NL
       newPassword: supersecure
+```
+
+### Import
+
+To download and import LDIF files using [import-ldif](https://backstage.forgerock.com/docs/ds/7/tools-reference/import-ldif-1.html) use `ds_import` for example as follows:
+
+```yaml
+ds_import:
+  - name: 03-onlUserAttrs
+    ldif-url: file:///vagrant/downloads/03-onlUserAttrs.ldif
+    properties:
+      includeBranch: c=nl
+      excludeAttribute:
+        - ds-pwp-password-expiration-time
+        - pwdHistory
+      skipFile: /tmp/03-onlUserAttrs-skipped.ldif
 ```
 
 ### Replication

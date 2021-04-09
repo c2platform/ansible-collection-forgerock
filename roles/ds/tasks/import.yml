@@ -1,0 +1,15 @@
+---
+- name: "Download LDIF file"
+  get_url:
+    url: "{{ item['ldif-url'] }}"
+    dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+  register: ldif_file
+
+- name: "Import LDIF file"
+  shell: >
+      ./import-ldif {{ ds_connect|c2platform.forgerock.ds_cmd }}
+      --ldifFile {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif
+      {{ item['properties']|c2platform.forgerock.ds_cmd }}
+  args:
+    chdir: "{{ ds_home_version }}/bin"
+  when: ldif_file.changed
