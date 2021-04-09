@@ -177,6 +177,7 @@ def ds_config_fingerprint(config):
     str = hashlib.sha1(bytes(json_config, 'utf-8'))
     return str.hexdigest()
 
+
 # Return path for fingerprint folder
 def ds_config_fingerprint_folder(ds_home, ds_version):
     return os.path.join(os.path.sep, ds_home, '.fingerprint', ds_version)
@@ -197,10 +198,13 @@ def ds_pop(settings, k):
 
 
 # Return dn from ldif string
-def dn_from_ldif(ldif):
-    dn = ldif.split("\n")[0]
-    dn = dn.split(':')[1]
-    return dn.strip()
+def dn_from_modify_item(itm):
+    if 'dn' in itm:
+        return itm['dn']
+    else:
+        dn = itm['ldif'].split("\n")[0]
+        dn = dn.split(':')[1]
+        return dn.strip()
 
 
 class FilterModule(object):
@@ -220,5 +224,5 @@ class FilterModule(object):
             'ds_config_fingerprint_component_path':
             ds_config_fingerprint_component_path,
             'ds_pop': ds_pop,
-            'dn_from_ldif': dn_from_ldif
+            'dn_from_modify_item': dn_from_modify_item
         }

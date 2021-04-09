@@ -1,12 +1,18 @@
 ---
-- name: "Check {{ item['ldif']|c2platform.forgerock.dn_from_ldif }}"
-  shell:  "./ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --baseDn {{ item['ldif']|c2platform.forgerock.dn_from_ldif }} objectclass=top || true"
+- name: "Check {{ item|c2platform.forgerock.dn_from_modify_item }}"
+  shell:  "./ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --baseDn {{ item|c2platform.forgerock.dn_from_modify_item }} objectclass=top || true"
   args:
     chdir: "{{ ds_home_version }}/bin"
   register: ldapsearch_result
   changed_when: false
 
 - block:
+    - name: "Download {{ item['ldif-url'] }}"
+      get_url:
+        url: "{{ item['ldif-url'] }}"
+        dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+      when: item['ldif-url'] is defined
+
     - name: "{{ item['name'] }}.ldif"
       copy:
         content: "{{ item['ldif'] }}"
@@ -15,8 +21,9 @@
         owner: "{{ ds_owner }}"
         group: "{{ ds_group }}"
         mode: '0640'
+      when: item['ldif'] is defined
 
-    - name: "item {{ item['ldif']|c2platform.forgerock.dn_from_ldif }}"
+    - name: "item {{ item|c2platform.forgerock.dn_from_modify_item }}"
       shell:  "./ldapmodify {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --filename {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
       args:
         chdir: "{{ ds_home_version }}/bin"

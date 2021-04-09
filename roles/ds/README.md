@@ -12,6 +12,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Backends](#backends)
   - [Modify](#modify)
   - [Passwords](#passwords)
+  - [Import](#import)
   - [Replication](#replication)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
@@ -109,6 +110,31 @@ ds_modify:
       dc: org
 ```
 
+Optionally you can also configure the LDIF to be downloaded using `ldif-url`. Let's say we have an LDIF file `file:///vagrant/downloads/akaufman.ldif` with following contents
+
+```yaml
+dn: cn=akaufman,o=special,c=NL
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: akaufman
+sn: Andy's special account
+givenName: Andy
+uid: akaufman
+userPassword: secret
+```
+
+The following configuration will create this entry
+```yaml
+ds_modify_extra:
+  - name: akaufman
+    ldif-url: file:///vagrant/downloads/akaufman.ldif
+    dn: cn=akaufman,o=special,c=NL
+```
+
+Note here the use of another variable `ds_modify_extra`. This variable works exactly the same as `ds_modify`. Anything you configure with this var will be applied to DS using `ldapmodify`.
+
 ### Passwords
 
 To configure passwords use `ds_passwords`. 
@@ -124,6 +150,22 @@ ds_passwords: # see also secrets.yml
     sa_useradmin:
       authzId: cn=sa_useradmin,o=special,c=NL
       newPassword: supersecure
+```
+
+### Import
+
+To download and import LDIF files using [import-ldif](https://backstage.forgerock.com/docs/ds/7/tools-reference/import-ldif-1.html) use `ds_import` for example as follows:
+
+```yaml
+ds_import:
+  - name: 03-onlUserAttrs
+    ldif-url: file:///vagrant/downloads/03-onlUserAttrs.ldif
+    properties:
+      includeBranch: c=nl
+      excludeAttribute:
+        - ds-pwp-password-expiration-time
+        - pwdHistory
+      skipFile: /tmp/03-onlUserAttrs-skipped.ldif
 ```
 
 ### Replication
