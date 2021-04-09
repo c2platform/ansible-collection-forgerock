@@ -109,6 +109,31 @@ ds_modify:
       dc: org
 ```
 
+Optionally you can also configure the LDIF to be downloaded using `ldif-url`. Let's say we have an LDIF file `file:///vagrant/downloads/akaufman.ldif` with following contents
+
+```yaml
+dn: cn=akaufman,o=special,c=NL
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: akaufman
+sn: Andy's special account
+givenName: Andy
+uid: akaufman
+userPassword: secret
+```
+
+The following configuration will create this entry
+```yaml
+ds_modify_extra:
+  - name: akaufman
+    ldif-url: file:///vagrant/downloads/akaufman.ldif
+    dn: cn=akaufman,o=special,c=NL
+```
+
+Note here the use of another variable `ds_modify_extra`. This variable works exactly the same as `ds_modify`. Anything you configure with this var will be applied to DS using `ldapmodify`.
+
 ### Passwords
 
 To configure passwords use `ds_passwords`. 
