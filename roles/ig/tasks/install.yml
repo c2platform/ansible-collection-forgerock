@@ -24,6 +24,8 @@
     - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config"
     - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config/routes"
     - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/scripts"
+    - "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/scripts/groovy"
+
 
 # As for chmod rights, Chef/XLS has a mixture of 700-becoming-755, 500 and 644. We'll try with this
 # highest/unsafest level first, if any tool requires a lower/safer level we'll adjust.
@@ -65,4 +67,27 @@
   with_items:
     - config
     - properties
+
+- name: Get templated routes in place
+  template:
+    src: "{{ item }}.json.j2"
+    dest:  "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/config/routes/{{ item }}.json"
+    owner: "{{ ig_owner  }}"
+    group: "{{ ig_group }}"
+    mode: 0755
+  with_items:
+    - 111-not_enforced
+    - 112-local_static_content
+    - 121-ipwhitelisting-template
+    - 202-suwinet-inkijk-pep
+    - 900_not_found
+
+- name: Get groovy script(s) in place
+  copy:
+    dest:  "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}/.openig/scripts/groovy/sf_RewritePath.groovy"
+    owner: "{{ ig_owner }}"
+    group: "{{ ig_group }}"
+    mode: 0644
+    remote_src: yes
+    src: "{{ ig_code_location }}/sf_RewritePath.groovy"
 
