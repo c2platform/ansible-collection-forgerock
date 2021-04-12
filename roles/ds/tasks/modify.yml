@@ -28,3 +28,4 @@
       args:
         chdir: "{{ ds_home_version }}/bin"
   when: ldapsearch_result is search("No Such Entry")
+
