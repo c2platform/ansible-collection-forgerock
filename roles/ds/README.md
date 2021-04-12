@@ -166,6 +166,7 @@ ds_import:
         - ds-pwp-password-expiration-time
         - pwdHistory
       skipFile: /tmp/03-onlUserAttrs-skipped.ldif
+      rejectFile: /tmp/03-onlUserAttrs-reject.ldif      
       skipSchemaValidation: '' # required with custom object classes
 ```
 
