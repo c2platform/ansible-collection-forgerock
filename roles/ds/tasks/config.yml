@@ -12,14 +12,3 @@
     use_fingerprint: "{{ component in ds_config_components_fingerprint }}"
   loop_control:
     loop_var: component
-
-- name: Create db schema ldifs
-  copy:
-    content: "{{ ds_db_schema_ldifs[item] }}"
-    remote_src: yes
-    dest: "{{ ds_home_version }}/db/schema/./{{ item }}.ldif"
-    owner: "{{ ds_owner }}"
-    group: "{{ ds_group }}"
-    mode: '0640'
-  with_items: "{{ ds_db_schema_ldifs }}"
-  when: ds_db_schema_ldifs|default(False)

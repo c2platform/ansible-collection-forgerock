@@ -166,7 +166,11 @@ ds_import:
         - ds-pwp-password-expiration-time
         - pwdHistory
       skipFile: /tmp/03-onlUserAttrs-skipped.ldif
+      rejectFile: /tmp/03-onlUserAttrs-reject.ldif      
+      skipSchemaValidation: '' # required with custom object classes
 ```
+
+Note: option `skipSchemaValidation` is required when importing LDIF with custom / self defined object classes as `import-ldif` will fail on schema validation of those object classes. 
 
 ### Replication
 

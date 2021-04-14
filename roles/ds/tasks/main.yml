@@ -8,11 +8,6 @@
   when: ds_modify|default(False)
   with_items: "{{ ds_modify + (ds_modify_extra|default([])) }}"
 
-- name: Restart service, as the ldif import done above sometimes only seems to be effective after that
-  service:
-    name: ds-config
-    state: restarted
-
 - include_tasks: modify_pw.yml
   when: ds_passwords|default(False)
 
