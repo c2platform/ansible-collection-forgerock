@@ -3,6 +3,8 @@
   get_url:
     url: "{{ item['ldif-url'] }}"
     dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+    group: "{{ ds_owner }}"
+    owner: "{{ ds_group }}"
   register: ldif_file
 
 - name: "Import LDIF file"
