@@ -11,7 +11,14 @@
 - include_tasks: modify_pw.yml
   when: ds_passwords|default(False)
 
-- include_tasks: import.yml
+- debug:
+    var: ds_import
+
+- debug:
+    var: ds_import_enable
+
+- name: Import using import-ldif
+  include_tasks: import.yml
   with_items: "{{ ds_import }}"
   when: ds_import|default(False) and ds_import_enable
 
