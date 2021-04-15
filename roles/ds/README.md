@@ -206,6 +206,7 @@ If one of the servers is unavailable, the setup will fail of course.
 The possible settings under `replication-server`, `host1` and `host2` are mostly optional they will default to `ds_connect`. To setup replication at a minimum you need to configure:
 
 ```yaml
+ds_replication_enable: yes
 ds_replication: 
   replication-server:
     hostname: "1.1.1.51.nip.io"
@@ -216,7 +217,7 @@ ds_replication:
     - c=NL
     - dc=bkwi,dc=nl
 ```
-Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc.  
+Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc. Note that `ds_replication_enable` is default `no`. You can use this variable as a toggle to provision with / without replication.
 
 Configuration above will result in command being executed similar to 
 
