@@ -172,6 +172,8 @@ ds_import:
 
 Note: option `skipSchemaValidation` is required when importing LDIF with custom / self defined object classes as `import-ldif` will fail on schema validation of those object classes. 
 
+Note: import is default disabled using `ds_import_enable: no`. This var can be used to toggle import on / off.
+
 ### Replication
 
 To create a two node cluster with [replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1) you can add `ds_replication` var similar to shown below:

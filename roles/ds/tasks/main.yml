@@ -14,6 +14,7 @@
 - include_tasks: import.yml
   when: ds_import|default(False)
   with_items: "{{ ds_import }}"
+  when: ds_import_enable
 
 - include: setup_replication.yml
   when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname and ds_replication_enable
