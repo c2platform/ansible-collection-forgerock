@@ -1,67 +1,36 @@
-Ansible AM Role
-=========
-
-This role installs ForgeRock AM (commercial version) on your target host. During development we sometimes use the open source version OpenAM, but in
-the end what BKWI needs is AM.
-
-Note: This role is still in active development. There may be unidentified issues and the role variables may change as development continues.
-One shortcoming is that in present stage the Vagrant name remains 'openam', and as a consequence some of the variables
-used in the playbook/role cannot start with 'am' but need 'openam'. This will change later.
-
-Requirements
-------------
+# Ansible Role ForgeRock Access Management (AM)
 
 
+<!-- MarkdownTOC levels="2,3" autolink="true" -->
 
-# Ansible Role ForgeRock Access Management(AM)
+- [Requirements](#requirements)
+- [Role Variables](#role-variables)
+- [Dependencies](#dependencies)
+- [Example Playbook](#example-playbook)
 
-This Ansible role is used to install, upgrade and remove AM  on a node.
+<!-- /MarkdownTOC -->
 
+## Requirements
 
-Download and unpack WARfile (both in AM and in Tomcat WebApp directory)
+<!-- Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required. -->
 
+## Role Variables
 
-# Filesystem before and after situation
-Before: no /opt/am and anything below it. And no user forgerock and its homedirectory.
-After for AM:  
-User and homedirectory for forgerock.
-/opt/am has the unpacked war file.
-Same war file is also deployed as am.war under /opt/tomcat/webapps (our Tomcat role might have this directory name as variable, using it instead of hardcoding would then be better.)
+<!--  A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well. -->
 
+## Dependencies
 
-# Code samples and variable usage 
-TODO if needed
+<!--   A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles. -->
 
-
-# All dependencies/requirements to other parts
-The role currently runs requiring the Common, Java and Tomcat roles of the underlying Ansible ecosystem.
-Requirements configured (now as group_vars for the suwinet_am play, but it could be done at role level too) are JDK/Java version, Tomcat version,
-java_home directory, tomcat userid, expose java_home set to Yes.
-So if the Java and Tomcat roles would need to be replaced by different ones, these requirements would need to be translated for the new underlying roles.
-
-Tomcat package will automatically install on task preinstall.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: localhost
+```yaml
+    - hosts: servers
       roles:
-         - role: openam
+         - { role: username.rolename, x: 42 }
+```
 
-Tomcat start on http://domain:8080
-OpenAm available on http://domain:8080/am
+## Example Playbook
 
-
-
-# Definition of Done
-Currently this is limited to
-a] Before Amster has run, being able to access the bare bones AM console at the link given above.
-b] After Amster has run, the AM console then will have been changed into a more complete dialogue where login is possible with the credentials specified in the Ansible template.
-
-
-
+<!--   Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too: -->
 
 
 
