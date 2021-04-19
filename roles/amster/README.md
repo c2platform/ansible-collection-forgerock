@@ -2,7 +2,16 @@
 
 This Ansible role is used to install, upgrade and remove [ForgeRock Amster CLI](https://backstage.forgerock.com/docs/amster/6.5/user-guide/).
 
-[[_TOC_]]
+<!-- MarkdownTOC levels="2,3" autolink="true" -->
+
+- [Requirements](#requirements)
+- [Role description](#role-description)
+- [Role Variables](#role-variables)
+- [Dependencies](#dependencies)
+- [Definition of done](#definition-of-done)
+- [Links](#links)
+
+<!-- /MarkdownTOC -->
 
 ## Requirements
 
@@ -47,6 +56,11 @@ And amster tool makes a lot of changes in how AM works; probably most of them ar
 ## Definition of done
 
 See AM role, Amster changes the behaviour of AM main screen
+
+## Links
+
+* [Amster 7.0.1 > User Guide > Install AM with Amster](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-install-am.html)
+* [Amster 7.0.1 > User Guide > Connect to AM](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-connecting.html)
 
 
 
