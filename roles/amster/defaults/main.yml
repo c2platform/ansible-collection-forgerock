@@ -52,8 +52,31 @@ amster_realmsecret: SBPSECRET
 dsc_user_reports_inquire:
   hostname: "{{ amster_ds_hostname }}"
   port: 4444
-  bindDN:  '"cn=Directory Manager"'
+  bindDN: '"cn=Directory Manager"'
   bindPassword: "{{ amster_ds_rootpw }}"
   trustAll: ""
   useSsl: ""
   baseDn: '"cn=sa_reports,o=special,c=NL"'
+
+amster_am_install:
+  serverUrl: "http://{{ amster_install_am['serverURL'] }}:8080/am"
+  adminPwd: "{{ am_adminusrpw }}"
+  acceptLicense: ''
+  pwdEncKey: "{{ amster_encryptpw }}"
+  cfgStoreDirMgr: 'uid=am-config,ou=admins,ou=am-config'
+  cfgStoreDirMgrPwd: '{{ ds_rootpw }}'
+  cfgStore: dirServer
+  cfgStoreHost: "{{ amster_ds_hostname }}"
+  cfgStoreAdminPort: 4444
+  cfgStoreSsl: SSL
+  cfgStorePort: 10636
+  cfgStoreRootSuffix: ou=am-config
+  cookieDomain: "{{ amster_install_am['serverURL'] }}"
+  cfgDir: /opt/tomcat/am # default $HOME/openam
+  userStoreDirMgr: "cn=Directory Manager"
+  userStoreDirMgrPwd: "{{ ds_rootpw }}"
+  userStoreHost: "{{ amster_ds_hostname  }}"
+  userStoreType: LDAPv3ForOpenDS
+  userStoreSsl: SSL
+  userStorePort: 10636
+  userStoreRootSuffix: dc=bkwi,dc=NL
