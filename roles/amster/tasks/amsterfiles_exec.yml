@@ -4,8 +4,8 @@
 - name: Get cot.json in place
   copy:
     dest:  "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation/cot.json"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
     mode: 0644
     remote_src: yes
     src: "{{ amster_code_location }}/cot.json"
@@ -15,8 +15,8 @@
   template:
     src: "{{ item }}.j2"
     dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{ item }}.amster"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
     mode: 0755
   with_items:
      - 090-connect-to-openam
@@ -55,8 +55,8 @@
   template:
     src: "{{ item.templname }}.j2"
     dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{item.amstername }}.amster"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
     mode: 0755
   with_items:
      - { templname: 103-configure_realm, amstername: uwv-103-configure_realm }
@@ -71,8 +71,8 @@
   template:
     src: "{{ item.templname }}.j2"
     dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{item.amstername }}.amster"
-    owner: "{{ am_owner }}"
-    group: "{{ am_group }}"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
     mode: 0755
   with_items:
      - { templname: 103-configure_realm, amstername: suwinet-103-configure_realm }
@@ -125,7 +125,7 @@
   shell: "./amster 090-connect-to-openam.amster"
   register: amster_connect_var
   become: yes
-  become_user: "{{ am_owner }}"
+  become_user: "{{ amster_owner }}"
   args:
     chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
@@ -137,7 +137,7 @@
   command: "./amster 100-installAM_1.amster"
   register: task_register_var
   become: yes
-  become_user: "{{ am_owner }}"
+  become_user: "{{ amster_owner }}"
   args:
     chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
   when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
@@ -166,7 +166,7 @@
 #  command: "./amster 400-set-global-security-settings.amster"
 #  register: task_register_var
 #  become: yes
-#  become_user: "{{ am_owner }}"
+#  become_user: "{{ amster_owner }}"
 #  args:
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
@@ -175,7 +175,7 @@
 #  command: "./amster 100-configure_AM.amster"
 #  register: task_register_var
 #  become: yes
-#  become_user: "{{ am_owner }}"
+#  become_user: "{{ amster_owner }}"
 #  args:
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
@@ -184,7 +184,7 @@
 #  command: "./amster 111-configure-global-validation-service.amster"
 #  register: task_register_var
 #  become: yes
-#  become_user: "{{ am_owner }}"
+#  become_user: "{{ amster_owner }}"
 #  args:
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
@@ -192,6 +192,6 @@
 #  command: "./amster 201-configure-SAML.amster"
 #  register: task_register_var
 #  become: yes
-#  become_user: "{{ am_owner }}"
+#  become_user: "{{ amster_owner }}"
 #  args:
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
