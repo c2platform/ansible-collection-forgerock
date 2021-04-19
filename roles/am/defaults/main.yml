@@ -1,7 +1,7 @@
 ---
 am_version: 6.5.3
 am_home: /opt/am
-am_home_link: /opt/am
+am_home_link: /opt/am/am
 
 am_owner: tomcat
 am_group: tomcat
