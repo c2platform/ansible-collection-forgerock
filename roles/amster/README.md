@@ -2,7 +2,16 @@
 
 This Ansible role is used to install, upgrade and remove [ForgeRock Amster CLI](https://backstage.forgerock.com/docs/amster/6.5/user-guide/).
 
-[[_TOC_]]
+<!-- MarkdownTOC levels="2,3" autolink="true" -->
+
+- [Requirements](#requirements)
+- [Role description](#role-description)
+- [Role Variables](#role-variables)
+    - [Installation](#installation)
+- [Dependencies](#dependencies)
+- [Links](#links)
+
+<!-- /MarkdownTOC -->
 
 ## Requirements
 
@@ -41,12 +50,41 @@ And amster tool makes a lot of changes in how AM works; probably most of them ar
 
 ## Role Variables
 
+### Installation
+
+Use `amster_am_install` var to control installation
+
+```yaml
+amster_am_install:
+  serverUrl: "http://{{ amster_install_am['serverURL'] }}:8080/am"
+  adminPwd: "{{ am_adminusrpw }}"
+  acceptLicense: ''
+  pwdEncKey: "{{ amster_encryptpw }}"
+  cfgStoreDirMgr: 'uid=am-config,ou=admins,ou=am-config'
+  cfgStoreDirMgrPwd: '{{ ds_rootpw }}'
+  cfgStore: dirServer
+  cfgStoreHost: "{{ amster_ds_hostname }}"
+  cfgStoreAdminPort: 4444
+  cfgStoreSsl: SSL
+  cfgStorePort: 10636
+  cfgStoreRootSuffix: ou=am-config
+  cookieDomain: "{{ amster_install_am['serverURL'] }}"
+  cfgDir: /opt/tomcat/am # default $HOME/openam
+  userStoreDirMgr: "cn=Directory Manager"
+  userStoreDirMgrPwd: "{{ ds_rootpw }}"
+  userStoreHost: "{{ amster_ds_hostname  }}"
+  userStoreType: LDAPv3ForOpenDS
+  userStoreSsl: SSL
+  userStorePort: 10636
+  userStoreRootSuffix: dc=bkwi,dc=NL
+```
 
 ## Dependencies
 
-## Definition of done
+## Links
 
-See AM role, Amster changes the behaviour of AM main screen
+* [Amster 7.0.1 > User Guide > Install AM with Amster](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-install-am.html)
+* [Amster 7.0.1 > User Guide > Connect to AM](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-connecting.html)
 
 
 

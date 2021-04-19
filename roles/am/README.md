@@ -1,6 +1,5 @@
 # Ansible Role ForgeRock Access Management (AM)
 
-
 <!-- MarkdownTOC levels="2,3" autolink="true" -->
 
 - [Requirements](#requirements)
