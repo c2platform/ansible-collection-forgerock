@@ -79,4 +79,4 @@ amster_am_install:
   userStoreType: LDAPv3ForOpenDS
   userStoreSsl: SSL
   userStorePort: 10636
-  userStoreRootSuffix: dc=bkwi,dc=NL
+  userStoreRootSuffix: dc=bkwi,dc=nl
