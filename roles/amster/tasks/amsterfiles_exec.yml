@@ -148,18 +148,21 @@
 #  debug:
 #    msg: "{{ task_register_var }}"
 
-#- name: Fix the bug in the trust between AM and Amster (after the 100 script creates the buggy config)
-## See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause in Authorized keys fails for our setup
-- name: Fix bug
   replace:
-    path: "{{ item }}"
-    regexp: ^.*ssh-rsa
-    replace: ssh-rsa
-  with_items:
-    - /opt/tomcat/am/amster_rsa.pub
-    - /opt/tomcat/am/authorized_keys
 
-#- name: execute 400 amster deck (with 101 and 102); for now unconditional pending further idempotency discussions
+
+- name: Set facl to allow splunk user to read logdir (which got created in the 100-i script)
+  acl:
+    path: "{{ am_home_link }}/openamcfg/am/log"
+    entity: splunk
+    etype: user
+    permissions: rx
+    default: True
+    recursive: true
+    state: present
+  become: true
+
+#- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
 #  command: "./amster 400-set-global-security-settings.amster"
 #  register: task_register_var
 #  become: yes
@@ -168,7 +171,7 @@
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
 
-#- name: execute 100-configure amster deck (a chain of 10+ others); for now unconditional pending further idempotency discussions
+#- name: execute 100-configure amster deck (a chain of 10+ others); unconditional as the idempotency is done in the Groovy script code
 #  command: "./amster 100-configure_AM.amster"
 #  register: task_register_var
 #  become: yes
@@ -177,7 +180,7 @@
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
 
-#- name: execute 111-configure amster (a separate part of the 100-deck); for now unconditional pending further idempotency  discussions
+#- name: execute 111-configure amster (a separate part of the 100-deck); unconditional as the idempotency is done in the Groovy script code
 #  command: "./amster 111-configure-global-validation-service.amster"
 #  register: task_register_var
 #  become: yes
@@ -185,7 +188,7 @@
 #  args:
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
-#- name: execute 201 amster deck; for now unconditional pending further idempotency  discussions
+#- name: execute 201 amster deck; unconditional as the idempotency is done in the Groovy script code
 #  command: "./amster 201-configure-SAML.amster"
 #  register: task_register_var
 #  become: yes
