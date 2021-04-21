@@ -144,23 +144,10 @@
     and amster_connect_var['stderr'] is search("Unexpected character")
 
 
-#- name: Debug
-#  debug:
-#    msg: "{{ task_register_var }}"
+- name: Debug
+  debug:
+    msg: "{{ task_register_var }}"
 
-  replace:
-
-
-- name: Set facl to allow splunk user to read logdir (which got created in the 100-i script)
-  acl:
-    path: "{{ am_home_link }}/openamcfg/am/log"
-    entity: splunk
-    etype: user
-    permissions: rx
-    default: True
-    recursive: true
-    state: present
-  become: true
 
 #- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
 #  command: "./amster 400-set-global-security-settings.amster"
