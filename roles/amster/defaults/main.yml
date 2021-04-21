@@ -9,6 +9,9 @@ am_adminusrpw: FRdemo123
 
 amster_encryptpw: C2ITMXJ1I8BSp61bmJbp4oBaOjBDC6Xi
 
+# TODO remove
+am_home: /opt/am
+am_version: 6.5.3
 
 amster_versions:
   6.5.3:
@@ -19,10 +22,6 @@ amster_owner: tomcat
 amster_group: tomcat
 
 amster_download_dir: /tmp
-
-amster_install_am:
-  serverURL: 1.1.1.52.nip.io
-  serveraddress: 1.1.1.52
 
 amster_code_location: /vagrant/downloads
 
@@ -48,7 +47,6 @@ amster_bindusrpwd: supersecret
 # Looks like being the standard pw for accessing the DS server, then of course point to that variable.
 amster_realmsecret: SBPSECRET
 
-
 dsc_user_reports_inquire:
   hostname: "{{ amster_ds_hostname }}"
   port: 4444
@@ -59,11 +57,11 @@ dsc_user_reports_inquire:
   baseDn: '"cn=sa_reports,o=special,c=NL"'
 
 amster_am_install:
-  serverUrl: "http://{{ amster_install_am['serverURL'] }}:8080/am"
+  serverUrl: "http://{{ ansible_fqdn }}:8443/am"
   adminPwd: "{{ am_adminusrpw }}"
   acceptLicense: ''
   pwdEncKey: "{{ amster_encryptpw }}"
-  cfgStoreDirMgr: 'uid=am-config,ou=admins,ou=am-config'
+  cfgStoreDirMgr: "cn=Directory Manager"
   cfgStoreDirMgrPwd: '{{ ds_rootpw }}'
   cfgStore: dirServer
   cfgStoreHost: "{{ amster_ds_hostname }}"
@@ -71,7 +69,7 @@ amster_am_install:
   cfgStoreSsl: SSL
   cfgStorePort: 10636
   cfgStoreRootSuffix: ou=am-config
-  cookieDomain: "{{ amster_install_am['serverURL'] }}"
+  cookieDomain: "{{ ansible_fqdn }}"
   cfgDir: /opt/tomcat/am # default $HOME/openam
   userStoreDirMgr: "cn=Directory Manager"
   userStoreDirMgrPwd: "{{ ds_rootpw }}"
@@ -79,4 +77,7 @@ amster_am_install:
   userStoreType: LDAPv3ForOpenDS
   userStoreSsl: SSL
   userStorePort: 10636
-  userStoreRootSuffix: dc=bkwi,dc=NL
+  userStoreRootSuffix: dc=bkwi,dc=nl
+
+amster_am_connect:
+  private-key: /opt/tomcat/am/

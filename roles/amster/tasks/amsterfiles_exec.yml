@@ -82,10 +82,10 @@
      - { templname: 107-update-identity-store, amstername: suwinet-107-update-identity-store }
      - { templname: 108-set-sessionproperties, amstername: suwinet-108-set-sessionproperties }
 
-
 - name: Confirm AM up
   uri:
-    url: "http://{{ amster_install_am['serverURL']  }}:8080/am"
+    url: "{{ amster_am_install['serverUrl'] }}"
+    validate_certs: no
     status_code: 200
   register: am_up_result
   until: am_up_result.status == 200
