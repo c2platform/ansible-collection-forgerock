@@ -144,10 +144,16 @@
     and amster_connect_var['stderr'] is search("Unexpected character")
 
 
-- name: Debug
-  debug:
-    msg: "{{ task_register_var }}"
-
+#- name: Fix the bug in the trust between AM and Amster (after the 100 script creates the buggy config)
+## See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause in Authorized keys fails for our setup
+- name: Fix bug
+  replace:
+    path: "{{ item }}"
+    regexp: ^.*ssh-rsa
+    replace: ssh-rsa
+  with_items:
+    - /opt/tomcat/am/amster_rsa.pub
+    - /opt/tomcat/am/authorized_keys
 
 #- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
 #  command: "./amster 400-set-global-security-settings.amster"
