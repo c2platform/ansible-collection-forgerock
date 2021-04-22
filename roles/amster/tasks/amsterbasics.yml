@@ -18,6 +18,8 @@
     - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config"
     - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/amsterFiles"
     - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation"
+    - "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation/uwv/uwv_cot_uwv"
+    
 # As for chmod rights, Chef/XLS has a mixture of 700-becoming-755, 500 and 644. We'll try with this
 # highest/unsafest level first, if any tool requires a lower/safer level we'll adjust.
 

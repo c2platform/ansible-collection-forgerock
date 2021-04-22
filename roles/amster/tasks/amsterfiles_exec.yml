@@ -24,9 +24,6 @@
      - 100-configure_AM
      - 101-connect_To_AM
      - 102-set-common-functions
-     - 104-create-J2EE_Agent
-     - 105-create-policy-set
-     - 106-create-policy
      - 110-create-authentication-LdapTree
      - 110-function-create-authentication-tree
      - 110-function-delete-authentication-tree
@@ -144,10 +141,53 @@
     and amster_connect_var['stderr'] is search("Unexpected character")
 
 
+- name: execute 100-configure amster deck (a chain of 10+ others); unconditional as the idempotency is done in the Groovy script code
+  command: "./amster 100-configure_AM.amster"
+  register: task_register_var
+  become: yes
+  become_user: "{{ amster_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+
 - name: Debug
   debug:
     msg: "{{ task_register_var }}"
 
+
+- name: execute 111-configure amster (a separate part of the 100-deck); unconditional as the idempotency is done in the Groovy script code
+  command: "./amster 111-configure-global-validation-service.amster"
+  register: task_register_var
+  become: yes
+  become_user: "{{ amster_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+
+- name: Debug
+  debug:
+    msg: "{{ task_register_var }}"
+
+- name: execute 201 amster deck; unconditional as the idempotency is done in the Groovy script code
+  command: "./amster 201-configure-SAML.amster"
+  register: task_register_var
+  become: yes
+  become_user: "{{ amster_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+  environment:
+    AMSTER_VERSION: 6.5.3
+    OPENAM_REALM: uwv
+    OPENAM_COT: uwv_cot_uwv
+    AMSTER_COT_FILE: /opt/amster/amster-6.5.3/amster_config/federation/cot.json
+    SAML_DIR: /opt/amster/amster-6.5.3/amster_config/federation/uwv/uwv_cot_uwv
+
+# For now kept upper case, as they used with Chef (the 201 deck grabs these values)
+# The specs tell to repeat the 201 'for each realm' but currently the sole SAML realm is uwv.
+# TBD to parametrise the environment vars when another SAML realm  would be added; but there is more work then,
+# also possibly adding another file like cot.json (amsterbasics.yml)
+
+- name: Debug
+  debug:
+    msg: "{{ task_register_var }}"
 
 #- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
 #  command: "./amster 400-set-global-security-settings.amster"
@@ -158,27 +198,3 @@
 #    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
 
 
-#- name: execute 100-configure amster deck (a chain of 10+ others); unconditional as the idempotency is done in the Groovy script code
-#  command: "./amster 100-configure_AM.amster"
-#  register: task_register_var
-#  become: yes
-#  become_user: "{{ amster_owner }}"
-#  args:
-#    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
-
-
-#- name: execute 111-configure amster (a separate part of the 100-deck); unconditional as the idempotency is done in the Groovy script code
-#  command: "./amster 111-configure-global-validation-service.amster"
-#  register: task_register_var
-#  become: yes
-#  become_user: "{{ amster_owner }}"
-#  args:
-#    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
-
-#- name: execute 201 amster deck; unconditional as the idempotency is done in the Groovy script code
-#  command: "./amster 201-configure-SAML.amster"
-#  register: task_register_var
-#  become: yes
-#  become_user: "{{ amster_owner }}"
-#  args:
-#    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"

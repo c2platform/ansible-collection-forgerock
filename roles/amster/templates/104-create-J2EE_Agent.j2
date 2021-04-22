@@ -6,7 +6,7 @@ igFQDN='{{ amster_igfqdn }}'
 igPORT='443'
 igPROTO='https'
 igREMOTELOGFILE='amAgent_suwinet_agent_8443.log'
-amFQDN=''{{ amster_amfqdn }}''
+amFQDN='{{ amster_amfqdn }}'
 amURI='acs'
 amPROTO='https'
 amPORT='443'
@@ -60,7 +60,7 @@ BODY="""
       "localAuditLogRotation" : false,
       "webSocketConnectionIntervalInMinutes" : 30,
       "agentConfigChangeNotificationsEnabled" : true,
-      "userpassword" : "{{ amster_bindusrpwd }}"
+      "userpassword" : "{{ amster_bindusrpwd }}",
       "httpSessionBinding" : true,
       "userPrincipalFlag" : false,
       "configurationReloadInterval" : 0,
