@@ -11,6 +11,17 @@
     src: "{{ amster_code_location }}/cot.json"
 
 
+- name: Get UwvInkijkAttributeMapper.class in place
+  copy:
+    dest:  "/opt/tomcat/tomcat/webapps/am/WEB-INF/lib/UwvInkijkAttributeMapper.class"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
+    mode: 0644
+    remote_src: yes
+    src: "{{ amster_code_location }}/UwvInkijkAttributeMapper.class"
+# File is still to be delivered by BKWI, hope the current dummy does not cause damage in this tomcat-reserved folder ;-)
+
+
 - name: Create the single-realm Amster scripts
   template:
     src: "{{ item }}.j2"
@@ -194,7 +205,7 @@
 # For now kept upper case, as they used with Chef (the 201 deck grabs these values)
 # The specs tell to repeat the 201 'for each realm' but currently the sole SAML realm is uwv.
 # TBD to parametrise the environment vars when another SAML realm  would be added; but there is more work then,
-# also possibly adding another file like cot.json (amsterbasics.yml)
+# also possibly adding another file like cot.json (beginning part of this yaml)
 
 - name: Debug
   debug:
