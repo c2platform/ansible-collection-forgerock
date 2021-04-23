@@ -22,6 +22,14 @@
 # File is still to be delivered by BKWI, hope the current dummy does not cause damage in this tomcat-reserved folder ;-)
 
 
+- name: Create root/.ssl for the appserver trusts
+  file:
+    path: "/root/.ssl"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: 0700
+
 - name: Create the single-realm Amster scripts
   template:
     src: "{{ item }}.j2"
