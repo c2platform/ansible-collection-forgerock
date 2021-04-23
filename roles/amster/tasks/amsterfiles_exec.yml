@@ -219,12 +219,15 @@
   debug:
     msg: "{{ task_register_var }}"
 
-#- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
-#  command: "./amster 400-set-global-security-settings.amster"
-#  register: task_register_var
-#  become: yes
-#  become_user: "{{ amster_owner }}"
-#  args:
-#    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
+  command: "./amster 400-set-global-security-settings.amster"
+  register: task_register_var
+  become: yes
+  become_user: "{{ amster_owner }}"
+  args:
+    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+  notify: restart tomcat instance
 
-
+- name: Debug
+  debug:
+    msg: "{{ task_register_var }}"
