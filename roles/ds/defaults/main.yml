@@ -75,12 +75,10 @@ ds_config_pps:
     - max-password-reset-age:14 days
     - password-history-count:10
     - require-secure-password-changes:true
-  # The remaining four commented out. These work for Chef/OpenAM but in the new AM version DEV, of DXC and CGI, prove to
-  # be blocking for AM configuration through Amster. Under discussion between VIPS and BKWI.
-  #  - max-password-age:56 days
-  #  - force-change-on-add:true
-  #  - force-change-on-reset:true
-  #  - idle-lockout-interval:45 days
+    - max-password-age:56 days
+    - force-change-on-add:true
+    - force-change-on-reset:true
+    - idle-lockout-interval:45 days
   service-accounts:
     - expire-passwords-without-warning:false
     - force-change-on-add:false
