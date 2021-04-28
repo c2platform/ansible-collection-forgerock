@@ -59,13 +59,13 @@ failureNode = 'e301438c-0bd0-429c-ab0c-66126501069a'
 println cyan("Entered realm = '$realmName' to set ldap tree")
 
 // Delete authentication tree and its nodes
-:load  '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/110-function-delete-authentication-tree.amster'
+:load  '{{ amster_home_version }}/110-function-delete-authentication-tree.amster'
 
 // Create authentication tree
-:load  '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/110-function-create-authentication-tree.amster' 
+:load  '{{ amster_home_version }}/110-function-create-authentication-tree.amster' 
 
 // Set tree as default service
 // TODO: Remove uncomment once password reset works
-//:load  '{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/110-function-load-authentication-service.amster'
+//:load  '{{ amster_home_version }}/110-function-load-authentication-service.amster'
 
 eval(":exit")

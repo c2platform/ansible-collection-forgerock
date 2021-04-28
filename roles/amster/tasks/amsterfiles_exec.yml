@@ -3,13 +3,12 @@
 
 - name: Get cot.json in place
   copy:
-    dest:  "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/amster_config/federation/cot.json"
+    dest:  "{{ amster_home_version }}/amster_config/federation/cot.json"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0644
     remote_src: yes
     src: "{{ amster_code_location }}/cot.json"
-
 
 - name: Get UwvInkijkAttributeMapper.class in place
   copy:
@@ -17,10 +16,10 @@
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0644
-    remote_src: yes
-    src: "{{ amster_code_location }}/UwvInkijkAttributeMapper.class"
-# File is still to be delivered by BKWI, hope the current dummy does not cause damage in this tomcat-reserved folder ;-)
-
+    content: ''
+    # TODO
+    # src: "{{ amster_code_location }}/UwvInkijkAttributeMapper.class"
+    # File is still to be delivered by BKWI, hope the current dummy does not cause damage in this tomcat-reserved folder ;-)
 
 - name: Create root/.ssl for the appserver trusts
   file:
@@ -33,7 +32,7 @@
 - name: Create the single-realm Amster scripts
   template:
     src: "{{ item }}.j2"
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{ item }}.amster"
+    dest: "{{ amster_home_version }}/{{ item }}.amster"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0755
@@ -70,7 +69,7 @@
     amster_realmfqdn: "{{ amster_uwv_fqdn }}"
   template:
     src: "{{ item.templname }}.j2"
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{item.amstername }}.amster"
+    dest: "{{ amster_home_version }}/{{item.amstername }}.amster"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0755
@@ -86,7 +85,7 @@
     amster_realmfqdn: "{{ amster_suwi_fqdn }}"
   template:
     src: "{{ item.templname }}.j2"
-    dest: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/{{item.amstername }}.amster"
+    dest: "{{ amster_home_version }}/{{item.amstername }}.amster"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0755
@@ -143,7 +142,7 @@
   become: yes
   become_user: "{{ amster_owner }}"
   args:
-    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+    chdir: "{{ amster_home_version }}/"
 
 #- name: Debug
 #  debug:
@@ -155,7 +154,7 @@
   become: yes
   become_user: "{{ amster_owner }}"
   args:
-    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+    chdir: "{{ amster_home_version }}/"
   when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
     and amster_connect_var['stderr'] is search("Unexpected character")
 
@@ -177,7 +176,7 @@
   become: yes
   become_user: "{{ amster_owner }}"
   args:
-    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+    chdir: "{{ amster_home_version }}/"
 
 - name: Debug
   debug:
@@ -190,7 +189,7 @@
   become: yes
   become_user: "{{ amster_owner }}"
   args:
-    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+    chdir: "{{ amster_home_version }}/"
 
 - name: Debug
   debug:
@@ -202,7 +201,7 @@
   become: yes
   become_user: "{{ amster_owner }}"
   args:
-    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+    chdir: "{{ amster_home_version }}/"
   environment:
     AMSTER_VERSION: 6.5.3
     OPENAM_REALM: uwv
@@ -225,7 +224,7 @@
   become: yes
   become_user: "{{ amster_owner }}"
   args:
-    chdir: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}/"
+    chdir: "{{ amster_home_version }}/"
   notify: restart tomcat instance
 
 - name: Debug
