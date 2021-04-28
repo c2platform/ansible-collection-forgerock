@@ -1,6 +1,8 @@
 ---
 amster_version: 6.5.3
 amster_home: /opt/amster
+amster_home_version: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
+amster_home_link: "{{ amster_home  }}/{{ amster_home|basename }}"
 
 amster_ds_hostname: 1.1.1.51.nip.io
 amster_ds_rootpw: supersecret
