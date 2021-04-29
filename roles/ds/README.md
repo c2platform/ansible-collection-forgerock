@@ -2,7 +2,7 @@
 
 This Ansible role is used to install and configure upgrade [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role will download and setup DS. Furthermore the role can be used to configure DS using `dsconfig`, create user stores, users and configure replication.
 
-<!-- MarkdownTOC levels="2,3" autolink="true" -->
+<!-- MarkdownTOC levels="2,3,4" autolink="true" -->
 
 - [Requirements](#requirements)
   - [Java](#java)
@@ -11,6 +11,10 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [DB Schema ldifs](#db-schema-ldifs)
   - [Backends](#backends)
   - [Modify](#modify)
+    - [Simple](#simple)
+    - [Download LDIF](#download-ldif)
+    - [Existence checks](#existence-checks)
+    - [Extra](#extra)
   - [Passwords](#passwords)
   - [Import](#import)
   - [Replication](#replication)
@@ -94,6 +98,8 @@ ds_config:
 
 Modify the directory using [LDIF](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldif to be used to modify DS using `./ldapmodify`.
 
+#### Simple
+
 ```yaml
 ds_modify:
   - name: userstore.orgRoot
@@ -109,6 +115,7 @@ ds_modify:
       objectClass: top
       dc: org
 ```
+#### Download LDIF
 
 Optionally you can also configure the LDIF to be downloaded using `ldif-url`. Let's say we have an LDIF file `file:///vagrant/downloads/akaufman.ldif` with following contents
 
@@ -133,7 +140,13 @@ ds_modify_extra:
     dn: cn=akaufman,o=special,c=NL
 ```
 
-Note here the use of another variable `ds_modify_extra`. This variable works exactly the same as `ds_modify`. Anything you configure with this var will be applied to DS using `ldapmodify`.
+#### Existence checks
+
+`dn` `search`
+
+#### Extra
+
+Using `ds_modify_extra`. This variable works exactly the same as `ds_modify`. Anything you configure with this var will be applied to DS using `ldapmodify`.
 
 ### Passwords
 
@@ -262,7 +275,9 @@ of the dsreplication arguments.
 * Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
 * [DS 6 > Reference | Replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1)
 * [How do I verify that a DS 5.x, 6 or OpenDJ 3.x server is responding to LDAP requests without providing a password? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a54816700)
-
+* [How do I rebuild indexes in DS (All versions)? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a46097400)
+* [How do I verify indexes in DS (All versions) are correct? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a59282000)
+* [Directory Services 7 > Tools Reference > ldapsearch — perform LDAP search operations](https://backstage.forgerock.com/docs/ds/7/tools-reference/ldapsearch-1.html)
 
 ## Notes
 
