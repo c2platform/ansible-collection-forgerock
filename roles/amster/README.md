@@ -57,11 +57,11 @@ Use `amster_am_install` var to control installation
 ```yaml
 amster_am_install:
   serverUrl: TODO
-  adminPwd: "{{ am_adminusrpw }}"
+  adminPwd: "{{ amster_amadmin_pw }}"
   acceptLicense: ''
   pwdEncKey: "{{ amster_encryptpw }}"
   cfgStoreDirMgr: 'uid=am-config,ou=admins,ou=am-config'
-  cfgStoreDirMgrPwd: '{{ ds_rootpw }}'
+  cfgStoreDirMgrPwd: '{{ amster_ds_rootpw }}'
   cfgStore: dirServer
   cfgStoreHost: "{{ amster_ds_hostname }}"
   cfgStoreAdminPort: 4444
@@ -71,7 +71,7 @@ amster_am_install:
   cookieDomain: TODO
   cfgDir: /opt/tomcat/am # default $HOME/openam
   userStoreDirMgr: "cn=Directory Manager"
-  userStoreDirMgrPwd: "{{ ds_rootpw }}"
+  userStoreDirMgrPwd: "{{ amster_ds_rootpw }}"
   userStoreHost: "{{ amster_ds_hostname  }}"
   userStoreType: LDAPv3ForOpenDS
   userStoreSsl: SSL

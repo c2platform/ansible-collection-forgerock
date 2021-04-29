@@ -6,8 +6,7 @@ amster_home_link: "{{ amster_home  }}/{{ amster_home|basename }}"
 
 amster_ds_hostname: 1.1.1.51.nip.io
 amster_ds_rootpw: supersecret
-am_adminusrpw: FRdemo123
-# The password that Amster sets for id AMadmin
+amster_amadmin_pw: supersecure # password that Amster sets amAdmin
 
 amster_encryptpw: C2ITMXJ1I8BSp61bmJbp4oBaOjBDC6Xi
 
@@ -41,11 +40,11 @@ dsc_user_reports_inquire:
 
 amster_am_install:
   serverUrl: "http://{{ ansible_fqdn }}:8443/am"
-  adminPwd: "{{ am_adminusrpw }}"
+  adminPwd: "{{ amster_amadmin_pw }}"
   acceptLicense: ''
   pwdEncKey: "{{ amster_encryptpw }}"
   cfgStoreDirMgr: "cn=Directory Manager"
-  cfgStoreDirMgrPwd: '{{ ds_rootpw }}'
+  cfgStoreDirMgrPwd: '{{ amster_ds_rootpw }}'
   cfgStore: dirServer
   cfgStoreHost: "{{ amster_ds_hostname }}"
   cfgStoreAdminPort: 4444
@@ -55,7 +54,7 @@ amster_am_install:
   cookieDomain: "{{ ansible_fqdn }}"
   cfgDir: /opt/tomcat/am # default $HOME/openam
   userStoreDirMgr: "cn=Directory Manager"
-  userStoreDirMgrPwd: "{{ ds_rootpw }}"
+  userStoreDirMgrPwd: "{{ amster_ds_rootpw }}"
   userStoreHost: "{{ amster_ds_hostname  }}"
   userStoreType: LDAPv3ForOpenDS
   userStoreSsl: SSL
