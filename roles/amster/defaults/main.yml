@@ -27,27 +27,8 @@ amster_download_dir: /tmp
 
 amster_code_location: /vagrant/downloads
 
-# These two not overwritten in host/environment vars. Realmname is either uwv or suwinet and overwritten
-# in amsterfiles_exec.yml. Realmfqdn is an intermediate var, and itself (in the amsterfiles_exec)
-# filled from amster_uwv_fqdn and amster_suwi_fqdn. This way we can use 1 single template
-# for both 103, 107, 108 versions.
-amster_realmname: suwinet
-amster_realmfqdn: suwinet.nl
-
-# These are source values for the intermediate ones above, and normal vars hence can be in host/environment vars.
-amster_suwi_fqdn: suwinet.nl
-amster_uwv_fqdn: uwv.bto.suwinet.nl
-
-
-# Other Amster template vars
-amster_igfqdn: suwinet-inkijk.bto.suwinet.nl
-amster_amfqdn: 1.1.1.52.nip.io
-# Value for BTO: acs.bto.suwinet.nl
-
 # These two to move to the PW vault mechanism chosen
 amster_bindusrpwd: supersecret
-# Looks like being the standard pw for accessing the DS server, then of course point to that variable.
-amster_realmsecret: SBPSECRET
 
 dsc_user_reports_inquire:
   hostname: "{{ amster_ds_hostname }}"
@@ -83,3 +64,59 @@ amster_am_install:
 
 amster_am_connect:
   private-key: /opt/tomcat/am/
+
+amster_scripts:
+  - 090-connect-to-openam
+  - 100-installAM_1
+  - 100-configure_AM
+  - 101-connect_To_AM
+  - 102-set-common-functions
+  - 110-create-authentication-LdapTree
+  - 110-function-create-authentication-tree
+  - 110-function-delete-authentication-tree
+  - 110-function-load-authentication-service
+  - 111-configure-global-validation-service
+  - 201-configure-SAML
+  - 209-function_load_all_saml
+  - 210-function-load-authentication-settings
+  - 400-set-global-security-settings
+
+amster_realm_defaults:
+  backend: o=suwi,c=NL
+  object_class: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
+  attributes: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
+  shared_secret: SBPSECRET # Looks like being the standard pw for accessing the DS server
+
+amster_realms:
+  uwv:
+    fqdn: uwv.bto.suwinet.nl
+    scripts:
+      - 103-configure_realm
+      - 107-update-identity-store
+      - 108-set-sessionproperties
+  suwinet:
+    # object_class: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
+    # backend: o=suwi,c=NL
+    # attributes: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
+    # shared_secret: SBPSECRET
+    fqdn: suwinet.nl
+    scripts:
+      - 103-configure_realm
+      - 104-create-J2EE_Agent
+      - 105-create-policy-set
+      - 106-create-policy
+      - 107-update-identity-store
+      - 108-set-sessionproperties
+    j2ee_agent:
+      name: suwinet-agent
+      fqdn: suwinet-inkijk.bto.suwinet.nl
+      fqdn_am: acs.bto.suwinet.nl
+    policy:
+      set_name: suwinet-policy-set
+      name: suwinet-inkijk-policy
+      resources:
+        - http://inkijk.local:80/*
+        - http://inkijk.local:80/*?
+        - http://inkijk.local:80/*?*
+      realms: ['uwv','suwinet']
+      am_protected_uid_identifier: frankbtotest
