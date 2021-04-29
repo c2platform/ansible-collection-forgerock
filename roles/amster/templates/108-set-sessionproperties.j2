@@ -1,4 +1,4 @@
-realmName = '{{ amster_realmname }}'
+realmName = '{{ realm }}'
 
 println ("108-set-custom-session-properties")
 println ("Set the whitelist first")
@@ -26,14 +26,14 @@ BODY="""{
 	"security" : {
       "moduleBasedAuthEnabled" : false,
       "zeroPageLoginAllowedWithoutReferrer" : false,
-      "sharedSecret" : "{{ amster_realmsecret }}",
+      "sharedSecret" : "{{ amster_realms[realm]['shared_secret']|default(amster_realm_defaults['shared_secret']) }}",
       "keyAlias" : "test",
       "zeroPageLoginEnabled" : false,
       "zeroPageLoginReferrerWhiteList" : [ ]
       },
       "postauthprocess" : {
       "usernameGeneratorClass" : "com.sun.identity.authentication.spi.DefaultUserIDGenerator",
-      "loginFailureUrl" : [  ], 
+      "loginFailureUrl" : [  ],
       "userAttributeSessionMapping" : [ "uid|uidIdentifier", "dn|dnIdentifier", "businessCategory|roleIdentifier" ],
       "loginPostProcessClass" : [ ],
       "usernameGeneratorEnabled" : true,

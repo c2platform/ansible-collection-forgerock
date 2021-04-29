@@ -3,15 +3,12 @@
 println blue ("107-update-identity-store")
 //assumes a identity story is present with id OpenDJ.
 
-realmName = '{{ amster_realmname }}'
+realmName = '{{ realm }}'
+usersBackend="{{ amster_realms[realm]['backend']|default(amster_realm_defaults['backend']) }}"
 
-usersBackend="o=suwi,c=NL"
-
-//static variables:
-// (As they look independent of environment, for now left hardcoded in Ansible template and not put in variables)
 userSearchAttribute="cn"
-userObjectclass=["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
-userAttributes=["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
+userObjectclass={{ amster_realms[realm]['object_class']|default(amster_realm_defaults['object_class']) }}
+userAttributes={{ amster_realms[realm]['attributes']|default(amster_realm_defaults['attributes']) }}
 authNamingAttr="uid"
 peopleContainerName="cn"
 peopleContainerValue=""

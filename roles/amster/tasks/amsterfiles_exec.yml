@@ -29,29 +29,20 @@
     group: "root"
     mode: 0700
 
-- name: Create the single-realm Amster scripts
+- name: Create Amster scripts
   template:
     src: "{{ item }}.j2"
     dest: "{{ amster_home_version }}/{{ item }}.amster"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0755
-  with_items:
-     - 090-connect-to-openam
-     - 100-installAM_1
-     - 100-configure_AM
-     - 101-connect_To_AM
-     - 102-set-common-functions
-     - 110-create-authentication-LdapTree
-     - 110-function-create-authentication-tree
-     - 110-function-delete-authentication-tree
-     - 110-function-load-authentication-service
-     - 111-configure-global-validation-service
-     - 201-configure-SAML
-     - 209-function_load_all_saml
-     - 210-function-load-authentication-settings
-     - 400-set-global-security-settings
+  with_items: "{{ amster_scripts }}"
 
+- name: Configure realm
+  include_tasks: "realm.yml"
+  loop_control:
+    loop_var: realm
+  with_items: '{{ amster_realms }}'
 
 # Note for 100-install: we preferred having 100-installAM_1.amster in a multi-line readable format with \ concatenation, but even
 # without Ansible this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
@@ -63,39 +54,6 @@
 
 # Note for 111: though part of the '100-deck' it's called separately from Ansible, not as part of the deck-amsterscript-chain
 
-- name: Create the 3 multi-realm Amster scripts for uwv realm
-  vars:
-    amster_realmname: "uwv"
-    amster_realmfqdn: "{{ amster_uwv_fqdn }}"
-  template:
-    src: "{{ item.templname }}.j2"
-    dest: "{{ amster_home_version }}/{{item.amstername }}.amster"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
-    mode: 0755
-  with_items:
-     - { templname: 103-configure_realm, amstername: uwv-103-configure_realm }
-     - { templname: 107-update-identity-store, amstername: uwv-107-update-identity-store }
-     - { templname: 108-set-sessionproperties, amstername: uwv-108-set-sessionproperties }
-
-
-- name: Create the 6 multi-realm Amster scripts for suwinet realm
-  vars:
-    amster_realmname: "suwinet"
-    amster_realmfqdn: "{{ amster_suwi_fqdn }}"
-  template:
-    src: "{{ item.templname }}.j2"
-    dest: "{{ amster_home_version }}/{{item.amstername }}.amster"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
-    mode: 0755
-  with_items:
-     - { templname: 103-configure_realm, amstername: suwinet-103-configure_realm }
-     - { templname: 104-create-J2EE_Agent, amstername: suwinet-104-create-J2EE_Agent }
-     - { templname: 105-create-policy-set, amstername: suwinet-105-create-policy-set }
-     - { templname: 106-create-policy, amstername: suwinet-106-create-policy }
-     - { templname: 107-update-identity-store, amstername: suwinet-107-update-identity-store }
-     - { templname: 108-set-sessionproperties, amstername: suwinet-108-set-sessionproperties }
 
 - name: Confirm AM up
   uri:

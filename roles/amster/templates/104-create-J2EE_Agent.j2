@@ -1,12 +1,12 @@
 println 104
 
 println green ("INFO: IG J2EE Agent parameters")
-agentName = 'suwinet-agent'
-igFQDN='{{ amster_igfqdn }}'
+agentName = '{{ amster_realms[realm]['j2ee_agent']['name'] }}'
+igFQDN='{{ amster_realms[realm]['j2ee_agent']['fqdn'] }}'
 igPORT='443'
 igPROTO='https'
-igREMOTELOGFILE='amAgent_suwinet_agent_8443.log'
-amFQDN='{{ amster_amfqdn }}'
+igREMOTELOGFILE='amAgent_{{ realm }}_agent_8443.log'
+amFQDN='{{ amster_realms[realm]['j2ee_agent']['fqdn_am'] }}'
 amURI='acs'
 amPROTO='https'
 amPORT='443'
@@ -150,9 +150,9 @@ BODY="""
       "legacyUserAgentSupport" : false,
       "bypassPrincipalList" : [ "" ],
       "cookieResetDomains" : {  },
-      "cdssoTrustedIdProvider" : [ "https://{{ amster_igfqdn }}/am/cdcservlet" ],
+      "cdssoTrustedIdProvider" : [ "https://{{ amster_realms[realm]['j2ee_agent']['fqdn'] }}/am/cdcservlet" ],
       "cdsso" : false,
-      "cdssoUrls" : [ "https://{{ amster_igfqdn }}/am/cdcservlet" ],
+      "cdssoUrls" : [ "https://{{ amster_realms[realm]['j2ee_agent']['fqdn'] }}/am/cdcservlet" ],
       "cdssoDomainList" : [ "" ],
       "cdssoRedirectUri" : "/agentapp/sunwCDSSORedirectURI",
       "cookieResetNames" : [ "" ],
@@ -166,7 +166,7 @@ BODY="""
 """;
 
 // SBP situation: Chef runs this script only when something is changed, so simply create the j2ee agent when it doesn't exist and otherwise update it
-// VIPS situation: more or less same, Ansible Amster play detects whether 
+// VIPS situation: more or less same, Ansible Amster play detects whether
 // initial install-openam was done and afterwards if 400-deck, 100-deck and 201-deck scripts have run.
 // So if that check determines the current versions of these decks do not match the state (export-config),
 // it'll re-run the decks and then this 104 script is also run.

@@ -1,0 +1,9 @@
+---
+- name: Create Amster realm scripts
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ amster_home_version }}/{{ realm }}-{{ item }}.amster"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
+    mode: 0755
+  with_items: "{{ amster_realms[realm]['scripts'] }}"

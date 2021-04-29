@@ -1,19 +1,12 @@
 println 106
 
-backendPROTO = 'http'
-backendFQDN = 'inkijk.local'
-backendPORT = '80'
-backendURI1 = '*'
-backendURI2 = '*?'
-backendURI3 = '*?*'
 // Note $realmName is already set in 103, which is executed prior to this
-
 
 BODY="""{
     "name" : "$policyName",
     "active" : true,
     "description" : "",
-    "resources" : [ "$backendPROTO://$backendFQDN:$backendPORT/$backendURI1","$backendPROTO://$backendFQDN:$backendPORT/$backendURI2","$backendPROTO://$backendFQDN:$backendPORT/$backendURI3" ],
+    "resources" : {{ amster_realms[realm]['policy']['resources'] }},
     "applicationName" : "$policySetName",
     "actionValues": { "GET":true,"POST":true },
     "subject": { "type":"AuthenticatedUsers" },
@@ -21,19 +14,17 @@ BODY="""{
     "condition" : {
                 "type": "OR",
                 "conditions": [
+{% for rlm in amster_realms[realm]['policy']['realms'] %}
                     {
-                        "authenticateToRealm": "/uwv",
+                        "authenticateToRealm": "/{{ rlm }}",
                         "type": "AuthenticateToRealm"
                     },
-                    {
-                        "authenticateToRealm": "/suwinet",
-                        "type": "AuthenticateToRealm"
-                    },
+{% endfor %}
                     {
                         "type" : "SessionProperty",
                         "ignoreValueCase" : true,
                         "properties" : {
-                            "am.protected.uidIdentifier" : ["frankbtotest"]
+                            "am.protected.uidIdentifier" : ["{{ amster_realms[realm]['policy']['am_protected_uid_identifier'] }}"]
                         }
                     }
                 ]}}"""

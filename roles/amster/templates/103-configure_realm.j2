@@ -2,9 +2,8 @@ println green ("=========================================================" )
 println green ("INFO: Setting all the variables" )
 
 println green ("INFO: Realm parameters")
-realmName = '{{ amster_realmname }}'
-realmFQDN = '{{ amster_realmfqdn }}'
-
+realmName = '{{ realm }}'
+realmFQDN = '{{ amster_realms[realm]['fqdn'] }}'
 
 println green ("=========================================================" )
 println green ("INFO: Creating the realm if it not yet exists" )
@@ -16,7 +15,7 @@ println green ("INFO: Creating the realm if it not yet exists" )
 if (!binding.hasVariable("realmFQDN")) { println red ("ERROR: missing variable. expecting 'realmFQDN' in script 401");    eval (":quit") }
 realmAliases="[\"$realmFQDN\"]"
 
-println "Checking the realm" 
+println "Checking the realm"
 
 haltOnError=false
 cur = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'") 
@@ -26,7 +25,7 @@ if (isNull(cur)) {
     haltOnError=true
   } else {
     println green ("Created realm $realmName")
-  } 
+  }
 } else{
   slurped = new groovy.json.JsonSlurper().parseText(cur)
   if (!( slurped.name.equals(realmName) &&

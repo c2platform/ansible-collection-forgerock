@@ -1,9 +1,8 @@
 println 105
 
-policySetName = 'suwinet-policy-set'
-policyName = 'suwinet-inkijk-policy'
+policySetName = '{{ amster_realms[realm]['policy']['set_name'] }}'
+policyName = '{{ amster_realms[realm]['policy']['name'] }}'
 // Note $realmName is already set in 103, which is executed prior to this
-
 
 BODY="""{
         "name": "$policySetName",
