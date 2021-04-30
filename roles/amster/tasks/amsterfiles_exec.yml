@@ -55,6 +55,10 @@
 # Note for 111: though part of the '100-deck' it's called separately from Ansible, not as part of the deck-amsterscript-chain
 
 
+- name: Debug
+  debug:
+    msg: "{{ amster_am_install['serverUrl'] }}"
+
 - name: Confirm AM up
   uri:
     url: "{{ amster_am_install['serverUrl'] }}"
@@ -115,6 +119,11 @@
     chdir: "{{ amster_home_version }}/"
   when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
     and amster_connect_var['stderr'] is search("Unexpected character")
+
+- name: Debug
+  debug:
+    msg: "{{ task_register_var }}"
+
 
 ## See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause in Authorized keys fails for our setup
 # (These 2 files get created in the 100-install script run)
