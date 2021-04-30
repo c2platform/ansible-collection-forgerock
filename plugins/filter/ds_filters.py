@@ -207,6 +207,16 @@ def dn_from_modify_item(itm):
         return dn.strip()
 
 
+# Return search string for ds_modify config
+def ds_modify_search(itm):
+    dn = dn_from_modify_item(itm)
+    base_dn = dn.rsplit(',', 1)[-1]  # e.g. c=NL
+    if 'search' in itm:
+        return '--baseDn ' + base_dn + ' "' + itm['search'] + '"'
+    else:
+        return '--baseDn "' + dn + '" --searchScope base objectclass=*  || true'
+
+
 class FilterModule(object):
     """ansible filters."""
 
@@ -224,5 +234,6 @@ class FilterModule(object):
             'ds_config_fingerprint_component_path':
             ds_config_fingerprint_component_path,
             'ds_pop': ds_pop,
-            'dn_from_modify_item': dn_from_modify_item
+            'dn_from_modify_item': dn_from_modify_item,
+            'ds_modify_search': ds_modify_search
         }
