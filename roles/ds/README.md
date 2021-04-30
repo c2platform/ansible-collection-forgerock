@@ -12,7 +12,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Backends](#backends)
   - [Modify](#modify)
     - [Simple](#simple)
-    - [Download LDIF](#download-ldif)
+    - [Download](#download)
     - [Existence checks](#existence-checks)
     - [Extra](#extra)
   - [Passwords](#passwords)
@@ -115,7 +115,7 @@ ds_modify:
       objectClass: top
       dc: org
 ```
-#### Download LDIF
+#### Download
 
 Optionally you can also configure the LDIF to be downloaded using `ldif-url`. Let's say we have an LDIF file `file:///vagrant/downloads/akaufman.ldif` with following contents
 
@@ -140,9 +140,43 @@ ds_modify_extra:
     dn: cn=akaufman,o=special,c=NL
 ```
 
+Notice the extra `dn`. This is used for existence check.
+
 #### Existence checks
 
-`dn` `search`
+The default is to perform existence check before applying LDIF by using the `dn` on first line of the LDIF. For example LDIF fragment below will be applied only if `c=NL` does not exists.
+
+```yaml
+ds_modify:
+  - name: userstore.orgRoot
+    ldif: |
+      dn: c=NL
+      objectClass: country
+      objectClass: top
+      c: NL
+```
+
+The `dn` can also explicitly be specified.
+```yaml
+ds_modify:
+  - name: somename
+    ldif: |
+      someldif
+    dn: cn=akaufman,o=special,c=NL
+```
+
+Other LDIF than simple adding require you to specifiy a `search` attribute to check for existence. For example when adding an attribute as shown below
+
+```yaml
+ds_modify:
+      - name: add-ACI-to-cNL
+        ldif: |
+          dn: c=NL
+          changetype: modify
+          add: aci
+          aci: (target="ldap:///o=suwi,c=nl")(targetattr ="*")(version 3.0; acl "Allow apps proxiedauth"; allow(all, proxy)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
+        search: "&(objectclass=top)(c=NL)(aci=*)"
+```
 
 #### Extra
 
