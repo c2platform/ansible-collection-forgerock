@@ -10,16 +10,24 @@
     remote_src: yes
     src: "{{ amster_code_location }}/cot.json"
 
-- name: Get UwvInkijkAttributeMapper.class in place
+- name: Get openam-federation.jar in place
   copy:
-    dest:  "/opt/tomcat/tomcat/webapps/am/WEB-INF/lib/UwvInkijkAttributeMapper.class"
+    dest:  "/opt/tomcat/tomcat/webapps/am/WEB-INF/lib/openam-federation.jar"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0644
-    content: ''
-    # TODO
-    # src: "{{ amster_code_location }}/UwvInkijkAttributeMapper.class"
-    # File is still to be delivered by BKWI, hope the current dummy does not cause damage in this tomcat-reserved folder ;-)
+    src: "{{ amster_code_location }}/openam-federation.jar"
+    remote_src: yes
+    # See XLS for the Sharepoint location of the jar and zip
+
+- name: Get openam-login.zip in place
+  copy:
+    dest:  "/opt/tomcat/tomcat/webapps/am/XUI/openam-login.zip"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
+    mode: 0644
+    src: "{{ amster_code_location }}/openam-login.zip"
+    remote_src: yes
 
 - name: Create root/.ssl for the appserver trusts
   file:
