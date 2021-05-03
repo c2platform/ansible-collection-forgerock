@@ -75,7 +75,9 @@ amster_scripts:
   - 110-function-delete-authentication-tree
   - 110-function-load-authentication-service
   - 111-configure-global-validation-service
+  - 112-configure-top-level-realm
   - 201-configure-SAML
+  - 208-function_create_federation_module
   - 209-function_load_all_saml
   - 210-function-load-authentication-settings
   - 400-set-global-security-settings

@@ -1,0 +1,48 @@
+println("Configure authentication for top level realm")
+
+// TODO: Need to be added to attributes. Maybe into amster_templates_base?
+newChainName = "ldapBkwiChain"
+moduleType = "LDAP"
+chainCriteria = "REQUIRED"
+
+ldapChain = eval("read AuthenticationChains --realm / --id '$newChainName'")
+if (isNull(ldapChain)) {
+    println yellow("Chain does not exist. Create!")
+    bodyBuilderCreate = new groovy.json.JsonBuilder()
+    bodyBuilderCreate {
+        _id newChainName
+    }
+
+    ldapChain = eval("create AuthenticationChains --realm / --id $newChainName --body '$bodyBuilderCreate'")
+}
+
+println yellow("Chain exists. Update!")
+slurped = new groovy.json.JsonSlurper().parseText(ldapChain)
+if (slurped._id.contains(newChainName) && slurped.authChainConfiguration?.module?.contains(moduleType)) {
+    println cyan("Nothing to do")
+} else {
+    println yellow("Adding LDAP Module")
+    bodyBuilderUpdate = new groovy.json.JsonBuilder()
+    bodyBuilderUpdate 'authChainConfiguration': [{
+                                                     module moduleType
+                                                     criteria chainCriteria
+                                                 }]
+    ldapChain = eval("update AuthenticationChains --realm / --id $newChainName --body '$bodyBuilderUpdate'")
+}
+
+println("Configure authentication settings")
+currentAuthenticationSettings = eval("read Authentication --realm /")
+if (isNull(currentAuthenticationSettings)) {
+    println("Error: there should be authentication settings already present!")
+} else {
+    println("Update Authentication Settings")
+    slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
+    if (slurped.core.orgConfig.contains(newChainName)) {
+        println cyan("Nothing to do")
+    } else {
+        slurped.core.orgConfig = newChainName
+        bodyBuilder = new groovy.json.JsonBuilder();
+        bodyBuilder 'core': slurped.core
+        eval("update Authentication --realm / --body '$bodyBuilder'")
+    }
+}
