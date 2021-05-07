@@ -17,35 +17,27 @@ This Ansible role is used to install, upgrade and remove [ForgeRock Amster CLI](
 
 ForgeRock uses zip files mostly - not tarballs, so to use this role `unzip` is required on target nodes.
 
-Note that the 'Amster' utility part of the AM install connects with a ForgeRock DS server.
-Hence requirement is that the configured DS server already is up and running. In a 2-server setup as is now the standard, provisioning of the DS node goes first. The role does a check whether the DS instance is up and running, using the ldapsearch utility which checks on port level.
+Note that the 'Amster' utility part of the AM install connects with a ForgeRock DS server and expects a proxied AM adsress.
+Hence requirement is that the configured DS server and IG proxy server already are up and running. In a 2-server setup as is now the standard, provisioning of the DS node goes first. The role does a check whether the DS instance is up and running, using the ldapsearch utility which checks on DS content level.
 
-Also note that the role itself is idempotent: if Amster has been run already (detected through directory /opt/am/<version>/openamcfg), it won't run again. Reason is that in the DS modifications, Amster does some 'create' calls with unique keys.
-Hence if your role has changed (e.g. different content of a template like config.amster.j2) and you want to provision afresh, recreate both the DS VM and the AM VM in order for the new Amster settings to have effect! As you see in the check above however requirement is that Amster is installed on the same server as AM. The split into a separate role was done as technically Amster can be a separate machine, but there are no current plans
-for this yet. Materialising these plans would mean that the idempotency check above cannot be a local check on the openamcfg directory,
-but must become a remote call from the Amster node to a different node (DS or AM) to determine whether it already has been run for this Amster file.
-(In the real life situation, the AM/DS nodes get configured using quite a few Amster files - roughly one per Suwinet application.)
+Designed 'patterns' are initial install (clean DS and clean AM) and running the play several times in case something changes, e.g. an Amster file other than 100-install. If however the 100-install changes, make sure both DS and AM get a full clean install; as otherwise the configuration in DS used by AM is not guaranteed as you want it to be. Note that there is no tight coupling between AM and Amster running on the same machine; though we never tested it a pattern with separate servers for AM and Amster could work. However as the usage scenarios are radically different, AM has the production load and Amster is solely for provisioning, the current co-hosting seems to work fine.
 
-Also note that the idempotency check, even if improved as above checking the AM node, is not complete.
-The effect of an Amster run is not only a change on the file system of the AM/Amster node, being the openamcfg directory, but also stores data in DS.
-If you e.g. throw away an AM-Amster node but not the associated DS node Amster will fail with a not-so-helpful NullPointerException error, see.
-
-https://backstage.forgerock.com/knowledge/kb/article/a81999726
 
 
 ## Role description
 
 1. Download and unpack Amster tool
-2. Run the Amster tool, calling the config instance on the associated DS server
+2. Run the Amster tool, calling the associated DS server (which solely has the 'config' instance, used for configuration and users)
+
+Note that due to the content of the (Groovy) .amster scripts, functional errors can appear during execution. Just like in the old Chef system these aren't trapped or analysed, it's up to the operators to watch these. In a user story for future extension trapping of functional errors is considered. Also for this reason debug statements (to give the outcome of all Amster commands on the screen and hence also in the AWX logfile) are kept in the Ansible code.
 
 # Filesystem before and after situation
-Before: no opt/amster and anything below it.
+Before: no opt/amster and anything below it. No /opt/tomcat/am.
 
 After situation for Amster:
 /opt/amster/amster-[version] has the tool.
-/opt/am/[version]/openamcfg is created after a succesful run of Amster (and used to check existence, avoiding a duplicate run)
+/opt/tomcat/am/openamcfg is created after a succesful run of Amster 
 And amster tool makes a lot of changes in how AM works; probably most of them are stored in the associated DS server.
-
 
 
 ## Role Variables
