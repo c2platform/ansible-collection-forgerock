@@ -86,7 +86,7 @@ amster_realm_defaults:
   backend: o=suwi,c=NL
   object_class: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
   attributes: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
-  shared_secret: SBPSECRET # Looks like being the standard pw for accessing the DS server
+  shared_secret: qdOjJ/gOqP6s94I85FxMB8DjAuJF8HS1HWqdIrD8uyw= # Or any other value generated via openssl rand -base64 32
 
 amster_realms:
   uwv:

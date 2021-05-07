@@ -114,9 +114,7 @@
   args:
     chdir: "{{ amster_home_version }}/"
 
-#- name: Debug
-#  debug:
-#    msg: "{{ amster_connect_var }}"
+
 
 - name: execute 100-installAM_1 amster (don't confuse with 100-configure_AM) if not yet done
   command: "./amster 100-installAM_1.amster"
@@ -131,7 +129,9 @@
 - name: Debug
   debug:
     msg: "{{ task_register_var }}"
-
+# Strong recommendation for VIPS Ops: Keep the debug statements for all these Amster runs; this way we get any
+# functional errors immediately in the AWX logs.
+# See git user story #809 for plans to trap some of the errors.
 
 ## See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause in Authorized keys fails for our setup
 # (These 2 files get created in the 100-install script run)

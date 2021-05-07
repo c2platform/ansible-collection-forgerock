@@ -1,5 +1,5 @@
 #ig_service: "ig.service"
-# Value above comes from an off-the-shelf IG role, for now we have to work with value below.
+# Value above comes from an off-thehelf IG role, for now we have to work with value below.
 ig_service: "tomcat.service"
 
 ig_version: 6.5.4
