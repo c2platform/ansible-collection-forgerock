@@ -11,6 +11,8 @@
 
 ## Requirements
 
+Note that currently we do NOT use this role (anymore). The AM play basically uses the Amster role; the sole function of AM installation itself, moving the AM WAR file to the proper Tomcat directory, is done as a configuration variable for the Tomcat role in the AM play.
+
 <!-- Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required. -->
 
 ## Role Variables

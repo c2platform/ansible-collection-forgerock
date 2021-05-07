@@ -8,7 +8,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Java](#java)
 - [Role Variables](#role-variables)
   - [Setup config](#setup-config)
-  - [DB Schema ldifs](#db-schema-ldifs)
+  - [DB Schema LDIF](#db-schema-ldif)
   - [Backends](#backends)
   - [Modify](#modify)
     - [Simple](#simple)
@@ -53,14 +53,13 @@ ds_setup_config
 `ds_config`
 Note that the configbase module (running dsconfig command) for some parts uses 'fingerprints': signatures of the last result stored on disk, to prevent unnecessary calls to dsconfig. This however assumes that Ansible is in full control of the file system.
 
-TODO if needed
-Note that the main dsconfig part(4.)  is highly parametrised, you could call it 'normalised' in SQL terms with no copypasting of elements. Parts 5 and 6 are not parametrised, except a small dsconfig part, and hence have quite some copypasting. For the code (nontrivial, but still a lot shorter than dsconfig used to be) parametrising is for sure doable but the return-on-investment is debatable. One reason is that we talk not about 1 'shelled' command but three different, each with slightly different syntax; ldapsearch, ldapmodify and ldappasswordmodify.
 
-### DB Schema ldifs
+### DB Schema LDIF
 
-Using `ds_db_schema_ldifs` ldifs files can be created in `db/schema`. For example configuration below will create file `/opt/ds/ds-6.5.4/db/schema/appPerson.ldif` to create a new __appPerson__ object class. 
+Using `ds_db_schema_ldifs` ldifs files can be created in `db/schema`. For example configuration below will create file `/opt/ds/ds-6.5.4/db/schema/appPerson.ldif` to create a new __appPerson__ object class. These files are automatically used upon restart of DS, but depending on a toggle mentioned below.
 
 ```yaml
+ds_db_schema_ldifs_enable: yes
 ds_db_schema_ldifs:
  appPerson: |  
    dn: cn=schema
@@ -72,6 +71,8 @@ ds_db_schema_ldifs:
    add: objectClasses
    objectClasses: ( AppPerson-oid NAME 'appPerson' DESC 'Extra properties for a app user' SUP top AUXILIARY MAY ( app-account-expiration-time ) )
 ```
+
+Note: processing of schema LDIF is default disabled with `ds_db_schema_ldifs_enable: no`. This var `ds_db_schema_ldifs_enable` was added to allow you to toggle configuration on / off.
 
 ### Backends
 
@@ -96,7 +97,7 @@ ds_config:
 
 ### Modify
 
-Modify the directory using [LDIF](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldif to be used to modify DS using `./ldapmodify`.
+Modify the directory using [LDIF](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldifs to be used to modify DS using `./ldapmodify`.
 
 #### Simple
 
@@ -250,7 +251,7 @@ ds_replication:
     - dc=bkwi,dc=nl
 ```
 
-If one of the servers is unavailable, the setup will fail of course.
+If one of the servers is unavailable, the setup will fail. This is one reason that in the overall process flow we install replication in a separate Ansible run, as then it's guaranteed that AWX has completed the base install and both servers are available.
 
 The possible settings under `replication-server`, `host1` and `host2` are mostly optional they will default to `ds_connect`. To setup replication at a minimum you need to configure:
 

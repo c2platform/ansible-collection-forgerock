@@ -12,6 +12,7 @@ ds_replication_global_admin_password: supersecret # requires better password e.g
 ds_replication_port: 8989
 ds_replication_enable: no
 ds_import_enable: no
+ds_db_schema_ldifs_enable: no
 ds_packages: []
 
 # ForgeRock downloads cannot be downloaded automatically

@@ -54,7 +54,7 @@
     group: "{{ ds_group }}"
     mode: '0640'
   with_items: "{{ ds_db_schema_ldifs }}"
-  when: ds_db_schema_ldifs|default(False)
+  when: ds_db_schema_ldifs|default(False) and ds_db_schema_ldifs_enable
 
 - name: Optimise JVM settings for DS
   replace:
