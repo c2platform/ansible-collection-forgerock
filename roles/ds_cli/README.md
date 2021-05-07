@@ -1,6 +1,6 @@
 # Ansible Role ForgeRock Directory Services CLI
 
-This role downloads and installs ForgeRock Directory Services CLI. ForgeRock does not provide a seperate install for CLI utilities.
+This role downloads and installs ForgeRock Directory Services CLI. ForgeRock does not provide a seperate install for CLI utilities. We need it on e.g. the AM node in order to do 'ping' calls to DS machines.
 
 > Server distributions include command-line tools for installing, configuring, and managing servers. The tools make it possible to script all operations.
 > 
