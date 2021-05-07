@@ -55,3 +55,9 @@
     mode: '0640'
   with_items: "{{ ds_db_schema_ldifs }}"
   when: ds_db_schema_ldifs|default(False) and ds_db_schema_ldifs_enable
+
+- name: Optimise JVM settings for DS
+  replace:
+    path: "{{ ds_home_version }}/config/java.properties"
+    regexp: start-ds.java-args=-server
+    replace: start-ds.java-args=-server -Xms1G -Xmx3G

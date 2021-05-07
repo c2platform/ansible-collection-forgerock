@@ -1,0 +1,23 @@
+println("Start SAML config import")
+
+// GET Fedration Module
+currentModule = eval("read FederationModule --realm '$realmName' --id Federation")
+if (!isNull(currentModule)) {
+    // Already there!
+    println("No need to create FederationModule as is already there in realm $realmName")
+} else {
+    // Create the needed Federation Module
+    println("No FederationModule found. Building JSON for Module")
+    bodyBuilder = new groovy.json.JsonBuilder()
+    bodyBuilder {
+        _id 'Federation'
+    }
+
+    println("Creating FederationModule")
+    currentModule = eval("create FederationModule --realm $realmName --id Federation --body '$bodyBuilder'")
+    if (isNull(currentModule)) {
+        println("Creation was unsuccessful")
+    } else {
+        println("Creation was successful. DONE.")
+    }
+}

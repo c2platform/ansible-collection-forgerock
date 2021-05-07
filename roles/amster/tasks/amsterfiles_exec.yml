@@ -10,16 +10,24 @@
     remote_src: yes
     src: "{{ amster_code_location }}/cot.json"
 
-- name: Get UwvInkijkAttributeMapper.class in place
+- name: Get openam-federation.jar in place
   copy:
-    dest:  "/opt/tomcat/tomcat/webapps/am/WEB-INF/lib/UwvInkijkAttributeMapper.class"
+    dest:  "/opt/tomcat/tomcat/webapps/am/WEB-INF/lib/openam-federation.jar"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0644
-    content: ''
-    # TODO
-    # src: "{{ amster_code_location }}/UwvInkijkAttributeMapper.class"
-    # File is still to be delivered by BKWI, hope the current dummy does not cause damage in this tomcat-reserved folder ;-)
+    src: "{{ amster_code_location }}/openam-federation.jar"
+    remote_src: yes
+    # See XLS for the Sharepoint location of the jar and zip
+
+- name: Get openam-login.zip in place
+  copy:
+    dest:  "/opt/tomcat/tomcat/webapps/am/XUI/openam-login.zip"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
+    mode: 0644
+    src: "{{ amster_code_location }}/openam-login.zip"
+    remote_src: yes
 
 - name: Create root/.ssl for the appserver trusts
   file:
@@ -54,6 +62,10 @@
 
 # Note for 111: though part of the '100-deck' it's called separately from Ansible, not as part of the deck-amsterscript-chain
 
+
+- name: Debug
+  debug:
+    msg: "{{ amster_am_install['serverUrl'] }}"
 
 - name: Confirm AM up
   uri:
@@ -115,6 +127,11 @@
     chdir: "{{ amster_home_version }}/"
   when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
     and amster_connect_var['stderr'] is search("Unexpected character")
+
+- name: Debug
+  debug:
+    msg: "{{ task_register_var }}"
+
 
 ## See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause in Authorized keys fails for our setup
 # (These 2 files get created in the 100-install script run)

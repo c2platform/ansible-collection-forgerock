@@ -13,6 +13,9 @@ dirSaml=System.getenv("SAML_DIR")
 // Connect to AM via amster
 :load '{{ amster_home_version }}/101-connect_To_AM.amster'
 
+// Create federation module
+:load '{{ amster_home_version }}/208-function_create_federation_module.amster' 
+
 // Start working on SAML
 :load '{{ amster_home_version }}/209-function_load_all_saml.amster'
 
