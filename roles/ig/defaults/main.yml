@@ -9,8 +9,8 @@ ig_code_location: /vagrant/downloads
 
 ig_versions:
   6.5.4:
-    url: file:///vagrant/downloads/IG-7.0.2.war
-    checksum: "sha256: abeeae3ef83f8bb018d58f90468778f52bffca1b4b5949fde809cb07ea58526e"
+    url: file:///vagrant/downloads/IG-6.5.4.war
+    checksum: "sha256: 47f7b9e7d9ac000ec66fc5bfea2e3d9b38d4702e632de86617a8c10b19028215"
 
 ig_owner: tomcat
 ig_group: tomcat
