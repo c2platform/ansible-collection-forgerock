@@ -4,6 +4,8 @@ ig_service: "tomcat.service"
 
 ig_version: 6.5.4
 ig_home: /opt/ig
+ig_home_version: "{{ ig_home_version }}"
+
 ig_code_location: /vagrant/downloads
 
 
