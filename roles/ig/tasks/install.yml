@@ -82,12 +82,12 @@
     - 202-suwinet-inkijk-pep
     - 900_not_found
 
-- name: Get groovy script(s) in place
-  copy:
-    dest:  "{{ ig_home_version }}/.openig/scripts/groovy/sf_RewritePath.groovy"
+- name: Rewrite paths
+  template:
+    src: RewritePath.groovy.j2
+    dest: "{{ ig_home_version }}/.openig/scripts/groovy/{{ item['name'] }}.groovy"
     owner: "{{ ig_owner }}"
     group: "{{ ig_group }}"
     mode: 0644
-    remote_src: yes
-    src: "{{ ig_code_location }}/sf_RewritePath.groovy"
-
+  with_items: "{{ ig_rewrite_paths }}"
+  when: ig_rewrite_paths is defined

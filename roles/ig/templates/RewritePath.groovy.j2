@@ -1,0 +1,25 @@
+String backendURI = '{{ item['backend'] }}';
+
+logger.debug("RewritePath.groovy. property URI BEFORE= " + backendURI);
+logger.debug("Request.uri.path = " + request.uri.path);
+logger.debug("Request.uri = " + request.uri);
+
+String path = request.uri.path;
+String target = "{{ item['target'] }}";
+String replacement = "{{ item['replacement'] }}";
+String processed = path.replace(target,replacement);
+
+logger.debug("Processed URI = " + processed );
+
+request.uri.path = processed;
+request.uri.host = backendURI;
+request.uri.scheme="http";
+
+
+String reformedUri=backendURI + processed;
+logger.debug("RewritePath.groovy: reformed newuri =" + reformedUri);
+
+attributes.staticURL = reformedUri;
+logger.debug("Final static URL = " + attributes.staticURL);
+
+next.handle(context, request)
