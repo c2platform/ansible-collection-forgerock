@@ -4,8 +4,9 @@ ig_service: "tomcat.service"
 
 ig_version: 6.5.4
 ig_home: /opt/ig
-ig_code_location: /vagrant/downloads
+ig_home_version: "{{ ig_home }}/{{ ig_home|basename }}-{{ ig_version }}"
 
+ig_code_location: /vagrant/downloads
 
 ig_versions:
   6.5.4:
@@ -18,7 +19,7 @@ ig_group: tomcat
 uri_broker: http://broker.local
 uri_inkijk: http://inkijk.local
 uri_xmlgba: http://utils.local
-uri_900route: https:////bkwtapp5.bkwt.local:8443 
+uri_900route: https:////bkwtapp5.bkwt.local:8443
 
 tomcat_instance_dir: "/opt/{{tomcat_instance}}"
 tomcat_instance: ig
