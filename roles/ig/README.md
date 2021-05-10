@@ -51,7 +51,8 @@ This will create file `myAppRewritePath.groovy` in `$HOME/.openig/scripts/groovy
 
 ## Links
 
-1. [IG 6 Release Notes](https://backstage.forgerock.com/docs/ig/6/release-notes/)
-2. [ForgeRock Identity Gateway 7 > Configuration Reference > Configuration Settings|https://backstage.forgerock.com/docs/ig/7/reference/configuration.html)
-3. [IG 6 > Configuration Reference](https://backstage.forgerock.com/docs/ig/6/reference/index.html)
-4. [ForgeRock Identity Gateway 7 > Configuration Reference > ReverseProxyHandler](https://backstage.forgerock.com/docs/ig/7/reference/ReverseProxyHandler.html)
+* [Identity Gateway 6.5 - Docs - BackStage](https://backstage.forgerock.com/docs/ig/6.5https://backstage.forgerock.com/docs/ig/6.5 )
+* [IG 6 Release Notes](https://backstage.forgerock.com/docs/ig/6/release-notes/)
+* [ForgeRock Identity Gateway 7 > Configuration Reference > Configuration Settings|https://backstage.forgerock.com/docs/ig/7/reference/configuration.html)
+* [IG 6 > Configuration Reference](https://backstage.forgerock.com/docs/ig/6/reference/index.html)
+* [ForgeRock Identity Gateway 7 > Configuration Reference > ReverseProxyHandler](https://backstage.forgerock.com/docs/ig/7/reference/ReverseProxyHandler.html)

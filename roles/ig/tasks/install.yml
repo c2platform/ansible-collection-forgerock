@@ -1,9 +1,4 @@
 ---
-# Install IG 
-# Assumes tomcat instance has been previously deployed, which is done in suwinet_ig play
-# Pass tomcat_instance_dir as a role param
-
-
 - name: Create owner
   user:
     name: "{{ ig_owner }}"
@@ -26,36 +21,8 @@
     - "{{ ig_home_version }}/.openig/scripts"
     - "{{ ig_home_version }}/.openig/scripts/groovy"
 
-
 # As for chmod rights, Chef/XLS has a mixture of 700-becoming-755, 500 and 644. We'll try with this
 # highest/unsafest level first, if any tool requires a lower/safer level we'll adjust.
-
-
-- name: Download OpenIG war
-  get_url:
-    url: "{{ ig_versions[ig_version]['url'] }}"
-    dest: "{{ tomcat_instance_dir }}/ig.war"
-    mode: "755"
-
-# in case it is already running...
-- name: Stop IG
-  service: name="{{ ig_service }}" state=stopped
-
-# Remove the ROOT dir so we can install the gateway at the root
-
-- name: Remove ROOT
-  file: path="{{ tomcat_home_version }}/webapps/ROOT.war" state=absent
-# create fresh
-
-- name: Copy the gateway war file as ROOT.war (unpacking is done by Tomcat automatically)
-  copy:
-    src: "{{ tomcat_instance_dir }}/ig.war"
-    dest: "{{ tomcat_home_version }}/webapps/ROOT.war"
-    remote_src: yes
-
-
-- name: restart tomcat
-  service: name="{{ ig_service }}" state=restarted
 
 - name: Get templated configs in place
   template:
