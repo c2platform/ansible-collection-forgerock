@@ -10,25 +10,6 @@
     remote_src: yes
     src: "{{ amster_code_location }}/cot.json"
 
-- name: Get openam-federation.jar in place
-  copy:
-    dest:  "/opt/tomcat/tomcat/webapps/am/WEB-INF/lib/openam-federation.jar"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
-    mode: 0644
-    src: "{{ amster_code_location }}/openam-federation.jar"
-    remote_src: yes
-    # See XLS for the Sharepoint location of the jar and zip
-
-- name: Get openam-login.zip in place
-  copy:
-    dest:  "/opt/tomcat/tomcat/webapps/am/XUI/openam-login.zip"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
-    mode: 0644
-    src: "{{ amster_code_location }}/openam-login.zip"
-    remote_src: yes
-
 - name: Create root/.ssl for the appserver trusts
   file:
     path: "/root/.ssl"
@@ -55,10 +36,10 @@
 # Note for 100-install: we preferred having 100-installAM_1.amster in a multi-line readable format with \ concatenation, but even
 # without Ansible this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
 # This applies to the high-level Amster commands like install--openam and export-config; for the lower-level 'Groovy code'
-# we'll use multi-line again as that is almost essential for readability.
+# we use multi-line again as that is almost essential for readability.
 # Also note that --cookieDomain in 100-install is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
 # for post-MVP but the whole .amster file logistics change then, with part input from either BKWI git or group_var.
-# Hence we left out making an extra Ansible variable for it.
+# Hence we left out making an extra Ansible variable for it, we just use ansible_fqdn.
 
 # Note for 111: though part of the '100-deck' it's called separately from Ansible, not as part of the deck-amsterscript-chain
 
