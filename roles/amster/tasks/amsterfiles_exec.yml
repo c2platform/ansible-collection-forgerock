@@ -10,6 +10,18 @@
     remote_src: yes
     src: "{{ amster_code_location }}/cot.json"
 
+- name: Get testdata to federation/test subfolder
+  copy:
+    dest:  "{{ amster_home_version }}/amster_config/federation"
+    owner: "{{ amster_owner }}"
+    group: "{{ amster_group }}"
+    mode: 0644
+    remote_src: yes
+    src: "{{ amster_code_location }}/test"
+# Get the test directory here https://dxcportal.sharepoint.com/sites/BKWIVIPS/Shared%20Documents/Forms/AllItems.aspx?viewid=1008fb07%2Db725%2D4eab%2Db5c3%2D7e8504d24645&id=%2Fsites%2FBKWIVIPS%2FShared%20Documents%2FForgeRock%2F03%20Design%2FCookbooks%5F30042021%2Fbkw%5Fam%5Frole%2Ffiles%2Fdefault
+# Note that code above 'works' technically but gave some interesting ACL issues on target machine. When fully using (BTO) 
+# do doublecheck the rights, e.g. modify the 'mode'  above or the ACL for the /tmp files on BTO.
+
 - name: Create root/.ssl for the appserver trusts
   file:
     path: "/root/.ssl"
