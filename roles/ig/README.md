@@ -6,6 +6,8 @@ This Ansible role is used to configure [ForgeRock Internet Gateway](https://www.
 
 - [Requirements](#requirements)
 - [Role Variables](#role-variables)
+    - [Config](#config)
+    - [Routes](#routes)
     - [Rewrite paths](#rewrite-paths)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
@@ -17,9 +19,19 @@ This Ansible role is used to configure [ForgeRock Internet Gateway](https://www.
 
 <!-- Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required. -->
 
+This role assumes that IG is installed using an Ansible role like `c2platform.tomcat`. It assumes that Tomcat is running under account `tomcat` and that the Tomcat home directory will be `/home/tomcat/`. IG creates it own home directory `/home/tomcat/.openig` as part of deployment.
+
 ## Role Variables
 
 <!--  A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well. -->
+
+### Config
+
+`ig_config` TODO
+
+### Routes
+
+`ig_routes` TODO
 
 ### Rewrite paths
 

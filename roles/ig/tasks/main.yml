@@ -1,4 +1,42 @@
 ---
-- include: install.yml
+- name: Create config routes # note: ig_home is created by IG
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ig_owner }}"
+    group: "{{ ig_group }}"
+    mode: 0755
+  with_items:
+    - "{{ ig_home }}"
+    - "{{ ig_home }}/config"
+    - "{{ ig_home }}/config/routes"
+    - "{{ ig_home }}/scripts"
+    - "{{ ig_home }}/scripts/groovy"
 
+- name: Get configs in place
+  copy:
+    content: "{{ ig_config[item]|to_json(ensure_ascii=False) }}"
+    dest:  "{{ ig_home }}/config/{{ item }}"
+    owner: "{{ ig_owner  }}"
+    group: "{{ ig_group }}"
+    mode: 0755
+  with_items: "{{ ig_config }}"
 
+- name: Configure routes
+  copy:
+    content: "{{ ig_routes[item]|to_json(ensure_ascii=False) }}"
+    dest:  "{{ ig_home }}/config/routes/{{ item }}"
+    owner: "{{ ig_owner  }}"
+    group: "{{ ig_group }}"
+    mode: 0755
+  with_items: "{{ ig_routes }}"
+
+- name: Rewrite paths
+  template:
+    src: RewritePath.groovy.j2
+    dest: "{{ ig_home }}/scripts/groovy/{{ item['name'] }}.groovy"
+    owner: "{{ ig_owner }}"
+    group: "{{ ig_group }}"
+    mode: 0644
+  with_items: "{{ ig_rewrite_paths }}"
+  when: ig_rewrite_paths is defined
