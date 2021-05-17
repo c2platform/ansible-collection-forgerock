@@ -39,7 +39,7 @@ dsc_user_reports_inquire:
   baseDn: '"cn=sa_reports,o=special,c=NL"'
 
 amster_am_install:
-  serverUrl: "http://{{ ansible_fqdn }}:8443/am"
+  serverUrl: "http://{{ ansible_fqdn }}:8443/acs"
   adminPwd: "{{ amster_amadmin_pw }}"
   acceptLicense: ''
   pwdEncKey: "{{ amster_encryptpw }}"
