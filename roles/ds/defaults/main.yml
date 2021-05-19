@@ -257,7 +257,7 @@ ds_config:
         - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
         - global-aci:"(targetattr!=\"userPassword||authPassword||changes||changeNumber||changeType||changeTime||targetDN||newRDN||newSuperior||deleteOldRDN||targetEntryUUID||targetUniqueID||changeInitiatorsName||changeLogCookie\")(version 3.0; acl \"Anonymous read access\"; allow (read,search,compare) userdn=\"ldap:///dc=bkwi,dc=nl\";)"
   backend-index_create:
-    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name: 'uid' }) }}"
+    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name': 'uid' }) }}"
     - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'member' }) }}"
     - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'uniqueMember' }) }}"
     - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'ou' }) }}"
