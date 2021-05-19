@@ -1,17 +1,43 @@
 ---
-- name: "Download LDIF file"
-  get_url:
-    url: "{{ item['ldif-url'] }}"
-    dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
-    group: "{{ ds_owner }}"
-    owner: "{{ ds_group }}"
-  register: ldif_file
+- name: Stat LDIF file
+  stat:
+    path: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+  register: ldif_import_file
 
-- name: "Import LDIF file"
-  shell: >
-      ./import-ldif {{ ds_connect|c2platform.forgerock.ds_cmd }}
-      --ldifFile {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif
-      {{ item['properties']|c2platform.forgerock.ds_cmd }}
-  args:
-    chdir: "{{ ds_home_version }}/bin"
-  when: ldif_file.changed
+- block:
+    - name: Download LDIF file
+      get_url:
+        url: "{{ item['ldif-url'] }}"
+        dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+        group: "{{ ds_owner }}"
+        owner: "{{ ds_group }}"
+
+    - name: Stop DS service
+      service:
+        name: ds-config
+        state: stopped
+
+    - name: Process LDIF using sed
+      shell:
+        cmd: >
+          sed -i '{{ sed_expression }}'
+          {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif
+      when: item['sed'] is defined
+      with_items: "{{ item['sed'] }}"
+      loop_control:
+        loop_var: sed_expression
+
+    - name: Import LDIF file
+      shell: >
+          ./import-ldif --ldifFile {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif
+          {{ item['properties']|c2platform.forgerock.ds_cmd }}
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      become: yes
+      become_user: forgerock
+
+    - name: Start DS Service
+      service:
+        name: ds-config
+        state: started
+  when: not ldif_import_file.stat.exists

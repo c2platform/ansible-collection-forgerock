@@ -22,7 +22,6 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
 - [Example Playbook](#example-playbook)
 - [Links](#links)
 - [Notes](#notes)
-  - [Systemd services changed](#systemd-services-changed)
   - [Fingerprint](#fingerprint)
   - [DS service checks](#ds-service-checks)
   - [Upgrade](#upgrade)
@@ -100,6 +99,8 @@ ds_config:
 Modify the directory using [LDIF](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldifs to be used to modify DS using `./ldapmodify`.
 
 #### Simple
+
+DS is checked for the existence of the DN as present on the first line of the LDIF. If the DN does not exist, the LDIF is applied.
 
 ```yaml
 ds_modify:
@@ -216,9 +217,30 @@ ds_import:
       skipFile: /tmp/03-onlUserAttrs-skipped.ldif
       rejectFile: /tmp/03-onlUserAttrs-reject.ldif      
       skipSchemaValidation: '' # required with custom object classes
+      no-prompt: ''
+      offline: ''      
 ```
 
 Note: option `skipSchemaValidation` is required when importing LDIF with custom / self defined object classes as `import-ldif` will fail on schema validation of those object classes. 
+
+Imports using `ds_import` will be done offline / after stopping `ds-config` service.
+
+It is possible to do some post-processing of the LDIF using `sed` as shown below.
+
+```yaml
+ds_import:
+  - name: export
+    ldif-url: file:///vagrant/downloads/export.ldif
+    properties:
+      backendId: suwiRoot
+      skipFile: /tmp/export-skipped.ldif
+      rejectFile: /tmp/export-reject.ldif
+      no-prompt: ''
+      offline: ''
+    sed:
+      - 's/dn: c=nl/dn: c=NL/g'
+      - 's/c: nl/c: NL/g'
+```
 
 Note: import is default disabled using `ds_import_enable: no`. This var can be used to toggle import on / off.
 
@@ -315,9 +337,6 @@ of the dsreplication arguments.
 * [Directory Services 7 > Tools Reference > ldapsearch — perform LDAP search operations](https://backstage.forgerock.com/docs/ds/7/tools-reference/ldapsearch-1.html)
 
 ## Notes
-
-### Systemd services changed
-A service added: ds-config. It is a wrapper around /bin/start-ds and stop-ds scripts. See the URL given on why this is needed.
 
 ### Fingerprint
 
