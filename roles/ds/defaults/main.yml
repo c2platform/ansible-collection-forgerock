@@ -62,7 +62,7 @@ ds_config_backend_index_templates:
     backend-name: suwiRoot
     set:
       - index-type:equality
-      - set index-type:substring
+      - index-type:substring
       - index-entry-limit:4000
 
 # Password policy settings
