@@ -60,7 +60,7 @@ BODY="""
       "localAuditLogRotation" : false,
       "webSocketConnectionIntervalInMinutes" : 30,
       "agentConfigChangeNotificationsEnabled" : true,
-      "userpassword" : "{{ amster_bindusrpwd }}",
+      "userpassword" : "{{ amster_realms[realm]['j2ee_agent']['password'] }}",
       "httpSessionBinding" : true,
       "userPrincipalFlag" : false,
       "configurationReloadInterval" : 0,

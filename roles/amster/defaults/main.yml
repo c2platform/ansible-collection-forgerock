@@ -112,6 +112,7 @@ amster_realms:
       name: suwinet-agent
       fqdn: suwinet-inkijk.bto.suwinet.nl
       fqdn_am: acs.bto.suwinet.nl
+      password: supersecure
     policy:
       set_name: suwinet-policy-set
       name: suwinet-inkijk-policy
