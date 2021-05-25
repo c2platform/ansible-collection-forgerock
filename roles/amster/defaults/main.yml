@@ -4,7 +4,7 @@ amster_home: /opt/amster
 amster_home_version: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
 amster_home_link: "{{ amster_home  }}/{{ amster_home|basename }}"
 
-amster_ds_hostname: 1.1.1.51.nip.io
+amster_ds_hostname: "{{ ansible_fqdn }}"
 amster_ds_rootpw: supersecret
 amster_amadmin_pw: supersecure # password that Amster sets amAdmin
 
