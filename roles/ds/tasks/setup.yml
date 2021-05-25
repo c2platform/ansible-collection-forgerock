@@ -10,6 +10,12 @@
   set_fact:
     ds_setup: '{{ ds_status is search("The server has not been configured") }}'
 
+- debug:
+    msg: "ds_status: {{ ds_status }}"
+
+- debug:
+    msg: "ds_setup: {{ ds_setup }}"
+
 - name: Setup
   command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
   args:
