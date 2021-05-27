@@ -2,6 +2,17 @@
 - include: install.yml
 - include: setup.yml
 - include: service.yml
+
+- name: Wait for DS
+  shell: >
+    ./status {{ ds_connect|c2platform.forgerock.ds_cmd }}
+  retries: 10
+  delay: 5
+  args:
+    chdir: "{{ ds_home_version }}/bin"
+  register: result
+  until: result.rc == 0
+
 - include: config.yml
 
 - include_tasks: modify.yml
