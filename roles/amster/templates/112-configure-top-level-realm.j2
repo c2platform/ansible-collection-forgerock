@@ -1,11 +1,11 @@
 println("Configure authentication for top level realm")
 
-// TODO: Need to be added to attributes. Maybe into amster_templates_base?
-newChainName = "ldapBkwiChain"
+newChainName = 'suwinetChain'
 moduleType = "LDAP"
 chainCriteria = "REQUIRED"
+realm = 'suwinet'
 
-ldapChain = eval("read AuthenticationChains --realm / --id '$newChainName'")
+ldapChain = eval("read AuthenticationChains --realm '$realm' --id '$newChainName'")
 if (isNull(ldapChain)) {
     println yellow("Chain does not exist. Create!")
     bodyBuilderCreate = new groovy.json.JsonBuilder()
@@ -13,10 +13,10 @@ if (isNull(ldapChain)) {
         _id newChainName
     }
 
-    ldapChain = eval("create AuthenticationChains --realm / --id $newChainName --body '$bodyBuilderCreate'")
+    ldapChain = eval("create AuthenticationChains --realm '$realm' --id $newChainName --body '$bodyBuilderCreate'")
 }
 
-println yellow("Chain exists. Update!")
+println yellow("Chain exist. Update!")
 slurped = new groovy.json.JsonSlurper().parseText(ldapChain)
 if (slurped._id.contains(newChainName) && slurped.authChainConfiguration?.module?.contains(moduleType)) {
     println cyan("Nothing to do")
@@ -27,11 +27,10 @@ if (slurped._id.contains(newChainName) && slurped.authChainConfiguration?.module
                                                      module moduleType
                                                      criteria chainCriteria
                                                  }]
-    ldapChain = eval("update AuthenticationChains --realm / --id $newChainName --body '$bodyBuilderUpdate'")
+    ldapChain = eval("update AuthenticationChains --realm '$realm' --id $newChainName --body '$bodyBuilderUpdate'")
 }
 
-println("Configure authentication settings")
-currentAuthenticationSettings = eval("read Authentication --realm /")
+currentAuthenticationSettings = eval("read Authentication --realm '$realm'")
 if (isNull(currentAuthenticationSettings)) {
     println("Error: there should be authentication settings already present!")
 } else {
@@ -43,6 +42,6 @@ if (isNull(currentAuthenticationSettings)) {
         slurped.core.orgConfig = newChainName
         bodyBuilder = new groovy.json.JsonBuilder();
         bodyBuilder 'core': slurped.core
-        eval("update Authentication --realm / --body '$bodyBuilder'")
+        eval("update Authentication --realm '$realm' --body '$bodyBuilder'")
     }
 }
