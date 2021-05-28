@@ -7,7 +7,7 @@
   shell: >
     ./status {{ ds_connect|c2platform.forgerock.ds_cmd }}
   retries: 10
-  delay: 5
+  delay: 7
   args:
     chdir: "{{ ds_home_version }}/bin"
   register: result
