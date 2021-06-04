@@ -60,5 +60,5 @@
 - name: Optimise JVM settings for DS
   replace:
     path: "{{ ds_home_version }}/config/java.properties"
-    regexp: start-ds.java-args=-server
+    regexp: ^start-ds.java-args=-server.*$
     replace: start-ds.java-args=-server -Xms1G -Xmx3G
