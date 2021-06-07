@@ -27,5 +27,12 @@
   with_items: "{{ ds_import }}"
   when: ds_import|default(False) and ds_import_enable
 
+- name: Execute scripts
+  include_tasks: scripts.yml
+  with_items: "{{ ds_scripts }}"
+  loop_control:
+    loop_var: ds_script
+  when: ds_scripts|default(False)
+
 - include: setup_replication.yml
   when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname and ds_replication_enable

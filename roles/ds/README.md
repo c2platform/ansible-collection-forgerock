@@ -17,6 +17,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
     - [Extra](#extra)
   - [Passwords](#passwords)
   - [Import](#import)
+  - [Scripts](#scripts)
   - [Replication](#replication)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
@@ -243,6 +244,24 @@ ds_import:
 ```
 
 Note: import is default disabled using `ds_import_enable: no`. This var can be used to toggle import on / off.
+
+### Scripts
+
+Use `ds_scripts` to configure execution of all kinds of scripts using Ansible [shell](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html) module.
+
+```yaml
+common_git_repos:
+  scripts:
+    repo: "{{ suwinet_ds_scripts_repo }}" # vault
+    dest: "{{ ds_home_link }}/scripts"
+
+ds_scripts:
+  password-reset_subentry-write:
+    shell: |
+      python3 -c 'import sys; print(sys.stdout.encoding)'
+      python3 migrate-admin-aci.py {{ ds_connect|c2platform.forgerock.ds_cmd }}
+    chdir: "{{ ds_home_version }}/scripts/ds"
+```
 
 ### Replication
 

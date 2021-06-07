@@ -122,3 +122,7 @@ amster_realms:
         - http://inkijk.local:80/*?*
       realms: ['uwv','suwinet']
       am_protected_uid_identifier: frankbtotest
+    #chain: # 112-configure-top-level-realm
+    #  name: suwinetChain
+    #  criteria: REQUIRED
+
