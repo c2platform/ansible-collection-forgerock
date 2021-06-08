@@ -250,6 +250,13 @@ Note: import is default disabled using `ds_import_enable: no`. This var can be u
 Use `ds_scripts` to configure execution of all kinds of scripts using Ansible [shell](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html) module.
 
 ```yaml
+ds_scripts_connect:
+  hostname: "{{ ds_connect['hostname'] }}"
+  port: "{{ ds_connect['port'] }}"
+  bindDN:  "{{ ds_connect['bindDN'] }}"
+  bindPassword: "{{ ds_connect['bindPassword'] }}"
+  baseDn: c=NL
+
 common_git_repos:
   scripts:
     repo: "{{ suwinet_ds_scripts_repo }}" # vault
@@ -258,9 +265,22 @@ common_git_repos:
 ds_scripts:
   password-reset_subentry-write:
     shell: |
-      python3 -c 'import sys; print(sys.stdout.encoding)'
       python3 migrate-admin-aci.py {{ ds_connect|c2platform.forgerock.ds_cmd }}
     chdir: "{{ ds_home_version }}/scripts/ds"
+```
+
+Typically DS scripts will require pip package [python-ldap](https://pypi.org/project/python-ldap/). This pip package typically requires OS packages to installed as well. When using [core](https://github.com/c2platform/ansible-collection-core) collection these can be configured as follows.
+
+```yaml
+common_pip_packages_extra: ['python-ldap']
+common_packages_extra:
+  Ubuntu 18:
+    - build-essential
+    - python3-dev
+    - python3-wheel
+    - libsasl2-dev
+    - libldap2-dev
+    - libssl-dev
 ```
 
 ### Replication

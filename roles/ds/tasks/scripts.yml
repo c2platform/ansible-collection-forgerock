@@ -1,16 +1,7 @@
 ---
-- debug:
-    msg: "ds_scripts[ds_script]: {{ ds_scripts[ds_script] }}"
-
-- name: "Execute script"
+- name: "Execute script {{ ds_script }}"
   shell: "{{ ds_scripts[ds_script]['shell'] }}"
   args:
     chdir: "{{ ds_scripts[ds_script]['chdir']|default(omit) }}"
   register: ds_script_execute
-  #changed_when: False
-  #become: yes
-  #become_user: forgerock
-  # failed_when, changed_when
-
-- debug:
-    msg: "ds_script_execute: {{ ds_script_execute }}"
+  changed_when: ds_script_execute['stdout'] is search("Script changed system state")
