@@ -33,7 +33,7 @@
 
 - name: Rewrite paths
   template:
-    src: RewritePath.groovy.j2
+    src: "{{ item['template']|default('RewritePath.groovy.j2') }}"
     dest: "{{ ig_home }}/scripts/groovy/{{ item['name'] }}.groovy"
     owner: "{{ ig_owner }}"
     group: "{{ ig_group }}"
