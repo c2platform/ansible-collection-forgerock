@@ -1,0 +1,17 @@
+logger.debug("Request.uri.path = " + request.uri.path);
+logger.debug("Request.uri = " + request.uri);
+
+String path = request.uri.path;
+pathElements = path.split("/")
+
+String target = {{ item['target'] }};
+String replacement = {{ item['replacement'] }};
+
+String processed = path.replace(target,replacement);
+logger.debug("Processed URI = " + processed );
+request.uri.path = processed;
+
+attributes.staticURL = processed;
+logger.debug("Final static URL = " + attributes.staticURL);
+
+next.handle(context, request)
