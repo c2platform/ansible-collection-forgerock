@@ -1,25 +1,34 @@
+logger.warn("Request.uri.path = " + request.uri.path);
+logger.warn("Request.uri = " + request.uri);
+
 String backendURI = '{{ item['backend'] }}';
-
-logger.debug("RewritePath.groovy. property URI BEFORE= " + backendURI);
-logger.debug("Request.uri.path = " + request.uri.path);
-logger.debug("Request.uri = " + request.uri);
-
 String path = request.uri.path;
 String target = "{{ item['target'] }}";
 String replacement = "{{ item['replacement'] }}";
-String processed = path.replace(target,replacement);
 
-logger.debug("Processed URI = " + processed );
+if (request.uri.host == "{{ item['xmlgba-url'] }}") {
+    backendURI = "{{ item['xmlgba-backend'] }}"
+    target = "html/xml-gba";
+    replacement = "xml-gba/static";
+} else if (request.uri.path.contains("/client")) {
+    pathElements = path.split("/")
+    target = path.substring(0, path.indexOf(pathElements[3])+pathElements[3].length());
+    replacement = "/${pathElements[2]}-${pathElements[1]}-${pathElements[3]}"
+}
+
+logger.warn("sf_RewritePath.groovy. property URI BEFORE= " + backendURI);
+
+String processed = path.replace(target,replacement);
+logger.warn("Processed URI = " + processed );
 
 request.uri.path = processed;
 request.uri.host = backendURI;
 request.uri.scheme="http";
 
-
 String reformedUri=backendURI + processed;
-logger.debug("RewritePath.groovy: reformed newuri =" + reformedUri);
+logger.warn("sf_RewritePath: reformed newuri =" + reformedUri);
 
 attributes.staticURL = reformedUri;
-logger.debug("Final static URL = " + attributes.staticURL);
+logger.warn("Final static URL = " + attributes.staticURL);
 
 next.handle(context, request)
