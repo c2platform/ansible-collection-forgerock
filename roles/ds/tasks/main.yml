@@ -1,38 +1,43 @@
 ---
 - include: install.yml
-- include: setup.yml
-- include: service.yml
 
-- name: Wait for DS
-  shell: >
-    ./status {{ ds_connect|c2platform.forgerock.ds_cmd }}
-  retries: 10
-  delay: 7
-  args:
-    chdir: "{{ ds_home_version }}/bin"
-  register: result
-  until: result.rc == 0
+- block:
+    - include: setup.yml
+    - include: git_repos.yml
+      when: ds_git_repos is defined
+    - include: service.yml
 
-- include: config.yml
+    - name: Wait for DS
+      shell: >
+        ./status {{ ds_connect|c2platform.forgerock.ds_cmd }}
+      retries: 10
+      delay: 7
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      register: result
+      until: result.rc == 0
 
-- include_tasks: modify.yml
-  when: ds_modify|default(False)
-  with_items: "{{ ds_modify + (ds_modify_extra|default([])) }}"
+    - include: config.yml
 
-- include_tasks: modify_pw.yml
-  when: ds_passwords|default(False)
+    - include_tasks: modify.yml
+      when: ds_modify|default(False)
+      with_items: "{{ ds_modify + (ds_modify_extra|default([])) }}"
 
-- name: Import using import-ldif
-  include_tasks: import.yml
-  with_items: "{{ ds_import }}"
-  when: ds_import|default(False) and ds_import_enable
+    - include_tasks: modify_pw.yml
+      when: ds_passwords|default(False)
 
-- name: Execute scripts
-  include_tasks: scripts.yml
-  with_items: "{{ ds_scripts }}"
-  loop_control:
-    loop_var: ds_script
-  when: ds_scripts|default(False)
+    - name: Import using import-ldif
+      include_tasks: import.yml
+      with_items: "{{ ds_import }}"
+      when: ds_import|default(False) and ds_import_enable
 
-- include: setup_replication.yml
-  when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname and ds_replication_enable
+    - name: Execute scripts
+      include_tasks: scripts.yml
+      with_items: "{{ ds_scripts }}"
+      loop_control:
+        loop_var: ds_script
+      when: ds_scripts|default(False)
+
+    - include: setup_replication.yml
+      when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname and ds_replication_enable
+  when: ds_setup_config is defined

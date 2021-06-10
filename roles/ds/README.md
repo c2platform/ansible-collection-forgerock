@@ -1,6 +1,10 @@
 # Ansible Role ForgeRock Directory Services (DS)
 
-This Ansible role is used to install and configure upgrade [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role will download and setup DS. Furthermore the role can be used to configure DS using `dsconfig`, create user stores, users and configure replication.
+This Ansible role can be used to install and configure [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role can download and setup DS.
+
+Note: on default - without additional configuration - this role will only install DS as CLI utilities. To perform actual setup of DS you will have to configure `ds_setup_config` var. 
+
+> Server distributions include command-line tools for installing, configuring, and managing servers. The tools make it possible to script all operations.
 
 <!-- MarkdownTOC levels="2,3,4" autolink="true" -->
 
@@ -8,7 +12,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Java](#java)
 - [Role Variables](#role-variables)
   - [Setup config](#setup-config)
-  - [DB Schema LDIF](#db-schema-ldif)
+  - [DB schema LDIF](#db-schema-ldif)
   - [Backends](#backends)
   - [Modify](#modify)
     - [Simple](#simple)
@@ -20,7 +24,7 @@ This Ansible role is used to install and configure upgrade [ForgeRock Directory 
   - [Scripts](#scripts)
   - [Replication](#replication)
 - [Dependencies](#dependencies)
-- [Example Playbook](#example-playbook)
+- [Example configuration](#example-configuration)
 - [Links](#links)
 - [Notes](#notes)
   - [Fingerprint](#fingerprint)
@@ -48,13 +52,25 @@ ForgeRock DS requires Java to be installed. `java_home` directory, expose java_h
 
 ### Setup config
 
-ds_setup_config
+At a minimum you will require `ds_setup_config` for example as follows
 
-`ds_config`
-Note that the configbase module (running dsconfig command) for some parts uses 'fingerprints': signatures of the last result stored on disk, to prevent unnecessary calls to dsconfig. This however assumes that Ansible is in full control of the file system.
+```yaml
+ds_setup_config:
+  instancePath:  "{{ ds_home_version }}"
+  rootUserDN: '"cn=Directory Manager"'
+  rootUserPassword: "{{ ds_rootpw }}"
+  hostname: "{{ ds_hostname }}"
+  adminConnectorPort: 4444
+  ldapPort: 10389
+  enableStartTls: ""
+  productionMode: ""
+  ldapsPort: 10636
+  profile: am-config:6.5
+  set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
+  acceptLicense: ""
+```
 
-
-### DB Schema LDIF
+### DB schema LDIF
 
 Using `ds_db_schema_ldifs` ldifs files can be created in `db/schema`. For example configuration below will create file `/opt/ds/ds-6.5.4/db/schema/appPerson.ldif` to create a new __appPerson__ object class. These files are automatically used upon restart of DS, but depending on a toggle mentioned below.
 
@@ -177,7 +193,7 @@ ds_modify:
           dn: c=NL
           changetype: modify
           add: aci
-          aci: (target="ldap:///o=suwi,c=nl")(targetattr ="*")(version 3.0; acl "Allow apps proxiedauth"; allow(all, proxy)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
+          aci: (target="ldap:///o=myapp,c=nl")(targetattr ="*")(version 3.0; acl "Allow apps proxiedauth"; allow(all, proxy)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
         search: "&(objectclass=top)(c=NL)(aci=*)"
 ```
 
@@ -233,7 +249,7 @@ ds_import:
   - name: export
     ldif-url: file:///vagrant/downloads/export.ldif
     properties:
-      backendId: suwiRoot
+      backendId: myappRoot
       skipFile: /tmp/export-skipped.ldif
       rejectFile: /tmp/export-reject.ldif
       no-prompt: ''
@@ -257,10 +273,10 @@ ds_scripts_connect:
   bindPassword: "{{ ds_connect['bindPassword'] }}"
   baseDn: c=NL
 
-common_git_repos:
+ds_git_repos:
   scripts:
-    repo: "{{ suwinet_ds_scripts_repo }}" # vault
-    dest: "{{ ds_home_link }}/scripts"
+    repo: "{{ myapp_ds_scripts_repo }}" # vault
+    dest: "{{ ds_home_version }}/scripts"
 
 ds_scripts:
   password-reset_subentry-write:
@@ -309,7 +325,7 @@ ds_replication:
   baseDNs:
     - ou=am-config
     - c=NL
-    - dc=bkwi,dc=nl
+    - dc=myapporg,dc=nl
 ```
 
 If one of the servers is unavailable, the setup will fail. This is one reason that in the overall process flow we install replication in a separate Ansible run, as then it's guaranteed that AWX has completed the base install and both servers are available.
@@ -326,7 +342,7 @@ ds_replication:
   baseDNs:
     - ou=am-config
     - c=NL
-    - dc=bkwi,dc=nl
+    - dc=myapporg,dc=nl
 ```
 Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc. Note that `ds_replication_enable` is default `no`. You can use this variable as a toggle to provision with / without replication.
 
@@ -338,7 +354,7 @@ Configuration above will result in command being executed similar to
 --bindPassword1 supersecret --secureReplication1 --replicationPort1 8989 \
 --host2 1.1.1.58.nip.io --port2 4444 --bindDn2 "cn=Directory Manager" \
 --bindPassword2 supersecret --secureReplication2 --replicationPort2 8989 \
---baseDN dc=bkwi,dc=nl \
+--baseDN dc=myapporg,dc=nl \
 --adminUid admin --adminPassword Su12perSec34retIt5Is \
 --trustAll  --no-prompt
 ```
@@ -362,7 +378,523 @@ of the dsreplication arguments.
 
 <!--A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.-->
 
-## Example Playbook
+## Example configuration
+
+```yaml
+---
+- name: myapp_ds
+  hosts: myapp_ds
+  become: yes
+
+  roles:
+    - { role: c2platform.core.common,  tags: ["common"] }
+    - { role: c2platform.core.java,    tags: ["java"] }
+    - { role: c2platform.forgerock.ds, tags: ["forgerock","ds"] }
+```
+
+Example configuration that includes `ds_setup_config` for your `group_vars` or `host_vars` configuration, that will perform and configure a DS server.
+
+```yaml
+---
+adoptopenjdk:
+  version: jdk11_0411_oj9
+
+ds_version: 6.5.4
+ds_versions:
+  6.5.4:
+    url: file:///vagrant/downloads/DS-6.5.4.zip
+    checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
+
+adoptopenjdk_java_home_etc_environment: true
+# Modified for Forgerock, especially DS needs this JAVA_HOME to be set on (re-)startup of a VM node
+
+common_pip_packages_extra: ['python-ldap']
+
+ds_setup_config:
+  instancePath:  "{{ ds_home_version }}"
+  rootUserDN: '"cn=Directory Manager"'
+  rootUserPassword: "{{ ds_rootpw }}"
+  hostname: "{{ ds_hostname }}"
+  adminConnectorPort: 4444
+  ldapPort: 10389
+  enableStartTls: ""
+  productionMode: ""
+  ldapsPort: 10636
+  profile: am-config:6.5
+  set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
+  acceptLicense: ""
+
+ds_config_backend_index_templates:
+  uid_etc:
+    backend-name: myappRoot
+    set:
+      - index-type:equality
+      - index-entry-limit:4000
+  cn_etc:
+    backend-name: myappRoot
+    set:
+      - index-type:equality
+      - index-type:substring
+      - index-entry-limit:4000
+
+# Password policy settings
+ds_config_pps:
+  generic:
+    - default-password-storage-scheme:Salted SHA-512
+    - password-attribute:userPassword
+    - deprecated-password-storage-scheme:Salted SHA-1
+    - last-login-time-attribute:ds-pwp-last-login-time
+    - last-login-time-format:yyyyMMddHHmmss
+    - password-expiration-warning-interval:7 days
+    - min-password-age:24 hours
+    - password-change-requires-current-password:true
+    - password-history-duration:0 seconds
+    - skip-validation-for-administrators:true
+    - require-secure-authentication:true
+  default:
+    - allow-user-password-changes:true
+    - expire-passwords-without-warning:true
+    - grace-login-count:2
+    - lockout-duration:0 minutes
+    - lockout-failure-expiration-interval:0 minutes
+    - lockout-failure-count:5
+    - max-password-reset-age:14 days
+    - password-history-count:10
+    - require-secure-password-changes:true
+    - max-password-age:56 days
+    - force-change-on-add:true
+    - force-change-on-reset:true
+    - idle-lockout-interval:45 days
+  service-accounts:
+    - expire-passwords-without-warning:false
+    - force-change-on-add:false
+    - force-change-on-reset:false
+    - grace-login-count:10
+    - idle-lockout-interval:2000 days
+    - lockout-duration:1 s
+    - lockout-failure-expiration-interval:1 s
+    - lockout-failure-count:10000
+    - max-password-age:2000 days
+    - max-password-reset-age:8 hours
+    - password-history-count:5
+    - require-secure-password-changes:true
+  jmx:
+    - default-password-storage-scheme:Salted SHA-512
+    - expire-passwords-without-warning:false
+    - force-change-on-add:false
+    - force-change-on-reset:false
+    - grace-login-count:10
+    - idle-lockout-interval:2000 days
+    - lockout-duration:480 s
+    - lockout-failure-expiration-interval:600 s
+    - lockout-failure-count:5
+    - max-password-age:2000 days
+    - max-password-reset-age:8 hours
+    - password-history-count:5
+    - password-history-duration:0 seconds
+
+ds_config:
+  connection-handler_set_cert: # note underscore → connection-handler component
+    - handler-name: LDAPS
+      add: ssl-cert-nickname:config-server-cert
+  connection-handler:
+    - handler-name: LDAP
+      set: enabled:false
+    - handler-name: LDAPS
+      set: allow-ldap-v2:true
+  global-configuration:
+    - set: lookthrough-limit:20000
+    - set: smtp-server:127.0.0.1:25
+  log-publisher:
+    - publisher-name: File-Based Access Logger
+      set: enabled:false
+  password-policy_create:
+    - policy-name: Default Password Policy
+      type: password-policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+      when:
+        regex: '^(Default Password Policy)\s+:'
+        method: list-password-policies
+        match: no
+        #switches:
+        #  property: password-attribute
+  password-policy:
+    - policy-name: Default Password Policy
+      set: "{{ ds_config_pps['generic'] + ds_config_pps['default'] }}"
+      add:
+        - password-validator:Length-Based Password Validator
+        - password-validator:Similarity-Based Password Validator
+        - password-validator:Attribute Value
+        - password-validator:Unique Characters
+        - password-validator:Character Set
+  password-policy_remove:
+    - policy-name: Default Password Policy
+      remove: password-validator:At least 8 characters
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sAt least 8 characters)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
+    - policy-name: Default Password Policy
+      remove: password-validator:Common passwords
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sCommon passwords)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
+    - policy-name: Default Password Policy
+      remove: password-validator:Dictionary
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sDictionary)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
+    - policy-name: Default Password Policy
+      remove: password-validator:Repeated Characters
+      when:
+        regex: '^password-validator\s:[\S\s.]*(\sRepeated Characters)[\s,].*$'
+        method: get-password-policy-prop
+        match: yes
+        switches:
+           policy-name: Default Password Policy
+           property: password-validator
+  password-policy_service-accounts-create:
+    - policy-name: Password Policy Service Accounts
+      type: password-policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+  password-policy_service-accounts:
+    - policy-name: Password Policy Service Accounts
+      set: "{{ ds_config_pps['generic'] + ds_config_pps['service-accounts'] }}"
+  password-policy_service-accounts-jmx-create:
+    - policy-name: Password Policy JMX Service Accounts
+      type: password-policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+  password-policy_service-accounts-jmx:
+    - policy-name: Password Policy JMX Service Accounts
+      set: "{{ ds_config_pps['generic'] + ds_config_pps['jmx'] }}"
+  password-validator:
+    - validator-name: '"Length-Based Password Validator"'
+      set:
+        - enabled:true
+        - min-password-length:8
+        - max-password-length:0
+    - validator-name: '"Similarity-Based Password Validator"'
+      set:
+        - enabled:true
+        - min-password-difference:3
+    - validator-name: '"Attribute Value"'
+      set: enabled:true
+      add:
+        - match-attribute:cn
+        - match-attribute:sn
+        - match-attribute:givenName
+        - match-attribute:uid
+    - validator-name: '"Unique Characters"'
+      set:
+        - enabled:true
+        - min-unique-characters:4
+        - case-sensitive-validation:true
+    - validator-name: '"Character Set"'
+      set:
+        - enabled:true
+        - allow-unclassified-characters:true
+  backend_create:
+    - set:
+        - base-dn:c=NL
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: myappRoot
+    - set:
+        - base-dn:dc=myapporg,dc=nl
+        - enabled:true
+        - db-cache-percent:5
+      type: je
+      backend-name: userRoot
+  access-control-handler:
+    - add:
+        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)" 
+        - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
+        - global-aci:"(targetattr!=\"userPassword||authPassword||changes||changeNumber||changeType||changeTime||targetDN||newRDN||newSuperior||deleteOldRDN||targetEntryUUID||targetUniqueID||changeInitiatorsName||changeLogCookie\")(version 3.0; acl \"Anonymous read access\"; allow (read,search,compare) userdn=\"ldap:///dc=myapporg,dc=nl\";)"
+  backend-index_create:
+    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name': 'uid' }) }}"
+    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'member' }) }}"
+    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'uniqueMember' }) }}"
+    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'ou' }) }}"
+    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'cn' }) }}"
+    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'givenName' }) }}"
+    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'sn' }) }}"
+    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'mail' }) }}"
+    - set:
+        - index-type:equality
+        - index-type:substring
+        - index-entry-limit:100000
+      backend-name: myappRoot
+      index-name: businessCategory
+#  password-validator_add:
+#    - validator-name: '"Attribute Value"'
+#      set: enabled:true
+#      add:
+#        - match-attribute:cn
+#        - match-attribute:sn
+#        - match-attribute:givenName
+#        - match-attribute:uid
+#      #remove:
+#      #  - match-attribute:sn
+
+ds_config_components:
+  - connection-handler
+  - global-configuration
+  - log-publisher
+  - password-policy_create
+  - password-policy
+  - password-policy_service-accounts-create
+  - password-policy_service-accounts
+  - password-policy_service-accounts-jmx-create
+  - password-policy_service-accounts-jmx
+  - password-validator
+  - password-policy_remove
+  - backend_create
+  - backend-index_create
+  - access-control-handler
+  #- password-validator_add
+
+# Components that require use of a fingerpint to detect
+# changes between current and desired state
+ds_config_components_fingerprint:
+  - connection-handler
+  #- password-validator_add
+  #- password-policy_create
+  - password-policy
+  - password-policy_service-accounts-create
+  - password-policy_service-accounts
+  - password-policy_service-accounts-jmx-create
+  - password-policy_service-accounts-jmx
+  - backend_create
+  - backend-index_create
+  - access-control-handler
+
+ds_db_schema_ldifs: # default disabled via ds_db_schema_ldifs_enable: no
+  myappPerson: | # db/schema/myappPerson.ldif to create myappPerson object class
+    dn: cn=schema
+    changetype: modify
+    add: attributeTypes
+    attributeTypes: ( myapp-account-expiration-time-oid NAME 'myapp-account-expiration-time' DESC 'The time the account becomes disabled' EQUALITY generalizedTimeMatch ORDERING generalizedTimeOrderingMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE USAGE userApplications )
+    dn: cn=schema
+    changetype: modify
+    add: objectClasses
+    objectClasses: ( myappPerson-oid NAME 'myappPerson' DESC 'Extra properties for a myapp user' SUP top AUXILIARY MAY ( myapp-account-expiration-time ) )
+ds_modify:
+  - name: userstore.myappRoot
+    ldif: |
+      dn: c=NL
+      objectClass: country
+      objectClass: top
+      c: NL
+  - name: userstore.userRoot
+    ldif: |
+      dn: dc=myapporg,dc=nl
+      objectClass: domain
+      objectClass: top
+      dc: myapporg
+  - name: organization.special
+    ldif: |
+      dn: o=special,c=NL
+      objectClass: organization
+      objectClass: top
+      o: special
+  - name: organization.myapp
+    ldif: |
+      dn: o=myapp,c=NL
+      objectClass: organization
+      objectClass: top
+      o: myapp
+  - name: special.sa_reports
+    ldif: |
+      dn: cn=sa_reports,o=special,c=NL
+      objectClass: person
+      objectClass: inetOrgPerson
+      objectClass: organizationalPerson
+      objectClass: top
+      sn: Reports
+      cn: sa_reports
+      givenName: Service Account
+      uid: sa_reports
+      ds-pwp-password-policy-dn: cn=Password Policy Service Accounts,cn=Password Policies,cn=config
+      ds-rlim-lookthrough-limit: 100000
+      ds-pwp-last-login-time: 20200903105229
+      ds-privilege-name: unindexed-search
+      ds-rlim-time-limit: 300
+      ds-rlim-size-limit: 10000
+  - name: special.sa_monitor
+    ldif: |
+      dn: cn=sa_monitor,o=special,c=NL
+      objectClass: person
+      objectClass: inetOrgPerson
+      objectClass: organizationalPerson
+      objectClass: top
+      sn: Myapp JMX monitoring account
+      cn: sa_monitor
+      givenName: Service Account
+      uid: sa_monitor
+      ds-pwp-password-policy-dn: cn=Password Policy JMX Service Accounts,cn=Password Policies,cn=config
+      ds-rlim-lookthrough-limit: 100000
+      ds-pwp-last-login-time: 20200903105938
+      ds-privilege-name: jmx-read
+      ds-rlim-size-limit:  1000
+  - name: special.sa_useradmin
+    ldif: |
+      dn: cn=sa_useradmin,o=special,c=NL
+      objectClass: person
+      objectClass: inetOrgPerson
+      objectClass: organizationalPerson
+      objectClass: top
+      sn: Myapp User Administrator
+      cn: sa_useradmin
+      givenName: Service Account
+      uid: sa_useradmin
+      ds-pwp-password-policy-dn: cn=Password Policy Service Accounts,cn=Password Policies,cn=config
+      ds-rlim-lookthrough-limit: 100000
+      ds-pwp-last-login-time: 20200829000000
+      ds-privilege-name: proxied-auth
+      ds-privilege-name: subentry-write
+      ds-privilege-name: password-reset
+      ds-privilege-name: modify-acl
+      ds-privilege-name: unindexed-search
+      ds-rlim-size-limit: 100000
+  - name: passwordpolicy.am_config
+    ldif: |
+      dn: uid=am-config,ou=admins,ou=am-config
+      changetype: modify
+      replace: ds-pwp-password-policy-dn
+      ds-pwp-password-policy-dn: cn=Root Password Policy,cn=Password Policies,cn=config
+    search: "&(objectclass=top)(uid=am-config)(ds-pwp-password-policy-dn=cn=Root Password Policy,cn=Password Policies,cn=config)"
+  - name: add-ACI-to-cNL
+    ldif: |
+      dn: c=NL
+      changetype: modify
+      add: aci
+      aci: (target="ldap:///o=myapp,c=nl")(targetattr ="*")(version 3.0; acl "Allow apps proxied auth"; allow(all, proxy)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
+      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Allow apps proxy auth"; allow(all)(userdn =  "ldap:///cn=sa_useradmin,o=special,c=nl");)
+      aci: (target="ldap:///o=myapp,c=nl")(version 3.0; acl "Delegated import and export rights"; allow (import,export) (userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
+      aci: (extop="1.3.6.1.4.1.4203.1.11.1 || 1.3.6.1.4.1.26027.1.6.1")(version 3.0; acl "Password modify and policy extended operation"; allow (read)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
+      aci: (target="ldap:///o=myappdesk,c=nl")(targetattr ="* || +")(version 3.0; acl "Allow auth"; allow(add,delete,write,read,search,compare)(userdn = "ldap:///o=myappdesk,c=nl??sub?(uid=a_*)");)
+      aci: (target="ldap:///o=myapp,c=nl")(targetattr ="* || +")(version 3.0; acl "Allow auth"; allow(add,delete,write,read,search,compare)(userdn = "ldap:///o=myappdesk,c=nl??sub?(uid=a_*)");)
+      aci: (target="ldap:///o=myapp,c=nl")(targetattr="aci||ds-pwp-account-disabled")(version 3.0; acl "Delegated write and delete rights"; allow (delete,write,read,search,compare)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
+      aci: (targetattr="objectclass||cn||sn||givenName||initials||mail||telephoneNumber||facsimileTelephoneNumber||businessCategory||myapp-account-expiration-time||userPassword||authPassword||isMemberOf")(version 3.0; acl "Self entry read"; allow (read,search,compare) userdn="ldap:///self";)
+      aci: (targetattr="sn||givenName||initials||mail||telephoneNumber||facsimileTelephoneNumber")(version 3.0; acl "Self entry update"; allow (delete,write) userdn="ldap:///self";)
+      aci: (targetattr="objectClass||businessCategory||myapp-account-expiration-time||ou||cn||employeeNumber||telephoneNumber||facsimileTelephoneNumber||givenName||initials||mail||sn||uid||isMemberOf||ds-pwp-account-disabled||ds-pwp-last-login-time||ds-pwp-password-expiration-time||ds-pwp-warned-time||pwdAccountLockedTime||pwdChangedTime||pwdFailureTime||pwdReset")(version 3.0; acl "Report user read rights"; allow (read,search,compare)(userdn = "ldap:///cn=sa_reports,o=special,c=nl");)
+      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Report user account status rights"; allow(all) userdn = "ldap:///cn=sa_reports,o=special,c=nl";)
+      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Self account status rights"; allow (read) userdn="ldap:///self";)
+      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Account usability"; allow(all)(userdn = "ldap:///all");)
+    search: "&(objectclass=top)(c=NL)(aci=*)"
+  - name: 11-add-self-manage-settings
+    ldif: |
+      dn: c=NL
+      changetype: modify
+      add: aci
+      aci: (targetattr = "objectclass || inetuserstatus || iplanet-am-user-login-status || iplanet-am-user-account-life || iplanet-am-session-quota-limit || iplanet-am-user-alias-list ||  iplanet-am-session-max-session-time || iplanet-am-session-max-idle-time || iplanet-am-session-get-valid-sessions || iplanet-am-session-destroy-sessions || iplanet-am-user-admin-start-dn || iplanet-am-auth-post-login-process-class || iplanet-am-user-federation-info || iplanet-am-user-federation-info-key || ds-pwp-account-disabled || sun-fm-saml2-nameid-info || sun-fm-saml2-nameid-infokey || sunAMAuthInvalidAttemptsData || memberof || member || kbaInfoAttempts")(version 3.0; acl "OpenAM User self modification denied for these attributes"; deny (write) userdn ="ldap:///self";)
+      aci: (targetcontrol="1.3.6.1.4.1.42.2.27.8.5.1 || 1.3.6.1.4.1.36733.2.1.5.1") (version 3.0; acl "Allow anonymous access to behera draft and transaction control"; allow(read) userdn="ldap:///anyone";)
+      aci: (targetattr="userPassword") (version 3.0; acl "Allow password change"; allow (write) userdn="ldap:///self";)
+    search: "&(objectclass=top)(c=NL)(aci=*Allow password change*)"
+  - name: 15-add-aci-for-sa_useradmin
+    ldif: |
+      dn: cn=sa_useradmin,o=special,c=NL
+      changetype: modify
+      add: aci
+      aci: (targetcontrol="2.16.840.1.113730.3.4.18")
+        (version 3.0; acl "Apps can use the Proxy Authorization Control";
+        allow(read) userdn="ldap:///cn=sa_useradmin,o=special,c=NL";)
+    search: "&(objectclass=top)(uid=sa_useradmin)(aci=*)"
+  - name: 16-delete-password-reset-from-sa_useradmin
+    ldif: |
+      dn: cn=sa_useradmin,o=special,c=NL
+      changetype: modify
+      delete: ds-privilege-name
+      ds-privilege-name: password-reset
+    search: "&(objectclass=top)(uid=sa_useradmin)(!(ds-privilege-name=password-reset))"
+
+ds_import: # default disabled - ds_import_enable: no
+  - name: export
+    ldif-url: file:///vagrant/downloads/export.ldif
+    properties:
+      backendId: myappRoot
+      skipFile: /tmp/export-skipped.ldif
+      rejectFile: /tmp/export-reject.ldif
+      no-prompt: ''
+      offline: ''
+      # excludeFilter
+    sed:
+      - 's/dn: c=nl/dn: c=NL/g'
+      - 's/c: nl/c: NL/g'
+# see secrets.yml for passwords - passwords are default 'secret'
+#ds_passwords:
+# see also secrets.yml
+#    sa_reports:
+#      authzId: cn=sa_reports,o=special,c=NL
+#      newPassword: supersecure
+#    sa_monitor:
+#      authzId: cn=sa_monitor,o=special,c=NL
+#      newPassword: supersecure
+#    sa_useradmin:
+#      authzId: cn=sa_useradmin,o=special,c=NL
+#      newPassword: supersecure
+
+ds_git_repos:
+  scripts:
+    repo: "{{ myapp_ds_scripts_repo }}" # vault
+    dest: "{{ ds_home_link }}/scripts"
+
+ds_scripts_connect:
+  hostname: "{{ ds_connect['hostname'] }}"
+  port: "{{ ds_connect['port'] }}"
+  bindDN:  "{{ ds_connect['bindDN'] }}"
+  bindPassword: "{{ ds_connect['bindPassword'] }}"
+  baseDn: c=NL
+
+ds_scripts:
+  password-reset_subentry-write:
+    # Note: this script does not filter currently on cn=Administrators
+    # which is currently not a problem because there are not other groups
+    # than groups with cn=Administrators
+    shell: |
+      # python3 -c 'import sys; print(sys.stdout.encoding)'
+      python3 migrate-admin-aci.py {{ ds_scripts_connect|c2platform.forgerock.ds_cmd }}
+    chdir: "{{ ds_home_version }}/scripts/ds"
+  migrate-myapp-expiry:
+    shell: |
+      python3 migrate-myapp-expiry.py {{ ds_scripts_connect|c2platform.forgerock.ds_cmd }}
+    chdir: "{{ ds_home_version }}/scripts/ds"
+
+#  ds_attributes:
+#  password-reset_subentry-write:
+#    filter: (objectclass=groupOfUniqueNames)
+#    attributes:
+#      - name: aci
+#        value: >
+#          (target="ldap:///{dn-parent}")(targetattr="ds-pwp-account-expiration-time")
+#          (version 3.0; acl "Delegated expiration rights"; allow (write,delete) groupdn="ldap:///dn"; )
+#        target: parent # default self
+#    members:
+#      - name: uniqueMember
+#        attributes:
+#          - name: ds-privilege-name
+#            values: ['password-reset', 'subentry-write']
+#
+```
+
 
 ## Links
 
@@ -381,6 +913,9 @@ of the dsreplication arguments.
 
 If in some testing situation it is needed to make changes in DS, e.g. using dsconfig but also commands like ldapmodify, manually (outside Ansible), beware that the next Ansible run could not work as intended due to it relying on now outdated fingerprints.
 The solution if you really needed to make manual changes in DS: manually remove the related fingerprint file, or simply all fingerprints, in /opt/ds/.fingerprint/6.5.4 directory. It causes Ansible to run a bit slower than it should, but it guarantees that it works as intended even in this 'manual' scenario.
+
+`ds_config`
+Note that the configbase module (running dsconfig command) for some parts uses 'fingerprints': signatures of the last result stored on disk, to prevent unnecessary calls to dsconfig. 
 
 ### DS service checks
 

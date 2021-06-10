@@ -1,0 +1,6 @@
+---
+- name: Git repos
+  ansible.builtin.git: "{{ ds_git_repo }}"
+  with_items: "{{ ds_git_repos }}"
+  vars:
+    ds_git_repo: "{{ ds_git_repos[item] }}"
