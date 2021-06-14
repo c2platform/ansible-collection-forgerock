@@ -6,7 +6,7 @@ BODY="""{
     "name" : "$policyName",
     "active" : true,
     "description" : "",
-    "resources" : {{ amster_realms[realm]['policy']['resources']|to_json }},
+    "resources" : {{ amster_realms[realm]['policy']['resources']|to_nice_json(ensure_ascii=False,indent=2) }},
     "applicationName" : "$policySetName",
     "actionValues": { "GET":true,"POST":true },
     "subject": { "type":"AuthenticatedUsers" },
