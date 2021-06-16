@@ -15,7 +15,7 @@ IgnoreSIGPIPE=no
 KillMode=process
 GuessMainPID=no
 RemainAfterExit=yes
-Environment=OPENDJ_JAVA_HOME={{ adoptopenjdk_java_home }}
+Environment=OPENDJ_JAVA_HOME={{ ds_java_home }}
 ExecStart={{ ds_home_link }}/bin/start-ds
 ExecStop={{ ds_home_link }}/bin/stop-ds
 

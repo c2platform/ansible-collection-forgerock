@@ -44,7 +44,11 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 
 ### Java
 
-ForgeRock DS requires Java to be installed. `java_home` directory, expose java_home set to Yes.
+The default is to use the JDK configured in the **java** role in c2platform.core.
+
+```yaml
+ds_java_home: "{{ adoptopenjdk['version']|c2platform.core.java_home }}"
+```
 
 ## Role Variables
 
@@ -404,9 +408,6 @@ ds_versions:
   6.5.4:
     url: file:///vagrant/downloads/DS-6.5.4.zip
     checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
-
-adoptopenjdk_java_home_etc_environment: true
-# Modified for Forgerock, especially DS needs this JAVA_HOME to be set on (re-)startup of a VM node
 
 common_pip_packages_extra: ['python-ldap']
 
