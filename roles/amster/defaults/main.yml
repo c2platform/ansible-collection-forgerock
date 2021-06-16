@@ -29,14 +29,12 @@ amster_code_location: /vagrant/downloads
 # These two to move to the PW vault mechanism chosen
 amster_bindusrpwd: supersecret
 
-dsc_user_reports_inquire:
+amster_ds_connect:
   hostname: "{{ amster_ds_hostname }}"
   port: 4444
   bindDN: '"cn=Directory Manager"'
   bindPassword: "{{ amster_ds_rootpw }}"
   trustAll: ""
-  useSsl: ""
-  baseDn: '"cn=sa_reports,o=special,c=NL"'
 
 amster_am_install:
   serverUrl: "http://{{ ansible_fqdn }}:8443/acs"

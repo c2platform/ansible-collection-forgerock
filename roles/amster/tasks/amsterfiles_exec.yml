@@ -55,11 +55,6 @@
 
 # Note for 111: though part of the '100-deck' it's called separately from Ansible, not as part of the deck-amsterscript-chain
 
-
-- name: Debug
-  debug:
-    msg: "{{ amster_am_install['serverUrl'] }}"
-
 - name: Confirm AM up
   uri:
     url: "{{ amster_am_install['serverUrl'] }}"
@@ -71,21 +66,15 @@
   delay: 10 # seconds
 #  This is a waitloop until AM web interface, assumed needed for the Amster REST calls, is up and running
 
-
-- name: check ldap connection to ds (check is more or less a random one from within ds role)
-# The actual check on the result is in the 'when' clause for the ldap tool, see below.
-# Last parameter is dashless hence hardcoded here.
-  shell:  "./ldapsearch  {{ dsc_user_reports_inquire|c2platform.forgerock.ds_cmd }} objectclass=person"
+- name: Wait for DS
+  shell: >
+    ./status {{ amster_ds_connect|c2platform.forgerock.ds_cmd }}
+  retries: 10
+  delay: 7
   args:
-    chdir: "{{ ds_home }}/{{ ds_home|basename }}-{{ ds_version }}/bin"
-  register: user_reports_inquire
-  ignore_errors: yes
-
-- name: Exit if no running DS service found
-  when: not user_reports_inquire is search("Service Account")
-  fail: msg="The DS server needed to provision using Amster is not running"
-
-
+    chdir: "{{ ds_home_version }}/bin"
+  register: result
+  until: result.rc == 0
 
 # If Amster is not configured, it will give an error message when trying to use :connect on the Amster command line
 # When Amster is configured (100 file, install-openam method), this error message is gone.
