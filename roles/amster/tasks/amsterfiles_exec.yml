@@ -91,12 +91,9 @@
 - name: Check if Amster is configured
   shell: "./amster 090-connect-to-openam.amster"
   register: amster_connect_var
-  become: yes
-  become_user: "{{ amster_owner }}"
   args:
     chdir: "{{ amster_home_version }}/"
-
-
+  changed_when: false
 
 - name: execute 100-installAM_1 amster (don't confuse with 100-configure_AM) if not yet done
   command: "./amster 100-installAM_1.amster"
@@ -107,13 +104,6 @@
     chdir: "{{ amster_home_version }}/"
   when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
     and amster_connect_var['stderr'] is search("Unexpected character")
-
-- name: Debug
-  debug:
-    msg: "{{ task_register_var }}"
-# Strong recommendation for VIPS Ops: Keep the debug statements for all these Amster runs; this way we get any
-# functional errors immediately in the AWX logs.
-# See git user story #809 for plans to trap some of the errors.
 
 ## See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause in Authorized keys fails for our setup
 # (These 2 files get created in the 100-install script run)
@@ -126,7 +116,6 @@
     - /opt/tomcat/am/amster_rsa.pub
     - /opt/tomcat/am/authorized_keys
 
-
 - name: execute 100-configure amster deck (a chain of 10+ others); unconditional as the idempotency is done in the Groovy script code
   command: "./amster 100-configure_AM.amster"
   register: task_register_var
@@ -135,11 +124,6 @@
   args:
     chdir: "{{ amster_home_version }}/"
 
-- name: Debug
-  debug:
-    msg: "{{ task_register_var }}"
-
-
 - name: execute 111-configure amster (a separate part of the 100-deck); unconditional as the idempotency is done in the Groovy script code
   command: "./amster 111-configure-global-validation-service.amster"
   register: task_register_var
@@ -147,10 +131,6 @@
   become_user: "{{ amster_owner }}"
   args:
     chdir: "{{ amster_home_version }}/"
-
-- name: Debug
-  debug:
-    msg: "{{ task_register_var }}"
 
 - name: execute 201 amster deck; unconditional as the idempotency is done in the Groovy script code
   command: "./amster 201-configure-SAML.amster"
@@ -171,10 +151,6 @@
 # TBD to parametrise the environment vars when another SAML realm  would be added; but there is more work then,
 # also possibly adding another file like cot.json (beginning part of this yaml)
 
-- name: Debug
-  debug:
-    msg: "{{ task_register_var }}"
-
 - name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
   command: "./amster 400-set-global-security-settings.amster"
   register: task_register_var
@@ -183,7 +159,3 @@
   args:
     chdir: "{{ amster_home_version }}/"
   notify: restart tomcat instance
-
-- name: Debug
-  debug:
-    msg: "{{ task_register_var }}"

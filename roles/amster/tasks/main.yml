@@ -1,3 +1,4 @@
 ---
 - include: amsterbasics.yml
 - include: amsterfiles_exec.yml
+  when: amster_am_install is defined

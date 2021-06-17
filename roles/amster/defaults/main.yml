@@ -36,29 +36,6 @@ amster_ds_connect:
   bindPassword: "{{ amster_ds_rootpw }}"
   trustAll: ""
 
-amster_am_install:
-  serverUrl: "http://{{ ansible_fqdn }}:8443/acs"
-  adminPwd: "{{ amster_amadmin_pw }}"
-  acceptLicense: ''
-  pwdEncKey: "{{ amster_encryptpw }}"
-  cfgStoreDirMgr: "cn=Directory Manager"
-  cfgStoreDirMgrPwd: '{{ amster_ds_rootpw }}'
-  cfgStore: dirServer
-  cfgStoreHost: "{{ amster_ds_hostname }}"
-  cfgStoreAdminPort: 4444
-  cfgStoreSsl: SSL
-  cfgStorePort: 10636
-  cfgStoreRootSuffix: ou=am-config
-  cookieDomain: "{{ ansible_fqdn }}"
-  cfgDir: /opt/tomcat/am # default $HOME/openam
-  userStoreDirMgr: "cn=Directory Manager"
-  userStoreDirMgrPwd: "{{ amster_ds_rootpw }}"
-  userStoreHost: "{{ amster_ds_hostname  }}"
-  userStoreType: LDAPv3ForOpenDS
-  userStoreSsl: SSL
-  userStorePort: 10636
-  userStoreRootSuffix: dc=bkwi,dc=nl
-
 amster_am_connect:
   private-key: /opt/tomcat/am/
 
@@ -79,48 +56,3 @@ amster_scripts:
   - 209-function_load_all_saml
   - 210-function-load-authentication-settings
   - 400-set-global-security-settings
-
-amster_realm_defaults:
-  backend: o=suwi,c=NL
-  object_class: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
-  attributes: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
-  shared_secret: qdOjJ/gOqP6s94I85FxMB8DjAuJF8HS1HWqdIrD8uyw= # Or any other value generated via openssl rand -base64 32
-
-amster_realms:
-  uwv:
-    fqdn: uwv.bto.suwinet.nl
-    scripts:
-      - 103-configure_realm
-      - 107-update-identity-store
-      - 108-set-sessionproperties
-  suwinet:
-    # object_class: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
-    # backend: o=suwi,c=NL
-    # attributes: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
-    # shared_secret: SBPSECRET
-    fqdn: suwinet.nl
-    scripts:
-      - 103-configure_realm
-      - 104-create-J2EE_Agent
-      - 105-create-policy-set
-      - 106-create-policy
-      - 107-update-identity-store
-      - 108-set-sessionproperties
-    j2ee_agent:
-      name: suwinet-agent
-      fqdn: suwinet-inkijk.bto.suwinet.nl
-      fqdn_am: acs.bto.suwinet.nl
-      password: supersecure
-    policy:
-      set_name: suwinet-policy-set
-      name: suwinet-inkijk-policy
-      resources:
-        - http://inkijk.local:80/*
-        - http://inkijk.local:80/*?
-        - http://inkijk.local:80/*?*
-      realms: ['uwv','suwinet']
-      am_protected_uid_identifier: frankbtotest
-    #chain: # 112-configure-top-level-realm
-    #  name: suwinetChain
-    #  criteria: REQUIRED
-
