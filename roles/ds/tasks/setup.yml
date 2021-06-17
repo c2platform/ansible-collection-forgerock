@@ -1,8 +1,6 @@
 ---
 - name: Check setup
   shell: "{{ ds_home_version }}/bin/status --offline || true"
-  become: yes
-  become_user: forgerock
   register: ds_status
   changed_when: False
 
@@ -14,16 +12,12 @@
   command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
   args:
     chdir: "{{ ds_home_version }}"
-  become: yes
-  become_user: "{{ ds_owner }}"
   when:  ds_setup
 
 - name: Stop DS
   command: "./stop-ds"
   args:
     chdir: "{{ ds_home_version }}/bin"
-  become: yes
-  become_user: "{{ ds_owner }}"
   when:  ds_setup
 
 - name: Chown recursive
