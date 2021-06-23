@@ -1,0 +1,113 @@
+---
+#- name: Get cot.json in place
+#  copy:
+#    dest:  "{{ amster_home_version }}/amster_config/federation/cot.json"
+#    owner: "{{ amster_owner }}"
+#    group: "{{ amster_group }}"
+#    mode: 0644
+#    remote_src: yes
+#    src: "{{ amster_code_location }}/cot.json"
+
+#- name: Get testdata to federation/test subfolder
+#  copy:
+#    dest:  "{{ amster_home_version }}/amster_config/federation"
+#    owner: "{{ amster_owner }}"
+#    group: "{{ amster_group }}"
+#    mode: 0644
+#    remote_src: yes
+#    src: "{{ amster_code_location }}/test"
+## Get the test directory here https://dxcportal.sharepoint.com/sites/BKWIVIPS/Shared%20Documents/Forms/AllItems.aspx?viewid=1008fb07%2Db725%2D4eab%2Db5c3%2D7e8504d24645&id=%2Fsites%2FBKWIVIPS%2FShared%20Documents%2FForgeRock%2F03%20Design%2FCookbooks%5F30042021%2Fbkw%5Fam%5Frole%2Ffiles%2Fdefault
+# Note that code above 'works' technically but gave some interesting ACL issues on target machine. When fully using (BTO) 
+# do doublecheck the rights, e.g. modify the 'mode'  above or the ACL for the /tmp files on BTO.
+
+#- name: Create root/.ssl for the appserver trusts
+#  file:
+#    path: "/root/.ssl"
+#    state: directory
+#    owner: "root"
+#    group: "root"
+#    mode: 0700
+
+#- name: Configure realm
+#  include_tasks: "realm.yml"
+#  loop_control:
+#    loop_var: realm
+#  with_items: '{{ amster_realms }}'
+
+# Note for 100-install: we preferred having 100-installAM_1.amster in a multi-line readable format with \ concatenation, but even
+# without Ansible this proved too buggy in Amster 6.5 with arguments in quotes. Hence the looooong line :-(
+# This applies to the high-level Amster commands like install--openam and export-config; for the lower-level 'Groovy code'
+# we use multi-line again as that is almost essential for readability.
+# Also note that --cookieDomain in 100-install is for now hardcoded to the  DNS name of the AM machine. That is not the proper way
+# for post-MVP but the whole .amster file logistics change then, with part input from either BKWI git or group_var.
+# Hence we left out making an extra Ansible variable for it, we just use ansible_fqdn.
+
+# Note for 111: though part of the '100-deck' it's called separately from Ansible, not as part of the deck-amsterscript-chain
+
+
+# If Amster is not configured, it will give an error message when trying to use :connect on the Amster command line
+# When Amster is configured (100 file, install-openam method), this error message is gone.
+# This is increment 1 of the check. Increment 2 might add another scenario: Amster (100 file) configured
+# but the outcome of the 090 check modified for a export-config following the connect is proving that not all
+# 3 amster-decks (400, 100, 201) were processed. TODO: as e.g. (SBP) 104 is now (SBP) run when settings
+# have changed, which could be var values or template hardcoded values, make sure that this SOLL-check
+# (using export-config method) not only detects 'not all 3 decks were run fully according to the _then_ desired
+# state', but same according to the _now_ desired state. Challenging, hence this is an ongoing VIPS team discussion.
+
+# So the idempotency model then will become: if 100 file not run, run 100 install deck and all 3 update decks.
+# If 100 file run but export-config result is not the SOLL after the 3 update decks, run the 3 update decks.
+
+
+#- name: execute 100-configure amster deck (a chain of 10+ others); unconditional as the idempotency is done in the Groovy script code
+#  command: "./amster 100-configure_AM.amster"
+#  register: task_register_var
+#  become: yes
+#  become_user: "{{ amster_owner }}"
+#  args:
+#    chdir: "{{ amster_home_version }}/"
+#
+#- name: execute 111-configure amster (a separate part of the 100-deck); unconditional as the idempotency is done in the Groovy script code
+#  command: "./amster 111-configure-global-validation-service.amster"
+#  register: task_register_var
+#  become: yes
+#  become_user: "{{ amster_owner }}"
+#  args:
+#    chdir: "{{ amster_home_version }}/"
+#
+#- name: execute 201 amster deck; unconditional as the idempotency is done in the Groovy script code
+#  command: "./amster 201-configure-SAML.amster"
+#  register: task_register_var
+#  become: yes
+#  become_user: "{{ amster_owner }}"
+#  args:
+#    chdir: "{{ amster_home_version }}/"
+#  environment:
+#    AMSTER_VERSION: 6.5.3
+#    OPENAM_REALM: uwv
+#    OPENAM_COT: uwv_cot_uwv
+#    AMSTER_COT_FILE: /opt/amster/amster-6.5.3/amster_config/federation/cot.json
+#    SAML_DIR: /opt/amster/amster-6.5.3/amster_config/federation/uwv/uwv_cot_uwv
+
+# For now kept upper case, as they used with Chef (the 201 deck grabs these values)
+# The specs tell to repeat the 201 'for each realm' but currently the sole SAML realm is uwv.
+# TBD to parametrise the environment vars when another SAML realm  would be added; but there is more work then,
+# also possibly adding another file like cot.json (beginning part of this yaml)
+
+#- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
+#  command: "./amster 400-set-global-security-settings.amster"
+#  register: task_register_var
+#  become: yes
+#  become_user: "{{ amster_owner }}"
+#  args:
+#    chdir: "{{ amster_home_version }}/"
+#  notify: restart tomcat instance
+
+- name: "Execute Amster script"
+  command: "./amster {{ item['script'] }}.amster"
+  register: amster_script_exec
+  args:
+    chdir: "{{ amster_home_version }}"
+  environment: "{{ item['vars'] }}"
+  with_items: "{{ am_configure }}"
+  changed_when: am_amster_stdout_tags['changed'] in amster_script_exec.stdout
+  failed_when: am_amster_stdout_tags['error'] in amster_script_exec.stdout

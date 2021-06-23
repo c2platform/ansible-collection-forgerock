@@ -1,4 +1,20 @@
 ---
-- include: amsterbasics.yml
-- include: amsterfiles_exec.yml
+- name: Download and install Amster
+  include: amster.yml
+
+- block:
+    - name: Install AM
+      include: install.yml
+
+    - name: Create Amster scripts
+      template:
+        src: "{{ item }}.j2"
+        dest: "{{ amster_home_version }}/{{ item }}.amster"
+        owner: "{{ amster_owner }}"
+        group: "{{ amster_group }}"
+        mode: 0755
+      with_items: "{{ am_amster_templates }}"
+
+    - name: Configure AM
+      include: configure.yml
   when: amster_am_install is defined

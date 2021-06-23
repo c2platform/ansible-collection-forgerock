@@ -1,0 +1,50 @@
+---
+- name: Confirm AM up
+  uri:
+    url: "{{ amster_am_install['serverUrl'] }}"
+    validate_certs: no
+    status_code: 200
+  register: am_up_result
+  until: am_up_result.status == 200
+  retries: 10
+  delay: 10 # seconds
+
+- name: Wait for DS
+  shell: >
+    ./status {{ amster_ds_connect|c2platform.forgerock.ds_cmd }}
+  retries: 10
+  delay: 7
+  args:
+    chdir: "{{ ds_home_version }}/bin"
+  register: ds_status
+  until: ds_status.rc == 0
+  changed_when: false
+
+- name: Check if Amster is configured
+  shell: "./amster 090-connect-to-openam.amster"
+  register: amster_connect_var
+  args:
+    chdir: "{{ amster_home_version }}/"
+  changed_when: false
+
+- name: execute 100-installAM_1 amster (don't confuse with 100-configure_AM) if not yet done
+  command: "./amster 100-installAM_1.amster"
+  register: task_register_var
+  #become: yes
+  #become_user: "{{ amster_owner }}"
+  args:
+    chdir: "{{ amster_home_version }}"
+  when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
+    and amster_connect_var['stderr'] is search("Unexpected character")
+  # TODO failed when is search("Configuration failed")
+
+# See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause
+# in Authorized keys fails for our setup
+- name: Fix bug
+  replace:
+    path: "{{ item }}"
+    regexp: ^.*ssh-rsa
+    replace: ssh-rsa
+  with_items:
+    - /opt/tomcat/am/amster_rsa.pub
+    - /opt/tomcat/am/authorized_keys

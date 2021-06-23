@@ -1,16 +1,23 @@
-println 104
+// {{ ansible_managed }}
+
+{{ am_amster_common_functions }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+
+println green ("INFO: Realm parameters")
+realmName = System.getenv("realm_name")
+realmFQDN = System.getenv("realm_fqdn")
 
 println green ("INFO: IG J2EE Agent parameters")
-agentName = '{{ amster_realms[realm]['j2ee_agent']['name'] }}'
-igFQDN='{{ amster_realms[realm]['j2ee_agent']['fqdn'] }}'
-igPORT='443'
-igPROTO='https'
-igREMOTELOGFILE='amAgent_{{ realm }}_agent_8443.log'
-amFQDN='{{ amster_realms[realm]['j2ee_agent']['fqdn_am'] }}'
-amURI='acs'
-amPROTO='https'
-amPORT='443'
-// Note $realmName is already set in 103, which is executed prior to this
+agentName = System.getenv("name")
+agentPassword = System.getenv("password")
+igFQDN = System.getenv("fqdn")
+igPORT = System.getenv("port")
+igPROTO = System.getenv("proto")
+igREMOTELOGFILE='amAgent_$realmName_agent_8443.log'
+amFQDN = System.getenv("am_fqdn")
+amURI = System.getenv("am_uri")
+amPROTO = System.getenv("am_proto")
+amPORT = System.getenv("am_port")
 
 BODY="""
 {
@@ -60,7 +67,7 @@ BODY="""
       "localAuditLogRotation" : false,
       "webSocketConnectionIntervalInMinutes" : 30,
       "agentConfigChangeNotificationsEnabled" : true,
-      "userpassword" : "{{ amster_realms[realm]['j2ee_agent']['password'] }}",
+      "userpassword" : "$agentPassword",
       "httpSessionBinding" : true,
       "userPrincipalFlag" : false,
       "configurationReloadInterval" : 0,
@@ -150,9 +157,9 @@ BODY="""
       "legacyUserAgentSupport" : false,
       "bypassPrincipalList" : [ "" ],
       "cookieResetDomains" : {  },
-      "cdssoTrustedIdProvider" : [ "https://{{ amster_realms[realm]['j2ee_agent']['fqdn'] }}/acs/cdcservlet" ],
+      "cdssoTrustedIdProvider" : [ "$igPROTO://$igFQDN/$am_uri/cdcservlet" ],
       "cdsso" : false,
-      "cdssoUrls" : [ "https://{{ amster_realms[realm]['j2ee_agent']['fqdn'] }}/acs/cdcservlet" ],
+      "cdssoUrls" : [ "$igPROTO://igFQDN/$am_uri/cdcservlet" ],
       "cdssoDomainList" : [ "" ],
       "cdssoRedirectUri" : "/agentapp/sunwCDSSORedirectURI",
       "cookieResetNames" : [ "" ],
@@ -165,23 +172,18 @@ BODY="""
 }
 """;
 
-// SBP situation: Chef runs this script only when something is changed, so simply create the j2ee agent when it doesn't exist and otherwise update it
-// VIPS situation: more or less same, Ansible Amster play detects whether
-// initial install-openam was done and afterwards if 400-deck, 100-deck and 201-deck scripts have run.
-// So if that check determines the current versions of these decks do not match the state (export-config),
-// it'll re-run the decks and then this 104 script is also run.
-// TODO: Ops procedures to make sure that the Ansible play _is_ run after something has changed!
-
 if(isNull(eval("read J2eeAgents --realm $realmName --id $agentName"))){
       if(isNull(eval("create J2eeAgents --realm $realmName --id $agentName --body '$BODY'"))) {
-            println red("Error creating J2eeAgent $agentName in realm $realmName");
+            println red("{{ am_amster_stdout_tags['error'] }} Error creating J2eeAgent $agentName in realm $realmName");
       } else {
-            println green("J2eeAgent $agentName in realm $realmName created");
+            println green("{{ am_amster_stdout_tags['changed'] }} J2eeAgent $agentName in realm $realmName created");
       }
 } else {
       if(isNull(eval("update J2eeAgents --realm $realmName --id $agentName --body '$BODY'"))) {
-            println red("Error updating J2eeAgent $agentName in realm $realmName");
+            println red("{{ am_amster_stdout_tags['error'] }} Error updating J2eeAgent $agentName in realm $realmName");
       } else {
             println green("J2eeAgent $agentName in realm $realmName updated");
       }
 }
+
+:quit

@@ -1,6 +1,6 @@
-# Ansible Role ForgeRock Amster CLI
+# Ansible Role ForgeRock Access Management (AM)
 
-This Ansible role is used to install, upgrade and remove [ForgeRock Amster CLI](https://backstage.forgerock.com/docs/amster/6.5/user-guide/).
+This Ansible role is used to setup and configure [AM](https://go.forgerock.com/Access-Management.html) usig [Amster](https://backstage.forgerock.com/docs/amster/6.5/user-guide/).
 
 <!-- MarkdownTOC levels="2,3" autolink="true" -->
 
@@ -21,8 +21,6 @@ Note that the 'Amster' utility part of the AM install connects with a ForgeRock 
 Hence requirement is that the configured DS server and IG proxy server already are up and running. In a 2-server setup as is now the standard, provisioning of the DS node goes first. The role does a check whether the DS instance is up and running, using the ldapsearch utility which checks on DS content level.
 
 Designed 'patterns' are initial install (clean DS and clean AM) and running the play several times in case something changes, e.g. an Amster file other than 100-install. If however the 100-install changes, make sure both DS and AM get a full clean install; as otherwise the configuration in DS used by AM is not guaranteed as you want it to be. Note that there is no tight coupling between AM and Amster running on the same machine; though we never tested it a pattern with separate servers for AM and Amster could work. However as the usage scenarios are radically different, AM has the production load and Amster is solely for provisioning, the current co-hosting seems to work fine.
-
-
 
 ## Role description
 
@@ -77,4 +75,4 @@ amster_am_install:
 
 * [Amster 7.0.1 > User Guide > Install AM with Amster](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-install-am.html)
 * [Amster 7.0.1 > User Guide > Connect to AM](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-connecting.html)
-
+* [Using Variables in Amster Scripts](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-usage-scripts.html#amster-variables-scripts)
