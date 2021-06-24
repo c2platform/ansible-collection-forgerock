@@ -76,3 +76,4 @@ amster_am_install:
 * [Amster 7.0.1 > User Guide > Install AM with Amster](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-install-am.html)
 * [Amster 7.0.1 > User Guide > Connect to AM](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-connecting.html)
 * [Using Variables in Amster Scripts](https://backstage.forgerock.com/docs/amster/7/user-guide/amster-usage-scripts.html#amster-variables-scripts)
+* [Amster 7.0.2 > Entity Reference > Realms](https://backstage.forgerock.com/docs/amster/7/entity-reference/sec-amster-entity-realms.html)
