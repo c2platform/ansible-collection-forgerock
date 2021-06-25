@@ -1,0 +1,5 @@
+  println("Parameters")
+  println("=========================================================" )
+  params = {{ am_amster_templates[item]['vars']|default('[]')|replace('{','[')|replace('}',']') }}
+  params_optional = {{ am_amster_templates[item]['vars-optional']|default('[]')|replace('{','[')|replace('}',']') }}
+{{ am_amster_set_params|indent(2, True) }}
