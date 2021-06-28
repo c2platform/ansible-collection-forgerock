@@ -138,12 +138,16 @@ am_amster_templates:
         value: LDAP
       - name: chainCriteria
         value: REQUIRED
+  400-set-global-security-settings:
+    vars: ['cookieName']
+    notify: restart tomcat instance # TODO
   401-set-global-locale:
     vars-optional:
       - name: locale
         value: nl_NL
   402-update-cookie-domains:
     vars: ['cookieDomains']
+    notify: restart tomcat instance # TODO
 
 #402-update-cookie-domains.j2
 
