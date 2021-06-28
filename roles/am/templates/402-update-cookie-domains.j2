@@ -1,21 +1,31 @@
-:load <%= node['openam']['amster_amsterFiles'] %>/102-set-common-functions.amster
-:load <%= node['openam']['amster_amsterFiles'] %>/101-connect_To_AM.amster
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-println green("402: Setting the cookie domain(s)")
+    BODY="""{
+        "_id":"",
+        "cookieDomains":$cookieDomains,
+        "locale":"en_US",
+        "_type":{
+        "_id":"platform",
+        "name":"Platform",
+        "collection":false
+        }
+    }"""
 
-BODY="""{
-    "_id":"",
-    "cookieDomains":[<%= node['openam']['cookieDomains']%>],
-    "locale":"en_US",
-    "_type":{
-    "_id":"platform",
-    "name":"Platform",
-    "collection":false
+    platform_cur=eval("read Platform --global")
+    if(isNull(eval("update Platform --global --body '$BODY'"))){
+        println red("{{ am_amster_stdout_tags['error'] }} in reading the platform settings")
+    }else{
+        println green("reading the platform was successful")
     }
-}"""
-
-if(isNull(eval("update Platform --global --body '$BODY'"))){
-    println red("error in reading the platform settings")
-}else{
-    println green("reading the platform was successful")
+    platform_new=eval("read Platform --global")
+    if (resourceChange(platform_cur,platform_new)) {
+      println green("{{ am_amster_stdout_tags['changed'] }} cookieDomains was changed")
+    }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
+:quit

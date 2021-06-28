@@ -142,9 +142,9 @@ am_amster_templates:
     vars-optional:
       - name: locale
         value: nl_NL
+  402-update-cookie-domains:
+    vars: ['cookieDomains']
 
-#:load '{{ amster_home_version }}/401-set-global-locale.amster'
-#:load '{{ amster_home_version }}/112-configure-top-level-realm.amster'
 #402-update-cookie-domains.j2
 
 #  - 111-configure-global-validation-service
