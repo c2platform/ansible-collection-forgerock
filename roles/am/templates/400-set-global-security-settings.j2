@@ -1,20 +1,21 @@
-:load '{{ amster_home_version }}/102-set-common-functions.amster'
-:load '{{ amster_home_version }}/101-connect_To_AM.amster'
-
-println blue("400: setting the global security settings")
-BODY="""
-{
-"amconfig.header.cookie":{
-"com.iplanet.am.cookie.name":"samb",
-"com.iplanet.am.cookie.secure":true}
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+  {{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+  BODY="""
+  {
+  "amconfig.header.cookie":{
+  "com.iplanet.am.cookie.name":"$cookieName",
+  "com.iplanet.am.cookie.secure":true}
+  }
+  """;
+  if(isNull(eval("update DefaultSecurityProperties --global --body '$BODY'"))){
+          println red("{{ am_amster_stdout_tags['error'] }} changing the security settings")
+  } else {
+          println green("{{ am_amster_stdout_tags['changed'] }} the security settings to the correct values")
+  }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
-""";
-
-if(isNull(eval("update DefaultSecurityProperties --global --body '$BODY'"))){
-        println red("Error changing the security settings")
-} else {
-        println green("Changed the security settings to the correct values")
-}
-
-//Added to Chef code on suggestion of Michael
-:exit
+:quit
