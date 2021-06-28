@@ -1,12 +1,14 @@
-println 106
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-// Note $realmName is already set in 103, which is executed prior to this
-
-BODY="""{
+  BODY="""{
     "name" : "$policyName",
     "active" : true,
     "description" : "",
-    "resources" : {{ amster_realms[realm]['policy']['resources']|to_nice_json(ensure_ascii=False,indent=2) }},
+    "resources" : {{ item['vars']['resources']|to_nice_json(ensure_ascii=False,indent=2) }},
     "applicationName" : "$policySetName",
     "actionValues": { "GET":true,"POST":true },
     "subject": { "type":"AuthenticatedUsers" },
@@ -14,7 +16,7 @@ BODY="""{
     "condition" : {
                 "type": "OR",
                 "conditions": [
-{% for rlm in amster_realms[realm]['policy']['realms'] %}
+{% for rlm in item['vars']['realms'] %}
                     {
                         "authenticateToRealm": "/{{ rlm }}",
                         "type": "AuthenticateToRealm"
@@ -24,24 +26,25 @@ BODY="""{
                         "type" : "SessionProperty",
                         "ignoreValueCase" : true,
                         "properties" : {
-                            "am.protected.uidIdentifier" : ["{{ amster_realms[realm]['policy']['am_protected_uid_identifier'] }}"]
+                            "am.protected.uidIdentifier" : ["{{ item['vars']['am.protected.uidIdentifier'] }}"]
                         }
                     }
                 ]}}"""
 
-// SBP situation: Chef runs this script only when something is changed, so simply create the Policy when it doesn't exist and otherwise update it
-// VIPS situation: basically same, see template 104 for details
-
-if(isNull(eval("read Policies --realm $realmName --id $policyName"))){
-      if(isNull(eval("create Policies --realm $realmName --id $policyName --body '$BODY'"))) {
-            println red("Error creating Policy $policyName in realm $realmName");
+      if(isNull(eval("read Policies --realm $realmName --id $policyName"))){
+            if(isNull(eval("create Policies --realm $realmName --id $policyName --body '$BODY'"))) {
+                  println red("{{ am_amster_stdout_tags['error'] }} creating Policy $policyName in realm $realmName");
+            } else {
+                  println green("{{ am_amster_stdout_tags['changed'] }} Policy $policyName in realm $realmName created");
+            }
       } else {
-            println green("Policy $policyName in realm $realmName created");
+            if(isNull(eval("update Policies --realm $realmName --id $policyName --body '$BODY'"))) {
+                  println red("{{ am_amster_stdout_tags['error'] }} updating Policy $policyName in realm $realmName");
+            } else {
+                  println green("{{ am_amster_stdout_tags['changed'] }} Policy $policyName in realm $realmName updated");
+            }
       }
-} else {
-      if(isNull(eval("update Policies --realm $realmName --id $policyName --body '$BODY'"))) {
-            println red("Error updating Policy $policyName in realm $realmName");
-      } else {
-            println green("Policy $policyName in realm $realmName updated");
-      }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
+:quit

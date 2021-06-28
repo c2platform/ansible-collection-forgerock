@@ -1,47 +1,51 @@
-println("Configure authentication for top level realm")
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-newChainName = 'suwinetChain'
-moduleType = "LDAP"
-chainCriteria = "REQUIRED"
-realm = 'suwinet'
+    ldapChain = eval("read AuthenticationChains --realm '$realm' --id '$newChainName'")
+    if (isNull(ldapChain)) {
+        println yellow("{{ am_amster_stdout_tags['changed'] }} Chain does not exist. Create!")
+        bodyBuilderCreate = new groovy.json.JsonBuilder()
+        bodyBuilderCreate {
+            _id newChainName
+        }
 
-ldapChain = eval("read AuthenticationChains --realm '$realm' --id '$newChainName'")
-if (isNull(ldapChain)) {
-    println yellow("Chain does not exist. Create!")
-    bodyBuilderCreate = new groovy.json.JsonBuilder()
-    bodyBuilderCreate {
-        _id newChainName
+        ldapChain = eval("create AuthenticationChains --realm '$realm' --id $newChainName --body '$bodyBuilderCreate'")
     }
 
-    ldapChain = eval("create AuthenticationChains --realm '$realm' --id $newChainName --body '$bodyBuilderCreate'")
-}
-
-println yellow("Chain exist. Update!")
-slurped = new groovy.json.JsonSlurper().parseText(ldapChain)
-if (slurped._id.contains(newChainName) && slurped.authChainConfiguration?.module?.contains(moduleType)) {
-    println cyan("Nothing to do")
-} else {
-    println yellow("Adding LDAP Module")
-    bodyBuilderUpdate = new groovy.json.JsonBuilder()
-    bodyBuilderUpdate 'authChainConfiguration': [{
-                                                     module moduleType
-                                                     criteria chainCriteria
-                                                 }]
-    ldapChain = eval("update AuthenticationChains --realm '$realm' --id $newChainName --body '$bodyBuilderUpdate'")
-}
-
-currentAuthenticationSettings = eval("read Authentication --realm '$realm'")
-if (isNull(currentAuthenticationSettings)) {
-    println("Error: there should be authentication settings already present!")
-} else {
-    println("Update Authentication Settings")
-    slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
-    if (slurped.core.orgConfig.contains(newChainName)) {
+    println yellow("Chain exist. Update!")
+    slurped = new groovy.json.JsonSlurper().parseText(ldapChain)
+    if (slurped._id.contains(newChainName) && slurped.authChainConfiguration?.module?.contains(moduleType)) {
         println cyan("Nothing to do")
     } else {
-        slurped.core.orgConfig = newChainName
-        bodyBuilder = new groovy.json.JsonBuilder();
-        bodyBuilder 'core': slurped.core
-        eval("update Authentication --realm '$realm' --body '$bodyBuilder'")
+        println yellow("Adding LDAP Module")
+        bodyBuilderUpdate = new groovy.json.JsonBuilder()
+        bodyBuilderUpdate 'authChainConfiguration': [{
+                                                         module moduleType
+                                                         criteria chainCriteria
+                                                     }]
+        ldapChain = eval("update AuthenticationChains --realm '$realm' --id $newChainName --body '$bodyBuilderUpdate'")
     }
+
+    currentAuthenticationSettings = eval("read Authentication --realm '$realm'")
+    if (isNull(currentAuthenticationSettings)) {
+        println("{{ am_amster_stdout_tags['error'] }}: there should be authentication settings already present!")
+    } else {
+        slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
+        if (slurped.core.orgConfig.contains(newChainName)) {
+            println cyan("Nothing to do")
+        } else {
+            slurped.core.orgConfig = newChainName
+            bodyBuilder = new groovy.json.JsonBuilder();
+            bodyBuilder 'core': slurped.core
+            eval("update Authentication --realm '$realm' --body '$bodyBuilder'")
+            println("{{ am_amster_stdout_tags['changed'] }} Update Authentication Settings")
+        }
+    }
+
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
+:quit

@@ -10,6 +10,8 @@ amster_amadmin_pw: supersecure # password that Amster sets amAdmin
 
 amster_encryptpw: C2ITMXJ1I8BSp61bmJbp4oBaOjBDC6Xi
 
+am_configure_manual: no
+
 # TODO remove
 am_home: /opt/am
 am_version: 6.5.3
@@ -17,7 +19,7 @@ am_version: 6.5.3
 amster_versions:
   6.5.3:
     url: file:///vagrant/downloads/Amster-6.5.3.zip
-    checksum: "sha256: 933f97cabd60ac37073229729668461993c99db4f56ff7ad02eb055f663ecae8"
+    checksum: "sha256: 933f97cabd60ac37073229729668461993c99db4f56ff7ad02eb055f66slecae8"
 
 amster_owner: tomcat
 amster_group: tomcat
@@ -39,40 +41,112 @@ amster_ds_connect:
 amster_am_connect:
   private-key: /opt/tomcat/am/
 
-amster_scripts:
+am_amster_scripts_default:
   - 090-connect-to-openam
   - 100-installAM_1
-  - 100-configure_AM
-  - 101-connect_To_AM
-  - 102-set-common-functions
-  - 110-create-authentication-LdapTree
+#  - 100-configure_AM
+#  - 101-connect_To_AM
+#  - 102-set-common-functions
+#  - 111-configure-global-validation-service
+#  - 112-configure-top-level-realm
+#  - 201-configure-SAML
+#  - 208-function_create_federation_module
+#  - 209-function_load_all_saml
+#  - 210-function-load-authentication-settings
+#  - 400-set-global-security-settings
+
+# Scripts called by (an)other script(s).
+am_amster_subscripts:
   - 110-function-create-authentication-tree
   - 110-function-delete-authentication-tree
   - 110-function-load-authentication-service
-  - 111-configure-global-validation-service
-  - 112-configure-top-level-realm
-  - 201-configure-SAML
-  - 208-function_create_federation_module
-  - 209-function_load_all_saml
-  - 210-function-load-authentication-settings
-  - 400-set-global-security-settings
 
 am_amster_templates:
-  - 090-connect-to-openam
-  - 100-installAM_1
-  - 100-configure_AM
-#  - 101-connect_To_AM
-#  - 102-set-common-functions
-  - 103-configure_realm
-#  - 104-create-j2EE_agent
-#  - 105-create-policy-set
-#  - 106-create-policy
-#  - 107-update-identity-store
-#  - 108-set-sessionproperties
-#  - 110-create-authentication-LdapTree
-#  - 110-function-create-authentication-tree
-#  - 110-function-delete-authentication-tree
-#  - 110-function-load-authentication-service
+  090-connect-to-openam:
+  100-installAM_1:
+  100-configure_AM:
+  101-connect_To_AM:
+  102-set-common-functions:
+  103-configure_realm:
+    vars: ['realmName', 'realmAliases']
+    # Note: realmAliases is used in json body so use for example
+    # realmAliases: '[\"mydomain.com\"]'
+  104-create-J2EE_Agent:
+    vars: ['agentName', 'agentPassword', 'igFQDN', 'igPORT', 'igPROTO', 'amFQDN', 'amURI', 'amPROTO', 'amPORT', 'realmName', 'realmFQDN']
+  105-create-policy-set:
+    vars: ['policySetName','realmName']
+  106-create-policy:
+    vars: ['policySetName', 'policyName','realmName']
+  107-update-identity-store:
+    vars: ['realmName', 'usersBackend', 'authPwd']
+    vars-optional:
+      - name: userSearchAttribute
+        value: cn
+      - name: userObjectclass
+        value: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
+        string: no
+      - name: userAttributes
+        value: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
+        string: no
+      - name: authNamingAttr
+        value: uid
+      - name: peopleContainerName
+        value: cn
+      - name: peopleContainerValue
+        value:
+      - name: authKbaAttr
+        value: []
+        string: no
+      - name: authKbaIndexAttr
+        value:
+      - name: authKbaAttemptsAttr
+        value: []
+        string: no
+      - name: groupContainerName
+        value:
+      - name: groupContainerValue
+        value:
+      - name: memberof
+        value: isMemberOf
+  108-set-sessionproperties:
+    vars: ['realmName', 'sharedSecret']
+  110-create-authentication-LdapTree:
+    vars: ['realmName','defaultTreeName','defaultAuthenticationService', 'primaryLDAPServer','bindUserPassword']
+    vars-optional:
+      - name: startDN
+        value: cn=Directory Manager
+      - name: dnToStartUserSearch
+        value: o=suwi,c=NL
+      - name: bindUserDN
+        value: cn=Directory Manager
+      - name: attributeUsedtoRetrieveUserProfile
+        value: uid
+      - name: attributeUsedtoSearchForAUserToBeAuthenticated
+        value: uid
+      - name: secondaryLDAPServer
+        value:
+    scripts:
+      - 110-function-delete-authentication-tree
+      - 110-function-create-authentication-tree
+      # - 110-function-load-authentication-service
+      # Set tree as default service
+      # TODO uncomment when password reset works
+  112-configure-top-level-realm:
+    vars: ['newChainName','realm']
+    vars-optional:
+      - name: moduleType
+        value: LDAP
+      - name: chainCriteria
+        value: REQUIRED
+  401-set-global-locale:
+    vars-optional:
+      - name: locale
+        value: nl_NL
+
+#:load '{{ amster_home_version }}/401-set-global-locale.amster'
+#:load '{{ amster_home_version }}/112-configure-top-level-realm.amster'
+#402-update-cookie-domains.j2
+
 #  - 111-configure-global-validation-service
 #  - 112-configure-top-level-realm
 #  - 201-configure-SAML
@@ -91,6 +165,26 @@ am_amster_common_functions: |
   static String todo(String text)   { "\u001B[7m\u001B[33m" + "TODO: " + text + "\u001B[0m" }
   static String arrayToEscapedString(Object obj)   { obj.size() == 0 ? "[]" : "[\""+obj.join("\", \"")+"\"]" }
   static boolean isNull(Object obj) { (null==obj||"null".equalsIgnoreCase(obj))}
+  def resourceChange(c, n, content = false) {
+    bodyBuilder = new groovy.json.JsonBuilder()
+    cur_json = new groovy.json.JsonSlurper().parseText(c)
+    new_json = new groovy.json.JsonSlurper().parseText(n)
+    if (content) {
+      cur_json['_rev'] = 'ignore'
+      new_json['_rev'] = 'ignore'
+      if (cur_json == new_json) {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      if (cur_json['_rev'] == new_json['_rev']) {
+          return false
+      } else {
+          return true
+      }
+    }
+  }
 
   //todo? helper to accept String false in a condition? :: static Boolean containsFalse String(Object obj) { "False".equalsIgnoreCase(obj.toString()) || false == obj }
 
@@ -98,11 +192,22 @@ am_amster_stdout_tags:
   changed: "##CHANGED##"
   error: "##ERROR##"
 
-am_amster_params_check: |
-  params.eachWithIndex { v, i ->
-      println(v.getKey())
-      println(v.getValue())
-      if ( v.getValue() == null) {
-        throw new Exception("Params ${v.getKey()} is missing!")
+am_amster_set_params: |
+  params.each { v ->
+      if ( System.getenv(v) == null) {
+        throw new Exception("Param ${v} is missing!")
+      }
+  }
+  params.each { v ->
+    this[v] = System.getenv(v)
+    println("${v}=${this[v]}")
+  }
+  params_optional.each { v ->
+      if ( System.getenv(v['name']) == null) {
+        println("${v['name']}=${v['value']}")
+        this[v['name']] = v['value']
+      } else {
+        println("${v['name']}=${System.getenv(v['name'])} (default)")
+        this[v['name']] = System.getenv(v['name'])
       }
   }

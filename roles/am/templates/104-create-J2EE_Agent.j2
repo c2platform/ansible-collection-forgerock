@@ -1,26 +1,14 @@
-// {{ ansible_managed }}
-
-{{ am_amster_common_functions }}
+{{ ansible_managed|comment(decoration="// ") }}
 connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-println green ("INFO: Realm parameters")
-realmName = System.getenv("realm_name")
-realmFQDN = System.getenv("realm_fqdn")
+  igREMOTELOGFILE='amAgent_$realmName_agent_8443.log'
 
-println green ("INFO: IG J2EE Agent parameters")
-agentName = System.getenv("name")
-agentPassword = System.getenv("password")
-igFQDN = System.getenv("fqdn")
-igPORT = System.getenv("port")
-igPROTO = System.getenv("proto")
-igREMOTELOGFILE='amAgent_$realmName_agent_8443.log'
-amFQDN = System.getenv("am_fqdn")
-amURI = System.getenv("am_uri")
-amPROTO = System.getenv("am_proto")
-amPORT = System.getenv("am_port")
 
-BODY="""
-{
+  BODY="""
+  {
       "userDataCachePollingTime" : 1,
       "serviceDataCacheTime" : 1,
       "loginProbeTimeout" : 2000,
@@ -157,9 +145,9 @@ BODY="""
       "legacyUserAgentSupport" : false,
       "bypassPrincipalList" : [ "" ],
       "cookieResetDomains" : {  },
-      "cdssoTrustedIdProvider" : [ "$igPROTO://$igFQDN/$am_uri/cdcservlet" ],
+      "cdssoTrustedIdProvider" : [ "$igPROTO://$igFQDN/$amURI/cdcservlet" ],
       "cdsso" : false,
-      "cdssoUrls" : [ "$igPROTO://igFQDN/$am_uri/cdcservlet" ],
+      "cdssoUrls" : [ "$igPROTO://igFQDN/$amURI/cdcservlet" ],
       "cdssoDomainList" : [ "" ],
       "cdssoRedirectUri" : "/agentapp/sunwCDSSORedirectURI",
       "cookieResetNames" : [ "" ],
@@ -169,21 +157,23 @@ BODY="""
       "ssoCacheEnabled" : true,
       "cdssoSecureCookies" : false,
       "cdssoClockSkew" : 0 }
-}
-""";
-
-if(isNull(eval("read J2eeAgents --realm $realmName --id $agentName"))){
+    }
+    """;
+      if(isNull(eval("read J2eeAgents --realm $realmName --id $agentName"))){
+      // TODO read WebAgents --realm Realm --id id
       if(isNull(eval("create J2eeAgents --realm $realmName --id $agentName --body '$BODY'"))) {
-            println red("{{ am_amster_stdout_tags['error'] }} Error creating J2eeAgent $agentName in realm $realmName");
+                  println red("{{ am_amster_stdout_tags['error'] }} Error creating J2eeAgent $agentName in realm $realmName");
+            } else {
+                  println green("{{ am_amster_stdout_tags['changed'] }} J2eeAgent $agentName in realm $realmName created");
+            }
       } else {
-            println green("{{ am_amster_stdout_tags['changed'] }} J2eeAgent $agentName in realm $realmName created");
+            if(isNull(eval("update J2eeAgents --realm $realmName --id $agentName --body '$BODY'"))) {
+                  println red("{{ am_amster_stdout_tags['error'] }} Error updating J2eeAgent $agentName in realm $realmName");
+            } else {
+                  println green("J2eeAgent $agentName in realm $realmName updated");
+            }
       }
-} else {
-      if(isNull(eval("update J2eeAgents --realm $realmName --id $agentName --body '$BODY'"))) {
-            println red("{{ am_amster_stdout_tags['error'] }} Error updating J2eeAgent $agentName in realm $realmName");
-      } else {
-            println green("J2eeAgent $agentName in realm $realmName updated");
-      }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
-
 :quit

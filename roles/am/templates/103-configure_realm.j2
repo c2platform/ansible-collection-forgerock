@@ -1,17 +1,8 @@
-// {{ ansible_managed }}
+{{ ansible_managed|comment(decoration="// ") }}
 connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
-
 {{ am_amster_common_functions }}
-
-println("Parameters")
-println("=========================================================" )
-realmName = System.getenv("name")
-realmFQDN = System.getenv("fqdn")
-realmAliases = System.getenv("aliases")
-params = ['realmName':realmName,'fqdn':realmFQDN]
-
 try {
-  {{ am_amster_params_check }}
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
   println("Create realm")
   println("=========================================================")
   cur = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'")
@@ -29,7 +20,8 @@ try {
            slurped.parentPath.equals("/") &&
            slurped.active == true
    )){
-      if (isNull(eval ("update Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}' --body '{\"name\":\"$realmName\",\"active\":true,\"parentPath\":\"/\",\"aliases\":$realmAliases}'"))) {println("updating Realm config failed")} else { print("Updated realm $realmName")}
+      // TODO proper changed_when check
+      if (isNull(eval ("update Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}' --body '{\"name\":\"$realmName\",\"active\":true,\"parentPath\":\"/\",\"aliases\":$realmAliases}'"))) {println("{{ am_amster_stdout_tags['error'] }} updating Realm config failed")} else { print("{{ am_amster_stdout_tags['changed'] }} Updated realm $realmName")}
     } else {
       println blue("no delta, skipping realm creation/update")
     }

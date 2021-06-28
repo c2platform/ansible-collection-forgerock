@@ -3,13 +3,13 @@ println("Configure authentication service to use configured tree")
 // GET Realm
 currentRealm = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'".toString())
 if (isNull(currentRealm)) {
-    println("Unable to update authentication service as the realm $realmName is unknown")
+    println("{{ am_amster_stdout_tags['error'] }} to update authentication service as the realm $realmName is unknown")
 } else {
     currentAuthenticationSettings = eval("read Authentication --realm $realmName")
     if (isNull(currentAuthenticationSettings)) {
-        println("Error: there should be authentication settings already present!")
+        println("{{ am_amster_stdout_tags['error'] }} there should be authentication settings already present!")
     } else {
-        println("Update Authentication Settings")
+        println("{{ am_amster_stdout_tags['changed'] }} Update Authentication Settings")
         slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
         if (slurped.core.orgConfig.contains(defaultTreeName)) {
             println cyan("Nothing to do")

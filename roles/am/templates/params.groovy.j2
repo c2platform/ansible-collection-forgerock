@@ -1,5 +1,23 @@
-  println("Parameters")
-  println("=========================================================" )
-  params = {{ am_amster_templates[item]['vars']|default('[]')|replace('{','[')|replace('}',']') }}
-  params_optional = {{ am_amster_templates[item]['vars-optional']|default('[]')|replace('{','[')|replace('}',']') }}
-{{ am_amster_set_params|indent(2, True) }}
+println("Parameters")
+println("=========================================================" )
+{% if am_amster_templates[item['template']]['vars'] is defined %}
+{%     for var in am_amster_templates[item['template']]['vars'] %}
+{%         if item['vars'][var] is defined %}
+{{ var }} = "{{ item['vars'][var] }}"
+{%         endif %}
+{%     endfor %}
+{% endif %}
+{% if am_amster_templates[item['template']]['vars-optional'] is defined %}
+{%     for var in am_amster_templates[item['template']]['vars-optional'] %}
+{%        set qts = var|c2platform.forgerock.amster_param_quotes  %}
+{%         if item['vars'][var['name']] is defined %}
+{{ var['name'] }} = {{ qts }}{{ item['vars'][var['name']] }}{{ qts }}
+{%         else %}
+{{ var['name'] }} = {{ qts }}{{ var['value'] }}{{ qts }}
+{%         endif %}
+{%     endfor %}
+{% endif %}
+{% if am_amster_templates[item['template']]['vars'] is defined %}
+params = {{ am_amster_templates[item['template']]['vars']|default('[]')|to_json|replace('{','[')|replace('}',']') }}
+params.each { v -> if (!binding.hasVariable(v)) { throw new Exception("Parameter ${v} is missing!") }}
+{% endif %}

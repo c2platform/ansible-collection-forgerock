@@ -1,0 +1,21 @@
+:load <%= node['openam']['amster_amsterFiles'] %>/102-set-common-functions.amster
+:load <%= node['openam']['amster_amsterFiles'] %>/101-connect_To_AM.amster
+
+println green("402: Setting the cookie domain(s)")
+
+BODY="""{
+    "_id":"",
+    "cookieDomains":[<%= node['openam']['cookieDomains']%>],
+    "locale":"en_US",
+    "_type":{
+    "_id":"platform",
+    "name":"Platform",
+    "collection":false
+    }
+}"""
+
+if(isNull(eval("update Platform --global --body '$BODY'"))){
+    println red("error in reading the platform settings")
+}else{
+    println green("reading the platform was successful")
+}

@@ -1,48 +1,66 @@
-realmName = '{{ realm }}'
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+    println ("108-set-custom-session-properties")
+    println ("Set the whitelist first")
+    BODY="""{"sessionPropertyWhitelist":["am.protected.uidIdentifier","am.protected.dnIdentifier","am.protected.roleIdentifier"]}"""
 
-println ("108-set-custom-session-properties")
-println ("Set the whitelist first")
-BODY="""{"sessionPropertyWhitelist":["am.protected.uidIdentifier","am.protected.dnIdentifier","am.protected.roleIdentifier"]}"""
-
-if(isNull(eval("read SessionPropertyWhiteList --realm $realmName"))){
-  if(isNull(eval("create SessionPropertyWhiteList --realm $realmName --body '$BODY'"))) {
-    println red("Error creating SessionPropertyWhiteList in realm $realmName");
-  } else {
-    println green("SessionPropertyWhiteList in realm $realmName created");
-  }
-} else {
-  if(isNull(eval("update SessionPropertyWhiteList --realm $realmName --body '$BODY'"))) {
-    println red("Error updating SessionPropertyWhiteList in realm $realmName");
-  } else {
-    println green("SessionPropertyWhiteList in realm $realmName updated");
-  }
-}
-
-//=================================
-
-println ("Now add the custom session properties to the realm authentication settings")
-
-BODY="""{
-	"security" : {
-      "moduleBasedAuthEnabled" : false,
-      "zeroPageLoginAllowedWithoutReferrer" : false,
-      "sharedSecret" : "{{ amster_realms[realm]['shared_secret']|default(amster_realm_defaults['shared_secret']) }}",
-      "keyAlias" : "test",
-      "zeroPageLoginEnabled" : false,
-      "zeroPageLoginReferrerWhiteList" : [ ]
-      },
-      "postauthprocess" : {
-      "usernameGeneratorClass" : "com.sun.identity.authentication.spi.DefaultUserIDGenerator",
-      "loginFailureUrl" : [  ],
-      "userAttributeSessionMapping" : [ "uid|uidIdentifier", "dn|dnIdentifier", "businessCategory|roleIdentifier" ],
-      "loginPostProcessClass" : [ ],
-      "usernameGeneratorEnabled" : true,
-      "loginSuccessUrl" : [ "/acs/console" ]
+    spwl_cur=eval("read SessionPropertyWhiteList --realm $realmName")
+    if(isNull(spwl_cur)){
+      if(isNull(eval("create SessionPropertyWhiteList --realm $realmName --body '$BODY'"))) {
+        println red("{{ am_amster_stdout_tags['error'] }} creating SessionPropertyWhiteList in realm $realmName");
+      } else {
+        println green("{{ am_amster_stdout_tags['changed'] }} SessionPropertyWhiteList in realm $realmName created");
+      }
+    } else {
+      if(isNull(eval("update SessionPropertyWhiteList --realm $realmName --body '$BODY'"))) {
+        println red("{{ am_amster_stdout_tags['error'] }} updating SessionPropertyWhiteList in realm $realmName");
+      } else {
+        println green("Updating SessionPropertyWhiteList in realm $realmName");
+      }
     }
-}"""
+   spwl_new=eval("read SessionPropertyWhiteList --realm $realmName")
+    //=================================
 
-if(isNull(eval("update Authentication --realm $realmName --body '$BODY'"))) {
-  println red("Error updating authentication settings in realm $realmName")
-} else {
-  println green("Authentication settings in realm $realmName updated")
+    println ("Now add the custom session properties to the realm authentication settings")
+
+    BODY="""{
+    	"security" : {
+          "moduleBasedAuthEnabled" : false,
+          "zeroPageLoginAllowedWithoutReferrer" : false,
+          "sharedSecret" : "$sharedSecret",
+          "keyAlias" : "test",
+          "zeroPageLoginEnabled" : false,
+          "zeroPageLoginReferrerWhiteList" : [ ]
+          },
+          "postauthprocess" : {
+          "usernameGeneratorClass" : "com.sun.identity.authentication.spi.DefaultUserIDGenerator",
+          "loginFailureUrl" : [  ],
+          "userAttributeSessionMapping" : [ "uid|uidIdentifier", "dn|dnIdentifier", "businessCategory|roleIdentifier" ],
+          "loginPostProcessClass" : [ ],
+          "usernameGeneratorEnabled" : true,
+          "loginSuccessUrl" : [ "/acs/console" ]
+        }
+    }"""
+
+    auth_cur=eval("read Authentication --realm $realmName")
+    if(isNull(eval("update Authentication --realm $realmName --body '$BODY'"))) {
+      println red("{{ am_amster_stdout_tags['error'] }} updating authentication settings in realm $realmName")
+    } else {
+      println green("Authentication settings in realm $realmName submitted")
+    }
+    auth_new=eval("read Authentication --realm $realmName")
+    if (resourceChange(auth_cur,auth_new)) {
+      println green("{{ am_amster_stdout_tags['changed'] }} Authentication settings in realm $realmName updated")
+    }
+    if (resourceChange(spwl_cur,spwl_new)) {
+      println green("{{ am_amster_stdout_tags['changed'] }} SessionPropertyWhiteList settings in realm $realmName updated")
+    }
+
+
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
+:quit

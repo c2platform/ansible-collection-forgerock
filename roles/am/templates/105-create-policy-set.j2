@@ -1,10 +1,10 @@
-println 105
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-policySetName = '{{ amster_realms[realm]['policy']['set_name'] }}'
-policyName = '{{ amster_realms[realm]['policy']['name'] }}'
-// Note $realmName is already set in 103, which is executed prior to this
-
-BODY="""{
+  BODY="""{
         "name": "$policySetName",
         "displayName": "$policySetName",
         "applicationType": "iPlanetAMWebAgentService",
@@ -16,19 +16,25 @@ BODY="""{
         "editable": true,
         "_id": "$policySetName"}"""
 
-// SBP situation: Chef runs this script only when something is changed, so simply create the Application when it doesn't exist and otherwise update it
-// VIPS situation: basically same, see template 104 for details
-
-if(isNull(eval("read Applications --realm $realmName --id $policySetName"))){
-      if(isNull(eval("create Applications --realm $realmName --body '$BODY'"))) {
-            println red("Error creating Application $policySetName in realm $realmName");
+      cur_app = eval("read Applications --realm $realmName --id $policySetName")
+      if(isNull(cur_app)){
+            if(isNull(eval("create Applications --realm $realmName --body '$BODY'"))) {
+                  println red("{{ am_amster_stdout_tags['error'] }} creating Application $policySetName in realm $realmName");
+            } else {
+                  println green("{{ am_amster_stdout_tags['changed'] }} Application $policySetName in realm $realmName created");
+            }
       } else {
-            println green("Application $policySetName in realm $realmName created");
+            if(isNull(eval("update Applications --realm $realmName --id $policySetName --body '$BODY'"))) {
+                  println red("{{ am_amster_stdout_tags['error'] }} updating Application $policySetName in realm $realmName");
+            } else {
+                  println green("Application $policySetName in realm $realmName submitted for update");
+            }
       }
-} else {
-      if(isNull(eval("update Applications --realm $realmName --id $policySetName --body '$BODY'"))) {
-            println red("Error updating Application $policySetName in realm $realmName");
-      } else {
-            println green("Application $policySetName in realm $realmName updated");
+      new_app = eval("read Applications --realm $realmName --id $policySetName")
+      if (resourceChange(cur_app, new_app, true)) {
+          println green("{{ am_amster_stdout_tags['changed'] }} Application $policySetName in realm $realmName updated");
       }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
+:quit

@@ -100,7 +100,7 @@ if (isNull(eval("read AuthTree --realm $realmName --id $defaultTreeName"))) {
             ]
 
     if (isNull(eval("create AuthTree --realm $realmName --id '${defaultTreeName}' --body '$builder'"))) {
-        println red("Error creating AuthTree '${defaultTreeName}' in realm '$realmName'. script 110-create-authentication-tree.amster");
+        println red("{{ am_amster_stdout_tags['error'] }} creating AuthTree '${defaultTreeName}' in realm '$realmName'. script 110-create-authentication-tree.amster");
         eval(":exit")
     }
 } else {

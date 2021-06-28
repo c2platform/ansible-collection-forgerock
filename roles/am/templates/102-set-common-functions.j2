@@ -7,6 +7,9 @@ static String cyan(String text)   { "\u001B[36m" + text + "\u001B[39m" }
 static String todo(String text)   { "\u001B[7m\u001B[33m" + "TODO: " + text + "\u001B[0m" }
 static String arrayToEscapedString(Object obj)   { obj.size() == 0 ? "[]" : "[\""+obj.join("\", \"")+"\"]" }
 static boolean isNull(Object obj) { (null==obj||"null".equalsIgnoreCase(obj))}
+static boolean am_resource_changed(cur,new) {
 
+
+}
 //todo? helper to accept String false in a condition? :: static Boolean containsFalse String(Object obj) { "False".equalsIgnoreCase(obj.toString()) || false == obj }
 

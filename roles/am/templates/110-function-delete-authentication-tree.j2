@@ -5,7 +5,7 @@ if (deleteTree) {
 
     currentAuthenticationSettings = eval("read Authentication --realm $realmName")
     if (isNull(currentAuthenticationSettings)) {
-        println("Error: there should be authentication settings already present!")
+        println("{{ am_amster_stdout_tags['error'] }}: there should be authentication settings already present!")
     } else {
         println("Update Authentication Settings")
         slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
@@ -31,9 +31,9 @@ if (deleteTree) {
             println yellow("Node'${elementName}' doesn't exist.")
         } else {
             if (isNull(eval("delete $element --realm $realmName --id $elementName"))) {
-                println yellow("Node'${elementName}' deleted.")
+                println yellow("{{ am_amster_stdout_tags['changed'] }} Node'${elementName}' deleted.")
             } else {
-                println red("Error deleting Node '${elementName}' in realm '$realmName'. script 110-delete-authentication-tree.amster");
+                println red("{{ am_amster_stdout_tags['error'] }} deleting Node '${elementName}' in realm '$realmName'. script 110-delete-authentication-tree.amster");
             }
         }
     }

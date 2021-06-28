@@ -1,76 +1,53 @@
-// This amster script needs to be executed for every realm that is using the identity store
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-println blue ("107-update-identity-store")
-//assumes a identity story is present with id OpenDJ.
+  cur=eval("read OpenDJ --realm ${realmName} --id 'OpenDJ'")
+  if (cur == null) { println red ("{{ am_amster_stdout_tags['error'] }}: could not read prerequisite identity Story 'OpenDJ' in realm '${realmName}'."); eval (":quit") }
+  slurped = new groovy.json.JsonSlurper().parseText (cur)
+  if (slurped == null) { println red ("{{ am_amster_stdout_tags['error'] }}: could not find prerequisite identity Story 'OpenDJ' in realm '${realmName}'."); eval (":quit") }
 
-realmName = '{{ realm }}'
-usersBackend="{{ amster_realms[realm]['backend']|default(amster_realm_defaults['backend']) }}"
-
-userSearchAttribute="cn"
-userObjectclass={{ amster_realms[realm]['object_class']|default(amster_realm_defaults['object_class']) }}
-userAttributes={{ amster_realms[realm]['attributes']|default(amster_realm_defaults['attributes']) }}
-authNamingAttr="uid"
-peopleContainerName="cn"
-peopleContainerValue=""
-authKbaAttr=[]
-authKbaIndexAttr=""
-authKbaAttemptsAttr=[]
-groupContainerName="cn"
-groupContainerValue=""
-memberof="isMemberOf"
-
-authPwd="{{ amster_bindusrpwd }}"
-
-println blue ("Check variables")
-if (!binding.hasVariable("realmName"))    { println red ("ERROR: missing variable. expecting 'realmName'.");       eval (":quit") }
-cur=eval("read OpenDJ --realm ${realmName} --id 'OpenDJ'")
-if (cur == null) { println red ("ERROR: could not read prerequisite identity Story 'OpenDJ' in realm '${realmName}'."); eval (":quit") }
-slurped = new groovy.json.JsonSlurper().parseText (cur)
-if (slurped == null) { println red ("ERROR: could not find prerequisite identity Story 'OpenDJ' in realm '${realmName}'."); eval (":quit") }
-
-
-haltOnError=false
-
-println blue ("Checking all other variables")
-
-if (
-    slurped.userconfig.'sun-idrepo-ldapv3-config-organization_name'.equals(usersBackend) &&
-    slurped.userconfig.'sun-idrepo-ldapv3-config-users-search-attribute'.equals(userSearchAttribute) &&
-    slurped.userconfig.'sun-idrepo-ldapv3-config-user-objectclass'.sort().equals(userObjectclass.sort()) &&
-    slurped.userconfig.'sun-idrepo-ldapv3-config-user-attributes'.sort().equals(userAttributes.sort()) &&
-    slurped.userconfig.'sun-idrepo-ldapv3-config-people-container-name'.equals(peopleContainerName) &&
-    slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-attr'.sort().equals(authKbaAttr.sort()) &&
-    slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-attempts-attr'.sort().equals(authKbaAttemptsAttr.sort()) &&
-    slurped.groupconfig.'sun-idrepo-ldapv3-config-group-container-name'.equals(groupContainerName) &&
-    slurped.groupconfig.'sun-idrepo-ldapv3-config-memberof'.equals(memberof) &&
-    slurped.authentication.'sun-idrepo-ldapv3-config-auth-naming-attr'.equals(authNamingAttr) &&
-    ( peopleContainerValue.isEmpty() ? null == slurped.userconfig.'sun-idrepo-ldapv3-config-people-container-value' :  slurped.userconfig.'sun-idrepo-ldapv3-config-people-container-value'.equals(peopleContainerName) ) &&
-    ( authKbaIndexAttr.isEmpty() ? null == slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-index-attr' :  slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-index-attr'.equals(authKbaIndexAttr) ) &&
-    ( groupContainerValue.isEmpty() ? null == slurped.groupconfig.'sun-idrepo-ldapv3-config-group-container-value' :  slurped.groupconfig.'sun-idrepo-ldapv3-config-group-container-value'.equals(groupContainerValue) )
-){
-    println blue("Skipping identity store config, no delta")
-}else  {
-  if (isNull(eval("""update OpenDJ --realm realmName --id OpenDJ --body '{
-      "sun-idrepo-ldapv3-config-users-search-attribute":"${userSearchAttribute}",
-      "sun-idrepo-ldapv3-config-user-objectclass":${arrayToEscapedString(userObjectclass)},
-      "sun-idrepo-ldapv3-config-user-attributes": ${arrayToEscapedString(userAttributes)},
-      "sun-idrepo-ldapv3-config-auth-naming-attr":"${authNamingAttr}",
-      "sun-idrepo-ldapv3-config-people-container-name":"${peopleContainerName}",
-      "sun-idrepo-ldapv3-config-people-container-value":"${peopleContainerValue}",
-      "sun-idrepo-ldapv3-config-auth-kba-attr": ${arrayToEscapedString(authKbaAttr)},
-      "sun-idrepo-ldapv3-config-auth-kba-index-attr":"${authKbaIndexAttr}",
-      "sun-idrepo-ldapv3-config-auth-kba-attempts-attr":${arrayToEscapedString(authKbaAttemptsAttr)},
-      "sun-idrepo-ldapv3-config-group-container-name":"${groupContainerName}",
-      "sun-idrepo-ldapv3-config-group-container-value":"${groupContainerValue}",
-      "sun-idrepo-ldapv3-config-memberof":"${memberof}",
-      "sun-idrepo-ldapv3-config-organization_name" : "${usersBackend}",
-      "sun-idrepo-ldapv3-config-authpw":"${authPwd}"
-      }' """ ))){
-     println(red("Error occured setting identity store in realm '${realmName}', script 107"));
-     haltOnError=true;
-   } else {
-      println(green("Succeeded setting identity store settings in realm $realmName"))
-   }
+  if (
+      slurped.userconfig.'sun-idrepo-ldapv3-config-organization_name'.equals(usersBackend) &&
+      slurped.userconfig.'sun-idrepo-ldapv3-config-users-search-attribute'.equals(userSearchAttribute) &&
+      slurped.userconfig.'sun-idrepo-ldapv3-config-user-objectclass'.sort().equals(userObjectclass.sort()) &&
+      slurped.userconfig.'sun-idrepo-ldapv3-config-user-attributes'.sort().equals(userAttributes.sort()) &&
+      slurped.userconfig.'sun-idrepo-ldapv3-config-people-container-name'.equals(peopleContainerName) &&
+      slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-attr'.sort().equals(authKbaAttr.sort()) &&
+      slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-attempts-attr'.sort().equals(authKbaAttemptsAttr.sort()) &&
+      slurped.groupconfig.'sun-idrepo-ldapv3-config-group-container-name'.equals(groupContainerName) &&
+      slurped.groupconfig.'sun-idrepo-ldapv3-config-memberof'.equals(memberof) &&
+      slurped.authentication.'sun-idrepo-ldapv3-config-auth-naming-attr'.equals(authNamingAttr) &&
+      ( peopleContainerValue.isEmpty() ? null == slurped.userconfig.'sun-idrepo-ldapv3-config-people-container-value' :  slurped.userconfig.'sun-idrepo-ldapv3-config-people-container-value'.equals(peopleContainerName) ) &&
+      ( authKbaIndexAttr.isEmpty() ? null == slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-index-attr' :  slurped.userconfig.'sun-idrepo-ldapv3-config-auth-kba-index-attr'.equals(authKbaIndexAttr) ) &&
+      ( groupContainerValue.isEmpty() ? null == slurped.groupconfig.'sun-idrepo-ldapv3-config-group-container-value' :  slurped.groupconfig.'sun-idrepo-ldapv3-config-group-container-value'.equals(groupContainerValue) )
+  ){
+      println blue("Skipping identity store config, no delta")
+  }else  {
+    if (isNull(eval("""update OpenDJ --realm $realmName --id OpenDJ --body '{
+        "sun-idrepo-ldapv3-config-users-search-attribute":"${userSearchAttribute}",
+        "sun-idrepo-ldapv3-config-user-objectclass":${arrayToEscapedString(userObjectclass)},
+        "sun-idrepo-ldapv3-config-user-attributes": ${arrayToEscapedString(userAttributes)},
+        "sun-idrepo-ldapv3-config-auth-naming-attr":"${authNamingAttr}",
+        "sun-idrepo-ldapv3-config-people-container-name":"${peopleContainerName}",
+        "sun-idrepo-ldapv3-config-people-container-value":"${peopleContainerValue}",
+        "sun-idrepo-ldapv3-config-auth-kba-attr": ${arrayToEscapedString(authKbaAttr)},
+        "sun-idrepo-ldapv3-config-auth-kba-index-attr":"${authKbaIndexAttr}",
+        "sun-idrepo-ldapv3-config-auth-kba-attempts-attr":${arrayToEscapedString(authKbaAttemptsAttr)},
+        "sun-idrepo-ldapv3-config-group-container-name":"${groupContainerName}",
+        "sun-idrepo-ldapv3-config-group-container-value":"${groupContainerValue}",
+        "sun-idrepo-ldapv3-config-memberof":"${memberof}",
+        "sun-idrepo-ldapv3-config-organization_name" : "${usersBackend}",
+        "sun-idrepo-ldapv3-config-authpw":"${authPwd}"
+        }' """ ))){
+       println(red("{{ am_amster_stdout_tags['error'] }} occured setting identity store in realm '${realmName}', script 107"));
+     } else {
+        println(green("Succeeded setting identity store settings in realm $realmName"))
+     }
+  }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
-if (haltOnError) { eval(":quit")}
-
+:quit

@@ -3,18 +3,23 @@
   include: amster.yml
 
 - block:
-    - name: Install AM
-      include: install.yml
-
     - name: Create Amster scripts
       template:
         src: "{{ item }}.j2"
         dest: "{{ amster_home_version }}/{{ item }}.amster"
         owner: "{{ amster_owner }}"
         group: "{{ amster_group }}"
-        mode: 0755
-      with_items: "{{ am_amster_templates }}"
+        mode: 0600
+      with_items: "{{ am_amster_scripts_default + am_amster_subscripts }}"
+
+    - name: Install AM
+      include: install.yml
 
     - name: Configure AM
       include: configure.yml
   when: amster_am_install is defined
+
+- name: Fail manual mode
+  fail:
+    msg: "Running in manual configure mode!"
+  when: am_configure_manual|default(False)
