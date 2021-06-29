@@ -1,58 +1,66 @@
-println("Start SAML config import")
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-// GET Realm
-currentRealm = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'".toString())
-if (isNull(currentRealm)) {
-    println("Unable to update COT as the realm $realmName is unknown")
-} else {
-    // Check if realm already exists, if not then create
-    currentCot = eval("read CircleOfTrust --realm $realmName --id $cotName")
-    if (isNull(currentCot)) {
-        println("Create COT")
-        eval("import-config --failOnError --path $fileCot")
+    // GET Realm
+    currentRealm = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'".toString())
+    if (isNull(currentRealm)) {
+        println("Unable to update COT as the realm $realmName is unknown")
     } else {
-        println("COT $cotName already exists")
-    }
-}
-
-// GET all SAML entities in directory
-// From directory - dir/Entity
-dir = new File(dirSaml)
-list = [];
-bodyBuilder = new groovy.json.JsonBuilder()
-currentCot = eval("read CircleOfTrust --realm $realmName --id $cotName")
-slurped = new groovy.json.JsonSlurper().parseText(currentCot)
-
-dir.traverse(type: groovy.io.FileType.DIRECTORIES, maxDepth: 0) { it ->
-    samlMetadataFile = "$it/meta.xml"
-    samlMetadataExtFile = "$it/metaext.xml"
-    samlMetadata = new File(samlMetadataFile)?.text
-    samlMetadataExt = new File(samlMetadataExtFile)?.text
-    samlEntityName = new XmlParser().parseText(samlMetadata).@entityID
-
-    bodyBuilder 'metadata': groovy.json.StringEscapeUtils.escapeJava(samlMetadata), 'entityConfig': groovy.json.StringEscapeUtils.escapeJava(samlMetadataExt)
-    // Check if SAML Entity exists
-    println("read Saml2Entity --realm $realmName --id $samlEntityName")
-    isSAMLEntityConfigured = eval("read Saml2Entity --realm $realmName --id $samlEntityName")
-    if (isNull(isSAMLEntityConfigured)) {
-        println("Create SAML Entity $samlEntityName")
-        eval("create Saml2Entity --realm $realmName --id $samlEntityName --body '$bodyBuilder'")
-    } else {
-        println("Update SAML Entity $samlEntityName")
-        eval("update Saml2Entity --realm $realmName --id $samlEntityName --body '$bodyBuilder'")
+        // Check if realm already exists, if not then create
+        currentCot = eval("read CircleOfTrust --realm $realmName --id $cotName")
+        if (isNull(currentCot)) {
+            println("Create COT")
+            eval("import-config --failOnError --path $fileCot")
+        } else {
+            println("COT $cotName already exists")
+        }
     }
 
-    // Add SAML entity to COT
-    println("Add to COT $cotName")
-    entityIdCot = samlEntityName
+    // GET all SAML entities in directory
+    // From directory - dir/Entity
+    dir = new File(dirSaml)
+    list = [];
+    bodyBuilder = new groovy.json.JsonBuilder()
     currentCot = eval("read CircleOfTrust --realm $realmName --id $cotName")
     slurped = new groovy.json.JsonSlurper().parseText(currentCot)
-    if (slurped.trustedProviders.contains(entityIdCot)) {
-        println("SAML Entity $samlEntityName already part of COT $cotName")
-    } else {
-        println("Add SAML Entity $samlEntityName to COT $cotName")
-        bodyBuilder = new groovy.json.JsonBuilder();
-        bodyBuilder 'trustedProviders': slurped.trustedProviders + entityIdCot
-        eval("update CircleOfTrust --realm $realmName --id $cotName --body '$bodyBuilder'")
+
+    dir.traverse(type: groovy.io.FileType.DIRECTORIES, maxDepth: 0) { it ->
+        samlMetadataFile = "$it/meta.xml"
+        samlMetadataExtFile = "$it/metaext.xml"
+        samlMetadata = new File(samlMetadataFile)?.text
+        samlMetadataExt = new File(samlMetadataExtFile)?.text
+        samlEntityName = new XmlParser().parseText(samlMetadata).@entityID
+
+        bodyBuilder 'metadata': groovy.json.StringEscapeUtils.escapeJava(samlMetadata), 'entityConfig': groovy.json.StringEscapeUtils.escapeJava(samlMetadataExt)
+        // Check if SAML Entity exists
+        println("read Saml2Entity --realm $realmName --id $samlEntityName")
+        isSAMLEntityConfigured = eval("read Saml2Entity --realm $realmName --id $samlEntityName")
+        if (isNull(isSAMLEntityConfigured)) {
+            println("Create SAML Entity $samlEntityName")
+            eval("create Saml2Entity --realm $realmName --id $samlEntityName --body '$bodyBuilder'")
+        } else {
+            println("{{ am_amster_stdout_tags['changed'] }} Update SAML Entity $samlEntityName")
+            eval("update Saml2Entity --realm $realmName --id $samlEntityName --body '$bodyBuilder'")
+        }
+
+        // Add SAML entity to COT
+        println("Add to COT $cotName")
+        entityIdCot = samlEntityName
+        currentCot = eval("read CircleOfTrust --realm $realmName --id $cotName")
+        slurped = new groovy.json.JsonSlurper().parseText(currentCot)
+        if (slurped.trustedProviders.contains(entityIdCot)) {
+            println("SAML Entity $samlEntityName already part of COT $cotName")
+        } else {
+            println("{{ am_amster_stdout_tags['changed'] }} Add SAML Entity $samlEntityName to COT $cotName")
+            bodyBuilder = new groovy.json.JsonBuilder();
+            bodyBuilder 'trustedProviders': slurped.trustedProviders + entityIdCot
+            eval("update CircleOfTrust --realm $realmName --id $cotName --body '$bodyBuilder'")
+        }
     }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
+:quit

@@ -1,23 +1,31 @@
-println("Start SAML config import")
+{{ ansible_managed|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-// GET Fedration Module
-currentModule = eval("read FederationModule --realm '$realmName' --id Federation")
-if (!isNull(currentModule)) {
-    // Already there!
-    println("No need to create FederationModule as is already there in realm $realmName")
-} else {
-    // Create the needed Federation Module
-    println("No FederationModule found. Building JSON for Module")
-    bodyBuilder = new groovy.json.JsonBuilder()
-    bodyBuilder {
-        _id 'Federation'
-    }
-
-    println("Creating FederationModule")
-    currentModule = eval("create FederationModule --realm $realmName --id Federation --body '$bodyBuilder'")
-    if (isNull(currentModule)) {
-        println("Creation was unsuccessful")
+    // GET Fedration Module
+    currentModule = eval("read FederationModule --realm '$realmName' --id Federation")
+    if (!isNull(currentModule)) {
+        // Already there!
+        println("No need to create FederationModule as is already there in realm $realmName")
     } else {
-        println("Creation was successful. DONE.")
+        // Create the needed Federation Module
+        println("No FederationModule found. Building JSON for Module")
+        bodyBuilder = new groovy.json.JsonBuilder()
+        bodyBuilder {
+            _id 'Federation'
+        }
+
+        println("Creating FederationModule")
+        currentModule = eval("create FederationModule --realm $realmName --id Federation --body '$bodyBuilder'")
+        if (isNull(currentModule)) {
+            println("Creation was unsuccessful")
+        } else {
+            println("Creation was successful. DONE.")
+        }
     }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
+:quit

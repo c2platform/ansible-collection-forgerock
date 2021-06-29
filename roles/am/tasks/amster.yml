@@ -12,13 +12,8 @@
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0755
-  with_items:
-    - "{{ amster_home }}"
-    - "{{ amster_home_version }}"
-    - "{{ amster_home_version }}/amster_config"
-    - "{{ amster_home_version }}/amster_config/amsterFiles"
-    - "{{ amster_home_version }}/amster_config/federation"
-    - "{{ amster_home_version }}/amster_config/federation/uwv/uwv_cot_uwv"
+  with_items: "{{ am_config_directories }}"
+  when: am_config_directories|default(False)
 
 - name: Download zip file
   get_url:
