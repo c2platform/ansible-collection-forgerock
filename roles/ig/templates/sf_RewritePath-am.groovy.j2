@@ -1,0 +1,24 @@
+logger.warn("Request.uri.path = " + request.uri.path);
+logger.warn("Request.uri = " + request.uri);
+
+String backendURI = '{{ backendURI }}';
+String path = request.uri.path;
+String target = "am/";
+String replacement = "acs/";
+
+logger.warn("sf_RewritePath.groovy. property URI BEFORE= " + backendURI);
+
+String processed = path.replace(target,replacement);
+logger.warn("Processed URI = " + processed );
+
+request.uri.path = processed;
+request.uri.host = backendURI;
+request.uri.scheme="https";
+
+String reformedUri=backendURI + processed;
+logger.warn("sf_RewritePath: reformed newuri =" + reformedUri);
+
+attributes.staticURL = reformedUri;
+logger.warn("Final static URL = " + attributes.staticURL);
+
+next.handle(context, request)
