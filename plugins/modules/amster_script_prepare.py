@@ -4,8 +4,8 @@ from ansible.module_utils.basic import *
 # import glob, os, hashlib, uuid
 
 
-def script(step, template):
-    a = "s{}-{}.amster".format(step, template)
+def script(step, name, template):
+    a = "s{}-{}-{}.amster".format(step, template.split('-')[0], name)
     return a.lower().replace('_', '-').replace(' ', '-')
 
 
@@ -15,7 +15,7 @@ def amster_script_prepare(data):
     i = 1
     for c in fcts['am_configure']:
         c['step'] = str(i).zfill(2)
-        c['script'] = script(c['step'], c['template'])
+        c['script'] = script(c['step'], c['name'], c['template'])
         # c['script'] = amster_script_name() # TODO
         i += 1
     return True, fcts, str(i) + " Amster scripts prepared"
