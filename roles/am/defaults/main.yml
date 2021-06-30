@@ -148,6 +148,34 @@ am_amster_templates:
         value: LDAP
       - name: chainCriteria
         value: REQUIRED
+  113-update-ldap-module:
+    vars: ['realmName', 'primaryLdapServer', 'userSearchStartDN']
+    vars-optional:
+      - name: userBindDN
+        value: cn=Directory Manager
+      - name: moduleName
+        value: LDAP
+    body:
+      primaryLdapServer:
+      - "$primaryLdapServer"
+      secondaryLdapServer: []
+      userSearchStartDN:
+      - "$userSearchStartDN"
+      userBindDN: $userBindDN
+      userProfileRetrievalAttribute: uid
+      userSearchAttributes:
+      - uid
+      searchScope: SUBTREE
+      openam-auth-ldap-connection-mode: LDAPS
+      returnUserDN: true
+      profileAttributeMappings: []
+      minimumPasswordLength: '8'
+      beheraPasswordPolicySupportEnabled: true
+      trustAllServerCertificates: false
+      connectionHeartbeatInterval: 10
+      connectionHeartbeatTimeUnit: SECONDS
+      operationTimeout: 0
+      authenticationLevel: 0
   208-function_create_federation_module:
     vars: ['realmName']
   209-function_load_all_saml:

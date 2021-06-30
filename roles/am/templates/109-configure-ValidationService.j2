@@ -5,12 +5,12 @@ connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install
 try {
 {{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
-      currentValidation = eval("read ValidationService --realm $realmName")
-      slurped = new groovy.json.JsonSlurper().parseText (currentValidation)
+      slurped = new groovy.json.JsonSlurper().parseText ('{}')
       slurped.validGotoDestinations = validGotoDestinations
       bodyBuilder = new groovy.json.JsonBuilder();
       bodyBuilder 'validGotoDestinations': slurped.validGotoDestinations
 
+      currentValidation = eval("read ValidationService --realm $realmName")
       if(isNull(currentValidation)){
             if(isNull(eval("create ValidationService --realm $realmName --body '$bodyBuilder'"))) {
                   println red("{{ am_amster_stdout_tags['error'] }} creating ValidationService in realm $realmName");
@@ -21,12 +21,12 @@ try {
             if(isNull(eval("update ValidationService --realm $realmName --body '$bodyBuilder'"))) {
                   println red("{{ am_amster_stdout_tags['error'] }} updating ValidationService in realm $realmName");
             } else {
-                  println green("ValidationService in realm $realmName updated");
+                  println("Updating ValidationService in realm $realmName");
+                  newValidation = eval("read ValidationService --realm $realmName")
+                  if (resourceChange(currentValidation, newValidation)) {
+                      println green("{{ am_amster_stdout_tags['changed'] }} ValidationService in realm $realmName updated");
+                  }
             }
-      }
-      newValidation = eval("read ValidationService --realm $realmName")
-      if (resourceChange(currentValidation, newValidation)) {
-          println green("{{ am_amster_stdout_tags['changed'] }} ValidationService in realm $realmName updated");
       }
 } catch(Exception e) {
    println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")

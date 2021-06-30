@@ -1,0 +1,27 @@
+{{ ansible_managed|comment(decoration="// ") }}
+{{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
+connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
+{{ am_amster_common_functions }}
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+
+  BODY="""
+{{ am_amster_templates[item['template']]['body']|to_nice_json|indent(4, True) }}
+  """
+  currentLdapModule = eval("read LdapModule --realm $realmName --id $moduleName")
+  if (isNull(currentLdapModule)) {
+      println red("Unable to update Ldap Module as it cannot be read")
+  } else {
+      println cyan("Update Ldap Module with the following bind user dn: ${userBindDN}")
+      slurped = new groovy.json.JsonSlurper().parseText(currentLdapModule)
+      if (slurped.userSearchStartDN.contains(userSearchStartDN)) {
+          println cyan("Nothing to do")
+      } else {
+          eval("update LdapModule --realm $realmName --id $moduleName --body '$BODY'")
+          println green("{{ am_amster_stdout_tags['changed'] }} Ldap Module updated")
+      }
+  }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
+}
+:quit

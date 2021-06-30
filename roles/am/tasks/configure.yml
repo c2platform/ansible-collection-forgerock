@@ -79,7 +79,6 @@
   c2platform.forgerock.amster_script_prepare:
     configure: "{{ am_configure }}"
     templates: "{{ am_amster_templates }}"
-  no_log: no
 
 #- debug:
 #    msg: "am_configure: {{ am_configure }}"
@@ -92,7 +91,6 @@
     group: "{{ amster_group }}"
     mode: 0600
   with_items: "{{ am_configure }}"
-  # no_log: yes
 
 ##- debug:
 #    msg: "bodies: {{ am_configure|c2platform.forgerock.amster_script_bodies }}"
@@ -122,7 +120,6 @@
   when: (not am_configure_manual|default(False)) and item['enabled']|default(True)
   changed_when: am_amster_stdout_tags['changed'] in amster_script_exec.stdout
   failed_when: am_amster_stdout_tags['error'] in amster_script_exec.stdout
-  # no_log: yes
 
 #- meta: Manual mode
 #  when: ('file XYZ cannot be processed' | warn_me())
