@@ -84,57 +84,57 @@ am_amster_templates:
   107-update-identity-store:
     vars: ['realmName', 'usersBackend', 'authPwd']
     vars-optional:
-      - name: userSearchAttribute
-        value: cn
-      - name: userObjectclass
-        value: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
-        string: no
-      - name: userAttributes
-        value: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
-        string: no
-      - name: authNamingAttr
-        value: uid
-      - name: peopleContainerName
-        value: cn
-      - name: peopleContainerValue
-        value:
-      - name: authKbaAttr
-        value: []
-        string: no
-      - name: authKbaIndexAttr
-        value:
-      - name: authKbaAttemptsAttr
-        value: []
-        string: no
-      - name: groupContainerName
-        value:
-      - name: groupContainerValue
-        value:
-      - name: memberof
-        value: isMemberOf
+    - name: userSearchAttribute
+      value: cn
+    - name: userObjectclass
+      value: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
+      string: no
+    - name: userAttributes
+      value: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
+      string: no
+    - name: authNamingAttr
+      value: uid
+    - name: peopleContainerName
+      value: cn
+    - name: peopleContainerValue
+      value:
+    - name: authKbaAttr
+      value: []
+      string: no
+    - name: authKbaIndexAttr
+      value:
+    - name: authKbaAttemptsAttr
+      value: []
+      string: no
+    - name: groupContainerName
+      value:
+    - name: groupContainerValue
+      value:
+    - name: memberof
+      value: isMemberOf
   108-set-sessionproperties:
     vars: ['realmName', 'sharedSecret']
   109-configure-ValidationService:
     vars: ['realmName']
     vars-optional:
-      - name: validGotoDestinations
-        value: []
-        string: no
+    - name: validGotoDestinations
+      value: []
+      string: no
   110-create-authentication-LdapTree:
     vars: ['realmName','defaultTreeName','defaultAuthenticationService', 'primaryLDAPServer','bindUserPassword']
     vars-optional:
-      - name: startDN
-        value: cn=Directory Manager
-      - name: dnToStartUserSearch
-        value: o=suwi,c=NL
-      - name: bindUserDN
-        value: cn=Directory Manager
-      - name: attributeUsedtoRetrieveUserProfile
-        value: uid
-      - name: attributeUsedtoSearchForAUserToBeAuthenticated
-        value: uid
-      - name: secondaryLDAPServer
-        value:
+    - name: startDN
+      value: cn=Directory Manager
+    - name: dnToStartUserSearch
+      value: o=suwi,c=NL
+    - name: bindUserDN
+      value: cn=Directory Manager
+    - name: attributeUsedtoRetrieveUserProfile
+      value: uid
+    - name: attributeUsedtoSearchForAUserToBeAuthenticated
+      value: uid
+    - name: secondaryLDAPServer
+      value:
     scripts:
       - 110-function-delete-authentication-tree
       - 110-function-create-authentication-tree
@@ -144,17 +144,17 @@ am_amster_templates:
   112-configure-top-level-realm:
     vars: ['newChainName','realm']
     vars-optional:
-      - name: moduleType
-        value: LDAP
-      - name: chainCriteria
-        value: REQUIRED
+    - name: moduleType
+      value: LDAP
+    - name: chainCriteria
+      value: REQUIRED
   113-update-ldap-module:
     vars: ['realmName', 'primaryLdapServer', 'userSearchStartDN']
     vars-optional:
-      - name: userBindDN
-        value: cn=Directory Manager
-      - name: moduleName
-        value: LDAP
+    - name: userBindDN
+      value: cn=Directory Manager
+    - name: moduleName
+      value: LDAP
     body:
       primaryLdapServer:
       - "$primaryLdapServer"
@@ -180,6 +180,9 @@ am_amster_templates:
     vars: ['realmName']
   209-function_load_all_saml:
     vars: ['realmName', 'cotName', 'fileCot', 'dirSaml']
+    vars-optional:
+    - name: amsterVersion
+      value: "{{ am_version }}"
   210-function-load-authentication-settings:
     vars: ['realmName']
   400-set-global-security-settings:
@@ -187,8 +190,8 @@ am_amster_templates:
     notify: restart tomcat instance # TODO
   401-set-global-locale:
     vars-optional:
-      - name: locale
-        value: nl_NL
+    - name: locale
+      value: nl_NL
   402-update-cookie-domains:
     vars: ['cookieDomains']
     notify: restart tomcat instance # TODO
