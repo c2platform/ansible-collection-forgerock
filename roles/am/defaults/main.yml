@@ -113,7 +113,7 @@ am_amster_templates:
     - name: memberof
       value: isMemberOf
   108-set-sessionproperties:
-    vars: ['realmName', 'sharedSecret']
+    vars: ['realmName', 'sharedSecret', 'loginSuccessUrl']
   109-configure-ValidationService:
     vars: ['realmName']
     vars-optional:
