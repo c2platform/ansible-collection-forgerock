@@ -114,6 +114,12 @@ am_amster_templates:
         value: isMemberOf
   108-set-sessionproperties:
     vars: ['realmName', 'sharedSecret']
+  109-configure-ValidationService:
+    vars: ['realmName']
+    vars-optional:
+      - name: validGotoDestinations
+        value: []
+        string: no
   110-create-authentication-LdapTree:
     vars: ['realmName','defaultTreeName','defaultAuthenticationService', 'primaryLDAPServer','bindUserPassword']
     vars-optional:

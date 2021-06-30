@@ -8,6 +8,7 @@
     mode: 0644
   with_items: "{{ am_config_files }}"
   when: am_config_files|default(False)
+  no_log: yes
 
 - name: Various "raw" files
   copy:
@@ -18,6 +19,7 @@
     mode: 0644
   with_items: "{{ am_config_files_raw }}"
   when: am_config_files_raw|default(False)
+  no_log: yes
 
 ## Get the test directory here https://dxcportal.sharepoint.com/sites/BKWIVIPS/Shared%20Documents/Forms/AllItems.aspx?viewid=1008fb07%2Db725%2D4eab%2Db5c3%2D7e8504d24645&id=%2Fsites%2FBKWIVIPS%2FShared%20Documents%2FForgeRock%2F03%20Design%2FCookbooks%5F30042021%2Fbkw%5Fam%5Frole%2Ffiles%2Fdefault
 # Note that code above 'works' technically but gave some interesting ACL issues on target machine. When fully using (BTO) 
