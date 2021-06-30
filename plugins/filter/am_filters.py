@@ -15,11 +15,16 @@ def amster_param_quotes(var):
     return '"'
 
 
+def amster_script_header(item):
+    return "Script: {}\nTemplate: {}".format(item['script'], item['template'])
+
+
 class FilterModule(object):
     """ansible filters."""
 
     def filters(self):
         return {
+            'amster_script_header': amster_script_header,
             'amster_param_quotes': amster_param_quotes,
             'amster_script_index': amster_script_index
         }
