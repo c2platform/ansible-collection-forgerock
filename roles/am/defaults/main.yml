@@ -261,3 +261,10 @@ am_amster_set_params: |
         this[v['name']] = System.getenv(v['name'])
       }
   }
+
+# https://backstage.forgerock.com/knowledge/kb/article/a47894244
+am_security_advisory_202104: |
+  <!--<servlet-mapping>
+      <servlet-name>VersionServlet</servlet-name>
+      <url-pattern>/ccversion/*</url-pattern>
+  </servlet-mapping>-->

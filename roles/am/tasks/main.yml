@@ -23,3 +23,10 @@
   fail:
     msg: "Running in manual configure mode!"
   when: am_configure_manual|default(False)
+
+- name: "AM Security Advisory #202104"
+  ansible.builtin.replace:
+    path: "{{ tomcat_home_link|default('/opt/tomcat/tomcat')}}/webapps/acs/WEB-INF/web.xml"
+    #regexp: '(?:<servlet-mapping){1}.*?VersionServlet.*?(?:<\/servlet-mapping>){1}'
+    regexp: '(?:<!--)?(?:<servlet-mapping){1}.*?\n{1}.*?VersionServlet.*\n.*\n.*(?:</servlet-mapping>){1}(?:-->)?\n'
+    replace: "{{ am_security_advisory_202104|indent(4) }}"
