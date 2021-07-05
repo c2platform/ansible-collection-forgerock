@@ -1,0 +1,5 @@
+---
+# https://stackoverflow.com/questions/68251751/how-to-return-omit-from-ansible-jinja-filter
+- name: empty-am-hander
+  debug:
+    msg: empty handler

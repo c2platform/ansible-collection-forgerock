@@ -1,15 +1,1 @@
-static String red(String text)    { "\u001B[31m" + text + "\u001B[39m" }
-static String green(String text)  { "\u001B[32m" + text + "\u001B[39m" }
-static String yellow(String text) { "\u001B[33m" + text + "\u001B[39m" }
-static String blue(String text)   { "\u001B[34m" + text + "\u001B[39m" }
-static String magenta(String text){ "\u001B[35m" + text + "\u001B[39m" }
-static String cyan(String text)   { "\u001B[36m" + text + "\u001B[39m" }
-static String todo(String text)   { "\u001B[7m\u001B[33m" + "TODO: " + text + "\u001B[0m" }
-static String arrayToEscapedString(Object obj)   { obj.size() == 0 ? "[]" : "[\""+obj.join("\", \"")+"\"]" }
-static boolean isNull(Object obj) { (null==obj||"null".equalsIgnoreCase(obj))}
-static boolean am_resource_changed(cur,new) {
-
-
-}
-//todo? helper to accept String false in a condition? :: static Boolean containsFalse String(Object obj) { "False".equalsIgnoreCase(obj.toString()) || false == obj }
-
+{{ am_amster_common_functions }}

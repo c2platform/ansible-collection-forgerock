@@ -1,22 +1,24 @@
 {{ ansible_managed|comment(decoration="// ") }}
 {{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
-connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
-{{ am_amster_common_functions }}
 try {
-  {{ lookup('template', './params.groovy.j2')|indent(2, True) }}
-  BODY="""
-  {
-  "amconfig.header.cookie":{
-  "com.iplanet.am.cookie.name":"$cookieName",
-  "com.iplanet.am.cookie.secure":true}
-  }
-  """;
-  if(isNull(eval("update DefaultSecurityProperties --global --body '$BODY'"))){
-          println red("{{ am_amster_stdout_tags['error'] }} changing the security settings")
-  } else {
-          println green("{{ am_amster_stdout_tags['changed'] }} the security settings to the correct values")
-  }
+    BODY="""
+    {
+    "amconfig.header.cookie":{
+    "com.iplanet.am.cookie.name":"$cookieName",
+    "com.iplanet.am.cookie.secure":true}
+    }
+    """;
+    cur_prop = eval("read DefaultSecurityProperties --global")
+    upd_prop = eval("update DefaultSecurityProperties --global --body '$BODY'")
+    new_prop = eval("read DefaultSecurityProperties --global")
+    if(isNull(upd_prop)){
+       println red("{{ am_amster_stdout_tags['error'] }} in settings the properties.")
+    } else {
+      println green("Setting the default locale was successful.")
+    }
+    if (resourceChange(cur_prop, new_prop, true)) {
+       println("{{ am_amster_stdout_tags['changed'] }} com.iplanet.am.cookie.name $cookieName was set")
+    }
 } catch(Exception e) {
-   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
+    println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
 }
-:quit

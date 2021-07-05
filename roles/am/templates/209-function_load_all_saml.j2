@@ -1,7 +1,7 @@
 {{ ansible_managed|comment(decoration="// ") }}
 {{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
-connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
-{{ am_amster_common_functions }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
 try {
 {{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 
@@ -37,14 +37,14 @@ try {
 
         bodyBuilder 'metadata': groovy.json.StringEscapeUtils.escapeJava(samlMetadata), 'entityConfig': groovy.json.StringEscapeUtils.escapeJava(samlMetadataExt)
         // Check if SAML Entity exists
-        println("read Saml2Entity --realm $realmName --id $samlEntityName")
-        isSAMLEntityConfigured = eval("read Saml2Entity --realm $realmName --id $samlEntityName")
-        if (isNull(isSAMLEntityConfigured)) {
-            println("Create SAML Entity $samlEntityName")
+        saml_current = eval("read Saml2Entity --realm $realmName --id $samlEntityName")
+        if (isNull(saml_current)) {
+            println green("{{ am_amster_stdout_tags['changed'] }} Create SAML Entity $samlEntityName")
             eval("create Saml2Entity --realm $realmName --id $samlEntityName --body '$bodyBuilder'")
         } else {
-            println("{{ am_amster_stdout_tags['changed'] }} Update SAML Entity $samlEntityName")
             eval("update Saml2Entity --realm $realmName --id $samlEntityName --body '$bodyBuilder'")
+            saml_new = eval("read Saml2Entity --realm $realmName --id $samlEntityName")
+            if (resourceChange(saml_current,saml_new)) { println green("{{ am_amster_stdout_tags['changed'] }} SAML Entity $samlEntityName updated") }
         }
 
         // Add SAML entity to COT
@@ -55,10 +55,10 @@ try {
         if (slurped.trustedProviders.contains(entityIdCot)) {
             println("SAML Entity $samlEntityName already part of COT $cotName")
         } else {
-            println("{{ am_amster_stdout_tags['changed'] }} Add SAML Entity $samlEntityName to COT $cotName")
             bodyBuilder = new groovy.json.JsonBuilder();
             bodyBuilder 'trustedProviders': slurped.trustedProviders + entityIdCot
             eval("update CircleOfTrust --realm $realmName --id $cotName --body '$bodyBuilder'")
+            println green("{{ am_amster_stdout_tags['changed'] }} CircleOfTrust $cotName was updated with SAML entity")
         }
     }
 } catch(Exception e) {

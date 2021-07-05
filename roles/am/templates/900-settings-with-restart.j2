@@ -1,0 +1,15 @@
+{{ ansible_managed|comment(decoration="// ") }}
+{{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+{% if item['scripts'] is defined %}
+{%   set scrpts = item['scripts'] %}
+{% else %}
+{%   set scrpts = am_amster_templates[item['template']]['scripts'] %}
+{% endif %}
+
+{% for scrpt in scrpts %}
+:load  '{{ amster_home_version }}/{{ scrpt }}.amster'
+{% endfor %}
+:quit

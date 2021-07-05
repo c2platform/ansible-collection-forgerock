@@ -1,7 +1,7 @@
 {{ ansible_managed|comment(decoration="// ") }}
 {{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
-connect {{ amster_am_connect|c2platform.forgerock.ds_cmd }} {{ amster_am_install['serverUrl'] }}
-{{ am_amster_common_functions }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
 try {
 {{ lookup('template', './params.groovy.j2')|indent(2, True) }}
 

@@ -27,11 +27,9 @@
     chdir: "{{ amster_home_version }}/"
   changed_when: false
 
-- name: execute 100-installAM_1 amster (don't confuse with 100-configure_AM) if not yet done
+- name: execute 100-installAM_1 amster
   command: "./amster 100-installAM_1.amster"
   register: task_register_var
-  #become: yes
-  #become_user: "{{ amster_owner }}"
   args:
     chdir: "{{ amster_home_version }}"
   when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")

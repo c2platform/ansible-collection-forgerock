@@ -21,107 +21,39 @@
   when: am_config_files_raw|default(False)
   no_log: yes
 
-## Get the test directory here https://dxcportal.sharepoint.com/sites/BKWIVIPS/Shared%20Documents/Forms/AllItems.aspx?viewid=1008fb07%2Db725%2D4eab%2Db5c3%2D7e8504d24645&id=%2Fsites%2FBKWIVIPS%2FShared%20Documents%2FForgeRock%2F03%20Design%2FCookbooks%5F30042021%2Fbkw%5Fam%5Frole%2Ffiles%2Fdefault
-# Note that code above 'works' technically but gave some interesting ACL issues on target machine. When fully using (BTO) 
-# do doublecheck the rights, e.g. modify the 'mode'  above or the ACL for the /tmp files on BTO.
-
-#- name: Create root/.ssl for the appserver trusts
-#  file:
-#    path: "/root/.ssl"
-#    state: directory
-#    owner: "root"
-#    group: "root"
-#    mode: 0700
-
-#
-#- name: execute 201 amster deck; unconditional as the idempotency is done in the Groovy script code
-#  command: "./amster 201-configure-SAML.amster"
-#  register: task_register_var
-#  become: yes
-#  become_user: "{{ amster_owner }}"
-#  args:
-#    chdir: "{{ amster_home_version }}/"
-#  environment:
-#    AMSTER_VERSION: 6.5.3
-#    OPENAM_REALM: uwv
-#    OPENAM_COT: uwv_cot_uwv
-#    AMSTER_COT_FILE: /opt/amster/amster-6.5.3/amster_config/federation/cot.json
-#    SAML_DIR: /opt/amster/amster-6.5.3/amster_config/federation/uwv/uwv_cot_uwv
-
-# For now kept upper case, as they used with Chef (the 201 deck grabs these values)
-# The specs tell to repeat the 201 'for each realm' but currently the sole SAML realm is uwv.
-# TBD to parametrise the environment vars when another SAML realm  would be added; but there is more work then,
-# also possibly adding another file like cot.json (beginning part of this yaml)
-
-#- name: execute 400 amster deck (with 101 and 102); unconditional as the idempotency is done in the Groovy script code
-#  command: "./amster 400-set-global-security-settings.amster"
-#  register: task_register_var
-#  become: yes
-#  become_user: "{{ amster_owner }}"
-#  args:
-#    chdir: "{{ amster_home_version }}/"
-#  notify: restart tomcat instance
-
-#- name: Create Amster configure scripts
-#  template:
-#    src: "{{ item['script'] }}.j2"
-#    dest: "{{ amster_home_version }}/{{ item|c2platform.forgerock.amster_script_name }}"
-#    owner: "{{ amster_owner }}"
-#    group: "{{ amster_group }}"
-#    mode: 0600
-#  with_items: "{{ am_configure }}"
-
-#- set_fact:
-#    amster_script_params: "{'{{ item|c2platform.forgerock.amster_script_index(am_configure) }}': '{{ lookup('template', './params.groovy.j2') }}'}"
-#  with_items: "{{ am_configure }}"
-
-- name: Prepare execution of Amster scripts
+- name: Prepare Amster scripts facts
   c2platform.forgerock.amster_script_prepare:
+    dest: "{{ amster_home_version }}"
     configure: "{{ am_configure }}"
     templates: "{{ am_amster_templates }}"
 
-#- debug:
-#    msg: "am_configure: {{ am_configure }}"
+- name: Remove obsolete Amster scripts
+  file:
+    path: "{{ amster_home_version }}/{{ item }}"
+    state: absent
+  with_items: "{{ am_configure|selectattr('script-obsolete', 'defined')|map(attribute='script-obsolete')|list }}"
 
-- name: Create Amster configure scripts
+- name: Create Amster scripts
   template:
     src: "{{ item['template'] }}.j2"
     dest: "{{ amster_home_version }}/{{ item['script'] }}"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
     mode: 0600
-  with_items: "{{ am_configure }}"
-
-##- debug:
-#    msg: "bodies: {{ am_configure|c2platform.forgerock.amster_script_bodies }}"
-
-#- name: Amster env files
-#  template:
-#    src: environment.sh.j2
-#    dest: "{{ amster_home_version }}/{{ item['script'] }}-{{ item['vars']|to_json|checksum }}.sh"
-#    owner: "{{ amster_owner }}"
-#    group: "{{ amster_group }}"
-#    mode: 0600
-#  with_items: "{{ am_configure }}"
-
-#- debug:
-#    msg: |
-#      item['script']: {{ item['script'] }}
-#      item['name']: {{ item['name'] }}
-#      item['vars']: {{ item['vars']|default('') }}
-#  with_items: "{{ am_configure }}"
+  with_items: "{{ am_configure}}"
+  no_log: yes
 
 - name: Execute Amster script
-  command: "./amster {{ item['script'] }}"
+  command: "./amster {{ item }}"
   register: amster_script_exec
   args:
     chdir: "{{ amster_home_version }}"
-  with_items: "{{ am_configure }}"
-  when: (not am_configure_manual|default(False)) and item['enabled']|default(True) and am_configure_enabled|default(True)
+  with_items: "{{ am_configure|map(attribute='script')|list }}"
+  when: >
+    (not am_configure_manual|default(False)) and
+    am_configure|selectattr('script', 'equalto', item)|list|map(attribute='enabled')|first|default(True) and
+    am_configure_enabled|default(True)
   changed_when: am_amster_stdout_tags['changed'] in amster_script_exec.stdout
   failed_when: am_amster_stdout_tags['error'] in amster_script_exec.stdout
-
-#- meta: Manual mode
-#  when: ('file XYZ cannot be processed' | warn_me())
-#  delegate_to: localhost
-#  run_once: yes
+  # notify: "{{ item|c2platform.forgerock.amster_script_notify(am_configure, am_amster_templates)|default(None)|default(omit) }}"
+  # TODO
