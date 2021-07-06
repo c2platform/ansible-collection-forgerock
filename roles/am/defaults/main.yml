@@ -15,6 +15,7 @@ am_configure_manual: no
 # TODO remove
 am_home: /opt/am
 am_version: 6.5.3
+am_context: am
 
 amster_versions:
   6.5.3:
