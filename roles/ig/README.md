@@ -6,9 +6,10 @@ This Ansible role is used to configure [ForgeRock Internet Gateway](https://www.
 
 - [Requirements](#requirements)
 - [Role Variables](#role-variables)
-    - [Config](#config)
-    - [Routes](#routes)
-    - [Rewrite paths](#rewrite-paths)
+  - [Config](#config)
+  - [Routes](#routes)
+  - [Rewrite paths](#rewrite-paths)
+  - [CaptureDecorator](#capturedecorator)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
 - [Links](#links)
@@ -46,6 +47,16 @@ ig_rewrite_paths:
 ```
 
 This will create file `myAppRewritePath.groovy` in `$HOME/.openig/scripts/groovy/`.
+
+
+### CaptureDecorator
+
+The var `suwinet_ig_capture:` can be used to create verbose logging to help with troubleshooting IG.
+
+    suwinet_ig_capture: all
+
+[ForgeRock Identity Gateway 7 > Configuration Reference > CaptureDecorator
+https://backstage.forgerock.com/docs/ig/7/reference/CaptureDecorator.html#CaptureDecorator-usage-object
 
 ## Dependencies
 
