@@ -8,7 +8,7 @@
     mode: 0644
   with_items: "{{ am_config_files }}"
   when: am_config_files|default(False)
-  no_log: yes
+  no_log: "{{ am_no_log }}"
 
 - name: Various "raw" files
   copy:
@@ -19,7 +19,7 @@
     mode: 0644
   with_items: "{{ am_config_files_raw }}"
   when: am_config_files_raw|default(False)
-  no_log: yes
+  no_log: "{{ am_no_log }}"
 
 - name: Prepare Amster scripts facts
   c2platform.forgerock.amster_script_prepare:
@@ -41,7 +41,7 @@
     group: "{{ amster_group }}"
     mode: 0600
   with_items: "{{ am_configure}}"
-  no_log: yes
+  no_log: "{{ am_no_log }}"
 
 - name: Execute Amster script
   command: "./amster {{ item }}"

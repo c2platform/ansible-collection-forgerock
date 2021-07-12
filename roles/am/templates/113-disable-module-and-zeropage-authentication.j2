@@ -1,0 +1,55 @@
+{{ ansible_managed|comment(decoration="// ") }}
+{{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+    moduleAuth = false
+    zeroPage = false
+    zeroPageWithoutReferrer = false
+    println green ("113 - disable module and zero-page based authentication for all realms")
+
+    allRealms=eval("query Realms --global --filter true")
+    if (isNull(allRealms)){
+            println red("{{ am_amster_stdout_tags['error'] }} query to find all realms was erroneous")
+    } else {
+            slurped = new groovy.json.JsonSlurper().parseText(allRealms)
+            slurped.name.each{ realmName ->
+
+                    println green ("Processing realm $realmName")
+
+                    if (realmName == '/'){
+                            println magenta ("Found top level realm")
+                            realmName = ''
+                    }
+
+                    // GET Realm
+                    currentRealm = eval("read Realms --global --id '${("/" + realmName).bytes.encodeBase64().toString()}'".toString())
+                    if (isNull(currentRealm)) {
+                            println red("{{ am_amster_stdout_tags['error'] }} Unable to update the security settings as the realm $realmName is unknown")
+                    } else {
+                            currentAuthenticationSettings = eval("read Authentication --realm $realmName")
+                            if (isNull(currentAuthenticationSettings)) {
+                                    println("{{ am_amster_stdout_tags['error'] }} there should be authentication settings already present!")
+                            } else {
+                                    println("Update Authentication Settings")
+                                    slurped = new groovy.json.JsonSlurper().parseText(currentAuthenticationSettings)
+                                    if (slurped.moduleBasedAuthEnabled && slurped.zeroPageLoginEnabled && slurped.zeroPageLoginAllowedWithoutReferrer) {
+                                        println("Do nothing")
+                                    } else {
+                                            slurped.security.moduleBasedAuthEnabled = moduleAuth
+                                            slurped.security.zeroPageLoginEnabled= zeroPage
+                                            slurped.security.zeroPageLoginAllowedWithoutReferrer = zeroPageWithoutReferrer
+                                            bodyBuilder = new groovy.json.JsonBuilder();
+                                            bodyBuilder 'security':slurped.security
+                                            eval("update Authentication --realm $realmName --body '$bodyBuilder'")
+                                            println("{{ am_amster_stdout_tags['changed'] }} authentication was updated")
+                                    }
+                            }
+                    }
+            }
+    }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
+}
+:quit
