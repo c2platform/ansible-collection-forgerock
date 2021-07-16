@@ -45,7 +45,10 @@ try {
         }' """ ))){
        println(red("{{ am_amster_stdout_tags['error'] }} occured setting identity store in realm '${realmName}', script 107"));
      } else {
-        println(green("Succeeded setting identity store settings in realm $realmName"))
+        new_realm=eval("read OpenDJ --realm ${realmName} --id 'OpenDJ'")
+        if (resourceChange(cur, new_realm)) {
+          println(green("{{ am_amster_stdout_tags['changed'] }} Succeeded setting identity store settings in realm $realmName"))
+        }
      }
   }
 } catch(Exception e) {
