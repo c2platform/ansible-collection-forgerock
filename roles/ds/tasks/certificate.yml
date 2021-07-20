@@ -1,0 +1,53 @@
+---
+- include_role:
+    name: c2platform.tasks
+    tasks_from: cert
+  when: cacerts_ca_domains is defined
+
+- name: Read password
+  slurp:
+    src: "{{ ds_home_version }}/config/keystore.pin"
+  register: keystore_password
+
+#- name: Import certificate
+#  java_cert:
+#    pkcs12_path: "{{ ds_certificate['path'] }}"
+#    #pkcs12_alias: "{{ ds_certificate['alias'] }}"
+#    #pkcs12_password: "{{ keystore_password['content']  }}"
+#    cert_alias: "{{ ds_certificate['alias'] }}"
+#    keystore_path: "{{ ds_home_version }}/config/keystore"
+#    keystore_pass: "{{ keystore_password['content'] }}"
+#    keystore_type: JCEKS
+#    executable: "{{ ds_java_home }}/bin/keytool"
+#    state: present
+#  notify: restart ds
+
+- name: Import certificate # java_cert module
+  shell: > # does not support this type of import
+    {{ ds_java_home }}/bin/keytool
+    -importkeystore
+    -destkeystore {{ ds_home_version }}/config/keystore
+    -deststorepass {{ keystore_password['content']|b64decode }}
+    -srckeystore {{ ds_certificate['path'] }}
+    -srcstoretype PKCS12
+    -destkeypass {{ keystore_password['content']|b64decode }}
+    -alias {{ ds_certificate['alias'] }}
+    -noprompt
+  register: import_cert
+
+#keytool -importkeystore -destkeystore /path/to/ds/config/keystore 
+#-deststorepass cat /path/to/ds/config/keystore.pin 
+#-srckeystore server1.p12 -srcstoretype PKCS12 -destkeypass cat /path/to/ds/config/keystore.pin
+
+- debug:
+    msg: "keystore_password['content']: {{ keystore_password['content']|b64decode }}"
+
+- debug:
+    msg: "import_cert: {{ import_cert }}"
+
+#- name: DS config set certificate # TODO wordt niet uitgevoerd
+#  include_tasks: config_component.yml
+#  vars:
+#    component: connection-handler_set_cert
+#    skip_state_check: yes
+#  when: ds_setup # first / setup run
