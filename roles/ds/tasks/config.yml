@@ -1,11 +1,4 @@
 ---
-- name: DS config set certificate
-  include_tasks: config_component.yml
-  vars:
-    component: connection-handler_set_cert
-    skip_state_check: yes
-  when: ds_setup # first / setup run
-
 - include_tasks: config_component.yml
   with_items: "{{ ds_config_components }}"
   vars:
