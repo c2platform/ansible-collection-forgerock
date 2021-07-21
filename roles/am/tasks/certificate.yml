@@ -1,0 +1,50 @@
+---
+- include_role:
+    name: c2platform.tasks
+    tasks_from: cert
+  when: cacerts_ca_domains is defined
+
+- block:
+  - name: Download certificate
+    get_url:
+      url: "{{ item['url'] }}"
+      checksum: "{{ item['checksum']|default(omit) }}"
+      dest: "{{ item['path'] }}"
+      validate_certs: no
+    with_items: "{{ am_keystore['certificates'] }}"
+    register: cert_download
+  when: am_keystore is defined
+
+- block:
+  - name: Get password
+    ansible.builtin.slurp:
+      src: "{{ am_keystore['keystore_pass_file'] }}"
+    register: keystore_password
+
+  - name: "Remove certificate"
+    java_cert:
+      cert_alias: "{{ item['alias'] }}"
+      #cert_path: "{{ item['path'] }}" # required but not sure why
+      pkcs12_path: "{{ item['path'] }}"
+      keystore_path: "{{ am_keystore['keystore_path'] }}"
+      keystore_pass: "{{ keystore_password['content']|b64decode }}"
+      keystore_type: JCEKS
+      executable: "{{ am_keystore['keytool'] }}"
+      state: absent
+    with_items: "{{ am_keystore['certificates'] }}"
+    ignore_errors: yes
+
+  - name: "Add certificate"
+    java_cert:
+      pkcs12_path: "{{ item['path'] }}"
+      #pkcs12_alias: "{{ item['alias'] }}"
+      #pkcs12_password: somepass
+      cert_alias: "{{ item['alias'] }}"
+      #cert_path: "{{ item['path'] }}"
+      keystore_path: "{{ am_keystore['keystore_path'] }}"
+      keystore_pass: "{{ keystore_password['content']|b64decode }}"
+      executable: "{{ am_keystore['keytool'] }}"
+      state: present
+    with_items: "{{ am_keystore['certificates'] }}"
+    notify: restart tomcat instance
+  when: am_keystore is defined and cert_download.changed
