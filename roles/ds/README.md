@@ -47,7 +47,7 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 The default is to use the JDK configured in the **java** role in c2platform.core.
 
 ```yaml
-ds_java_home: "{{ adoptopenjdk['version']|c2platform.core.java_home }}"
+ds_java_home: "{{ java['version']|c2platform.core.java_home }}"
 ```
 
 ## Role Variables
@@ -400,7 +400,7 @@ Example configuration that includes `ds_setup_config` for your `group_vars` or `
 
 ```yaml
 ---
-adoptopenjdk:
+java:
   version: jdk11_0411_oj9
 
 ds_version: 6.5.4
