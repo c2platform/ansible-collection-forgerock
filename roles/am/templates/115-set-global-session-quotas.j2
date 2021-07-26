@@ -1,0 +1,64 @@
+{{ ansible_managed|comment(decoration="// ") }}
+{{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+
+    BODY="""{
+        "general": {
+            "latestAccessTimeUpdateFrequency": 60,
+            "dnRestrictionOnly": false,
+            "timeoutHandlers": [
+
+            ]
+        },
+        "search": {
+            "maxSessionListSize": 120,
+            "sessionListRetrievalTimeout": 5
+        },
+        "notifications": {
+            "propertyChangeNotifications": "OFF",
+            "notificationPropertyList": [
+
+            ]
+        },
+        "quotas": {
+            "iplanet-am-session-enable-session-constraint": "$iplanetSessionConstraint",
+            "behaviourWhenQuotaExhausted": "$behaviourWhenQuotaExhausted",
+            "denyLoginWhenRepoDown": "$denyLoginWhenRepoDown",
+            "quotaConstraintMaxWaitTime": $quotaConstraintMaxWaitTime
+        },
+        "stateless": {
+            "statelessSigningType": "HS256",
+            "statelessSigningRsaCertAlias": "test",
+            "statelessEncryptionType": "DIRECT",
+            "statelessEncryptionRsaCertAlias": "test",
+            "statelessCompressionType": "NONE",
+            "openam-session-stateless-enable-session-blacklisting": false,
+            "openam-session-stateless-blacklist-cache-size": 10000,
+            "openam-session-stateless-blacklist-poll-interval": 60,
+            "openam-session-stateless-blacklist-purge-delay": 1
+        },
+        "dynamic": {
+            "maxSessionTime": $maxSessionTime,
+            "maxIdleTime": $maxIdleTime,
+            "quotaLimit": $quotaLimit,
+            "maxCachingTime": $maxCachingTime
+        },
+        "_type" : {
+          "_id" : "session",
+          "name" : "Session",
+          "collection" : false
+        }
+    }"""
+
+    if(isNull(eval("update Session --global --body '$BODY'"))) {
+      println red("{{ am_amster_stdout_tags['error'] }} updating global Session settings");
+    } else {
+      println green("{{ am_amster_stdout_tags['changed'] }} Global Session settings updated");
+    }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
+}
+:quit

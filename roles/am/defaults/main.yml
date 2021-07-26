@@ -182,6 +182,29 @@ am_amster_templates:
       connectionHeartbeatTimeUnit: SECONDS
       operationTimeout: 0
       authenticationLevel: 0
+  115-set-global-session-quotas:
+    vars-optional:
+    - name: maxSessionTime
+      value: 540
+      string: no
+    - name: maxIdleTime
+      value: 45
+      string: no
+    - name: quotaLimit
+      value: 10 # limit of 10 as default, so multiple amadmin sessions are possible
+      string: no
+    - name: maxCachingTime
+      value: 3
+      string: no
+    - name: iplanetSessionConstraint
+      value: 'ON'
+    - name: denyLoginWhenRepoDown
+      value: 'YES'
+    - name: quotaConstraintMaxWaitTime
+      value: 6000
+      string: no
+    - name: behaviourWhenQuotaExhausted
+      value: org.forgerock.openam.session.service.DestroyAllAction
   208-function_create_federation_module:
     vars: ['realmName']
   209-function_load_all_saml:
