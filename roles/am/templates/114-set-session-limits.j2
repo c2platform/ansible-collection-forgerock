@@ -1,0 +1,33 @@
+{{ ansible_managed|comment(decoration="// ") }}
+{{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+
+    BODY="""{
+          "dynamic": {
+            "maxIdleTime": $maxIdleTime,
+            "quotaLimit": $quotaLimit,
+            "maxCachingTime": $maxCachingTime,
+            "maxSessionTime": $maxSessionTime
+        }
+    }"""
+
+    if(isNull(eval("read Session --realm $realmName"))){
+      if(isNull(eval("create Session --realm $realmName --body '$BODY'"))) {
+        println red("{{ am_amster_stdout_tags['error'] }} creating Session in realm $realmName");
+      } else {
+        println green("{{ am_amster_stdout_tags['changed'] }} in realm $realmName created");
+      }
+    } else {
+      if(isNull(eval("update Session --realm $realmName --body '$BODY'"))) {
+        println red("{{ am_amster_stdout_tags['error'] }} updating Session in realm $realmName");
+      } else {
+        println green("{{ am_amster_stdout_tags['changed'] }} Session in realm $realmName updated");
+      }
+    }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
+}
+:quit

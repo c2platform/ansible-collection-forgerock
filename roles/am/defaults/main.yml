@@ -154,7 +154,22 @@ am_amster_templates:
     - name: chainCriteria
       value: REQUIRED
   113-disable-module-and-zeropage-authentication:
-  114-update-ldap-module:
+  114-set-session-limits:
+    vars: ['realmName']
+    vars-optional:
+    - name: maxSessionTime
+      value: 540
+      string: no
+    - name: maxIdleTime
+      value: 45
+      string: no
+    - name: quotaLimit
+      value: 1
+      string: no
+    - name: maxCachingTime
+      value: 3
+      string: no
+  118-update-ldap-module:
     vars: ['realmName', 'primaryLdapServer', 'userSearchStartDN']
     vars-optional:
     - name: userBindDN
