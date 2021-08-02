@@ -12,6 +12,9 @@
 - name: Wait for DS
   shell: >
     ./status {{ amster_ds_connect|c2platform.forgerock.ds_cmd }}
+  environment:
+    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
+    JAVA_HOME: "{{ am_java_home }}"
   retries: 10
   delay: 7
   args:
@@ -22,6 +25,9 @@
 
 - name: Check if Amster is configured
   shell: "./amster 090-connect-to-openam.amster"
+  environment:
+    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
+    JAVA_HOME: "{{ am_java_home }}"
   register: amster_connect_var
   args:
     chdir: "{{ amster_home_version }}/"
@@ -29,6 +35,9 @@
 
 - name: execute 100-installAM_1 amster
   command: "./amster 100-installAM_1.amster"
+  environment:
+    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
+    JAVA_HOME: "{{ am_java_home }}"
   register: task_register_var
   args:
     chdir: "{{ amster_home_version }}"
