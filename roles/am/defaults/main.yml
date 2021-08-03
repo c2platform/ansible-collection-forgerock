@@ -8,7 +8,7 @@ amster_ds_hostname: "{{ ansible_fqdn }}"
 amster_ds_rootpw: supersecret
 amster_amadmin_pw: supersecure # password that Amster sets amAdmin
 
-am_java_home: "{{ java_versions['java_version'][java_home] }}"
+am_java_home: "{{ java_versions[java_version]['java_home'] }}"
 
 amster_encryptpw: C2ITMXJ1I8BSp61bmJbp4oBaOjBDC6Xi
 

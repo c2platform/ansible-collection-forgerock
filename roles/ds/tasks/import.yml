@@ -31,6 +31,9 @@
       shell: >
           ./import-ldif --ldifFile {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif
           {{ item['properties']|c2platform.forgerock.ds_cmd }}
+      environment:
+        OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
+        JAVA_HOME: "{{ ds_java_home }}"
       args:
         chdir: "{{ ds_home_version }}/bin"
       become: yes

@@ -3,7 +3,7 @@ ds_version: 6.5.4
 ds_home: /opt/ds
 ds_home_version: "{{ ds_home  }}/{{ ds_home|basename }}-{{ ds_version }}"
 ds_home_link: "{{ ds_home  }}/{{ ds_home|basename }}"
-ds_java_home: "{{ java['version']|c2platform.core.java_home }}"
+ds_java_home: "{{ java_versions[java_version]['java_home'] }}"
 
 ds_owner: forgerock
 ds_group: forgerock

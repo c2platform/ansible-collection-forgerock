@@ -10,6 +10,9 @@
     - name: Wait for DS
       shell: >
         ./status {{ ds_connect|c2platform.forgerock.ds_cmd }}
+      environment:
+        OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
+        JAVA_HOME: "{{ ds_java_home }}"
       retries: 10
       delay: 7
       args:

@@ -9,6 +9,9 @@
 
 - name: "Modify password"
   shell:  "./ldappasswordmodify  {{ ds_connect_ssl|combine(ds_passwords[item])|c2platform.forgerock.ds_cmd }}"
+  environment:
+    OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
+    JAVA_HOME: "{{ ds_java_home }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   with_items: "{{ ds_passwords }}"

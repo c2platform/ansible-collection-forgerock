@@ -400,8 +400,7 @@ Example configuration that includes `ds_setup_config` for your `group_vars` or `
 
 ```yaml
 ---
-java:
-  version: jdk11_0411_oj9
+java_version: jdk11_0411_oj9
 
 ds_version: 6.5.4
 ds_versions:

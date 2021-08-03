@@ -14,6 +14,9 @@
         ./dsconfig {{ component|c2platform.forgerock.ds_config_method(item,'get') }}
         {{ ds_connect|c2platform.forgerock.ds_cmd }}
         {{ item|c2platform.forgerock.ds_cmd_get(component) }}
+      environment:
+        OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
+        JAVA_HOME: "{{ ds_java_home }}"
       with_items: "{{ ds_config[component] }}"
       args:
         chdir: "{{ ds_home_version }}/bin"
@@ -29,6 +32,9 @@
     ./dsconfig {{ component|c2platform.forgerock.ds_config_method }}
     {{ ds_connect|c2platform.forgerock.ds_cmd }}
     {{ item|c2platform.forgerock.ds_cmd }}
+  environment:
+    OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
+    JAVA_HOME: "{{ ds_java_home }}"
   with_items: "{{ ds_config[component] }}"
   when:
     - item|c2platform.forgerock.ds_config_state_diff(current_config,component_fingerprint,use_fingerprint,skip_state_check|default(False))
