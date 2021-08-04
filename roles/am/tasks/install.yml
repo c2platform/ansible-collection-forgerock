@@ -23,6 +23,10 @@
   until: ds_status.rc == 0
   changed_when: false
 
+- debug:
+    msg: "ds_status: {{ ds_status }}"
+  when: am_debug|default(False)
+
 - name: Check if Amster is configured
   shell: "./amster 090-connect-to-openam.amster"
   environment:
@@ -32,6 +36,10 @@
   args:
     chdir: "{{ amster_home_version }}/"
   changed_when: false
+
+- debug:
+    msg: "amster_connect_var: {{ amster_connect_var }}"
+  when: am_debug|default(False)
 
 - name: execute 100-installAM_1 amster
   command: "./amster 100-installAM_1.amster"
@@ -44,6 +52,10 @@
   when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
     and amster_connect_var['stderr'] is search("Unexpected character")
   # TODO failed when is search("Configuration failed")
+
+- debug:
+    msg: "task_register_var: {{ task_register_var }}"
+  when: am_debug|default(False)
 
 # See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause
 # in Authorized keys fails for our setup

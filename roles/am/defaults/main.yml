@@ -14,6 +14,7 @@ amster_encryptpw: C2ITMXJ1I8BSp61bmJbp4oBaOjBDC6Xi
 
 am_configure_manual: no
 am_no_log: no
+am_debug: no
 
 # TODO remove
 am_home: /opt/am
