@@ -9,52 +9,56 @@
   retries: 10
   delay: 10 # seconds
 
-- name: Wait for DS
-  shell: >
-    ./status {{ amster_ds_connect|c2platform.forgerock.ds_cmd }}
-  environment:
-    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
-    JAVA_HOME: "{{ am_java_home }}"
-  retries: 10
-  delay: 7
-  args:
-    chdir: "{{ ds_home_version }}/bin"
-  register: ds_status
-  until: ds_status.rc == 0
-  changed_when: false
+# - name: Wait for DS
+#   shell: >
+#     ./status {{ amster_ds_connect|c2platform.forgerock.ds_cmd }}
+#   environment:
+#     OPENDJ_JAVA_HOME: "{{ am_java_home }}"
+#     JAVA_HOME: "{{ am_java_home }}"
+#   retries: 10
+#   delay: 7
+#   args:
+#     chdir: "{{ ds_home_version }}/bin"
+#   register: ds_status
+#   until: ds_status.rc == 0
+#   changed_when: false
+# 
+# - debug:
+#     msg: "ds_status: {{ ds_status }}"
+#   when: am_debug|default(False)
 
-- debug:
-    msg: "ds_status: {{ ds_status }}"
-  when: am_debug|default(False)
+#- name: Check if Amster is configured
+#  shell: "./amster 090-connect-to-openam.amster"
+#  environment:
+#    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
+#    JAVA_HOME: "{{ am_java_home }}"
+#  register: amster_connect_var
+#  args:
+#    chdir: "{{ amster_home_version }}/"
+#  changed_when: false
+#
+#- debug:
+#    msg: "amster_connect_var: {{ amster_connect_var }}"
+#  when: am_debug|default(False)
 
-- name: Check if Amster is configured
-  shell: "./amster 090-connect-to-openam.amster"
-  environment:
-    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
-    JAVA_HOME: "{{ am_java_home }}"
-  register: amster_connect_var
-  args:
-    chdir: "{{ amster_home_version }}/"
-  changed_when: false
 
-- debug:
-    msg: "amster_connect_var: {{ amster_connect_var }}"
-  when: am_debug|default(False)
+- name: Stat cfgDir
+  stat:
+    path: "{{ amster_am_install['cfgDir'] }}"
+  register: cfgDir
 
 - name: execute 100-installAM_1 amster
   command: "./amster 100-installAM_1.amster"
   environment:
     OPENDJ_JAVA_HOME: "{{ am_java_home }}"
     JAVA_HOME: "{{ am_java_home }}"
-  register: task_register_var
+  register: installam_amster
   args:
     chdir: "{{ amster_home_version }}"
-  when: amster_connect_var['stderr'] is search("Could not connect to OpenAM server")
-    and amster_connect_var['stderr'] is search("Unexpected character")
-  # TODO failed when is search("Configuration failed")
+  when: not cfgDir.stat.exists
 
 - debug:
-    msg: "task_register_var: {{ task_register_var }}"
+    msg: "installam_amster: {{ installam_amster }}"
   when: am_debug|default(False)
 
 # See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause
