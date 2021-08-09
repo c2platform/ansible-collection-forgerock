@@ -1,0 +1,42 @@
+{{ ansible_managed|comment(decoration="// ") }}
+{{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+    serverCounter = 0
+    // GET all server id's
+    allServersString = eval("query Servers --global --queryFilter true".toString())
+    if (isNull(allServersString)) {
+        println("Unable to update amlbcookies as server configuration cannot be read")
+    } else {
+        slurpedServers = new groovy.json.JsonSlurper().parseText(allServersString)
+        slurpedServers.each {
+            serverCounter++
+            serverName = "0${serverCounter}"
+            serverID = it._id
+            println("Server ID is ${serverID}")
+
+            advancedServerConfiguration = eval("read AdvancedProperties --global --serverName ${serverID}".toString())
+            if (isNull(advancedServerConfiguration)) {
+                println("{{ am_amster_stdout_tags['error'] }} Unable to update advanced server configuration of server ${serverID} as it cannot be read")
+            } else {
+                println("Update advanced server configuration with the ID ${serverName}")
+                slurped = new groovy.json.JsonSlurper().parseText(advancedServerConfiguration)
+                if (slurped["com.iplanet.am.lbcookie.value"] == serverName) {
+                    println cyan("Nothing to do")
+                } else {
+                    slurped["com.iplanet.am.lbcookie.value"] = serverName
+                    slurped.remove("_rev")
+                    jsonOutput = groovy.json.JsonOutput.toJson(slurped)
+                    println("JSON output ${jsonOutput}")
+                    eval("update AdvancedProperties --global --serverName ${serverID} --body '$jsonOutput'")
+                    println("{{ am_amster_stdout_tags['changed'] }} update advanced server configuration")
+                }
+            }
+        }
+    }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
+}
+:quit
