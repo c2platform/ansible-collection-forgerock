@@ -191,7 +191,7 @@ am_amster_templates:
       - uid
       searchScope: SUBTREE
       openam-auth-ldap-connection-mode: LDAPS
-      returnUserDN: true
+      returnUserDN: false
       profileAttributeMappings: []
       minimumPasswordLength: '8'
       beheraPasswordPolicySupportEnabled: true
