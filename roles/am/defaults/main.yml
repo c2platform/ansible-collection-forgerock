@@ -202,6 +202,9 @@ am_amster_templates:
       authenticationLevel: 0
   115-set-global-session-quotas:
     vars-optional:
+    - name: maxSessionListSize
+      value: 25000
+      string: no
     - name: maxSessionTime
       value: 540
       string: no
