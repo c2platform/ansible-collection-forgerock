@@ -226,6 +226,8 @@ am_amster_templates:
       string: no
     - name: behaviourWhenQuotaExhausted
       value: org.forgerock.openam.session.service.DestroyAllAction
+  116-configure-signing-secret:
+    vars: ['sharedSecret']
   208-function_create_federation_module:
     vars: ['realmName']
   209-function_load_all_saml:
