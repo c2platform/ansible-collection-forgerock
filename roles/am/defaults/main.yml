@@ -90,7 +90,7 @@ am_amster_templates:
     vars: ['realmName', 'usersBackend', 'authPwd']
     vars-optional:
     - name: userSearchAttribute
-      value: cn
+      value: uid
     - name: userObjectclass
       value: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
       string: no
