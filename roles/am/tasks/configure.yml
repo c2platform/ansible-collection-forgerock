@@ -60,4 +60,3 @@
   failed_when: am_amster_stdout_tags['error'] in amster_script_exec.stdout
   # notify: "{{ item|c2platform.forgerock.amster_script_notify(am_configure, am_amster_templates)|default(None)|default(omit) }}"
   # TODO
-

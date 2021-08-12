@@ -1,4 +1,14 @@
 ---
+#am_keystore:
+#  certificates:
+#  - path: /var/tmp/am.p12
+#    url: file:///etc/ssl/certs/am.p12
+#    alias: acs_bto # acs_kit_suwinet_nl_20210820
+#    # checksum:
+#  keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
+#  keystore_pass_file: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.storepass"
+#  keytool: "{{ java_versions[suwinet_java_version|default(java_version)]['keytool'] }}"
+
 - include_role:
     name: c2platform.tasks
     tasks_from: cert
@@ -43,6 +53,7 @@
       #cert_path: "{{ item['path'] }}"
       keystore_path: "{{ am_keystore['keystore_path'] }}"
       keystore_pass: "{{ keystore_password['content']|b64decode }}"
+      keystore_type: JCEKS
       executable: "{{ am_keystore['keytool'] }}"
       state: present
     with_items: "{{ am_keystore['certificates'] }}"

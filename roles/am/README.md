@@ -9,6 +9,7 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
 - [Role Variables](#role-variables)
   - [Installation](#installation)
   - [Configure](#configure)
+  - [Keystore](#keystore)
   - [Manual mode](#manual-mode)
 - [Dependencies](#dependencies)
 - [Links](#links)
@@ -125,6 +126,29 @@ am_amster_templates:
       # Set tree as default service
       # TODO uncomment when password reset works
 ```
+
+### Keystore
+
+Using `am_keystore` it is possible to replace the AM generated keystore with your own keystore.
+
+Only an URL is required for example as follows:
+
+```yaml
+am_keystore:
+  url: file:///vagrant/keystore.jceks
+```
+
+This will create for example the file `/opt/tomcat/am/acs/keystore.jceks` and update the content of `/opt/tomcat/am/acs/.storepass` to `changeit`
+
+There are optional attribute to customize this behaviour:
+
+1. `basename` for example if the basename of the download URL is different from what you want on the file system. For example if the URL is file:///vagrant/stub-keystore.jceks but you want to create a file `keystore.jceks`.
+2. `checksum`
+3. `group` and `owner`. Default `tomcat`.
+4. `backup` `yes` or `no` to save original backup / storepass files.
+5. `notify` if you want to notify some resource for example `restart tomcat instance`
+
+Note: for some reason the keystore is continually changing so we a cache copy is used to detect changes. The file is named for example `keystore.jceks.cache`.
 
 ### Manual mode
 

@@ -18,8 +18,12 @@
     - name: Configure AM
       include: configure.yml
 
-    - name: Certificate AM
-      include: certificate.yml
+    #- name: Certificate AM
+    #  include: certificate.yml
+
+    - name: Replace AM keystore
+      include: keystore.yml
+      when: am_keystore is defined
 
   when: amster_am_install is defined
 
