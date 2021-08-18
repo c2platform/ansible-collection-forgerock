@@ -1,10 +1,22 @@
 ---
 - include: install.yml
 
+- name: Create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: 0755
+    recurse: yes
+  with_items: "{{ ds_directories }}"
+  when: ds_directories is defined
+
+- include: git_repos.yml
+  when: ds_git_config is defined
+
 - block:
     - include: setup.yml
-    - include: git_repos.yml
-      when: ds_git_repos is defined
     - include: service.yml
 
     - name: Wait for DS

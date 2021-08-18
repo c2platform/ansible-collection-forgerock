@@ -21,6 +21,8 @@ Note: on default - without additional configuration - this role will only instal
     - [Extra](#extra)
   - [Passwords](#passwords)
   - [Import](#import)
+  - [Directories](#directories)
+  - [Git](#git)
   - [Scripts](#scripts)
   - [Replication](#replication)
 - [Dependencies](#dependencies)
@@ -264,6 +266,61 @@ ds_import:
 ```
 
 Note: import is default disabled using `ds_import_enable: no`. This var can be used to toggle import on / off.
+
+### Directories
+
+Create additional directories using `ds_directories` for example to create a `scripts` directory
+
+```yaml
+ds_directories:
+- "{{ ds_home_version }}/scripts"
+```
+### Git
+
+Fetch arbitrary files from a Git repository and add them to DS filesystem. To configure the repo and the parent dir for this repository.
+
+```yaml
+ds_git_config:
+  repo: https://myrepo
+  proxy: http://localhost:8888
+ds_git_config_parent_dir: /tmp
+```
+This will create a folder `/tmp/ds-git-config-<hash>`. You can also create this clone on the control for example if nodes don't have internet access. In this case we configure a custom checkout script using `ds_git_config_script` because the Ansible Git module does not allow any Git config.
+
+```yaml
+ds_git_config_control_node: yes
+ds_git_config_script: |
+  if [ ! -d "{{ ds_git_config['dir'] }}" ]; then
+    git init {{ ds_git_config['dir'] }}
+    cd {{ ds_git_config['dir'] }}
+    git remote add origin {{ ds_git_config['repo'] }}
+    git config http.proxy {{ ds_git_config['proxy'] }}
+    git config pull.ff only
+  fi
+  cd {{ ds_git_config['dir'] }}
+  git pull origin master
+```
+
+Configure where the files should be created using `ds_git_files`
+
+```yaml
+ds_git_files:
+- source: ds/scripts/ldap_wrapper.py
+  dest: "{{ ds_home_version }}/scripts/ldap_wrapper.py"
+- source: ds/scripts/migrate-admin-aci.py
+  dest: "{{ ds_home_version }}/scripts/migrate-admin-aci.py"
+- source: ds/scripts/migrate-suwinet-expiry.py
+  dest: "{{ ds_home_version }}/scripts/migrate-suwinet-expiry.py"
+```
+
+In the above example we are putting the files in a directory `scripts` that does not exist. To create it we can use `ds_directories`.
+
+```yaml
+ds_directories:
+- "{{ ds_home_version }}/scripts"
+```
+
+Note: if we want to execute those scripts, see [Scripts](#scripts) 
 
 ### Scripts
 

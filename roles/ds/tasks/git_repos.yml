@@ -1,6 +1,36 @@
 ---
-- name: Git repos
-  ansible.builtin.git: "{{ ds_git_repo }}"
-  with_items: "{{ ds_git_repos }}"
-  vars:
-    ds_git_repo: "{{ ds_git_repos[item] }}"
+- set_fact:
+    ds_git_config:
+      dir:  "{{ ds_git_config_parent_dir }}/ds-git-config-{{ ds_git_config['repo']|hash('sha1') }}"
+
+- set_fact:
+    ds_git_clone_delegate: localhost
+  when: ds_git_config_control_node
+
+# Ansible Git module does support config
+- name: Git checkout ( custom )
+  shell: "{{ ds_git_config_script }}"
+  delegate_to: "{{ ds_git_clone_delegate|default(omit) }}"
+  changed_when: False
+  when: ds_git_config_script is defined
+
+- name: Git checkout
+  ansible.builtin.git:
+    repo: "{{ ds_git_config['repo'] }}"
+    dest: "{{ ds_git_config['dir'] }}"
+    version: "{{ ds_git_config['version']|default(omit) }}"
+  delegate_to: "{{ ds_git_clone_delegate|default(omit) }}"
+  changed_when: False
+  when: not ds_git_config_script is defined
+
+- name: Git files
+  ansible.builtin.copy:
+    src: "{{ ds_git_config['dir'] }}/{{ item['source'] }}"
+    dest: "{{ item['dest'] }}"
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    remote_src: "{{ not ds_git_config_control_node }}"
+  with_items: "{{ ds_git_files }}"
+  when: ds_git_files is defined
+  notify: "{{ item['notify']|default(omit) }}"
+  ignore_errors: "{{ item['ignore_errors']|default(False) }}"
