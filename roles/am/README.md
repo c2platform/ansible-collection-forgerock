@@ -2,14 +2,18 @@
 
 This Ansible role is used to setup and configure [AM](https://go.forgerock.com/Access-Management.html) usig [Amster](https://backstage.forgerock.com/docs/amster/6.5/user-guide/).
 
-<!-- MarkdownTOC levels="2,3" autolink="true" -->
+<!-- MarkdownTOC levels="2,3,4" autolink="true" -->
 
 - [Requirements](#requirements)
 - [Role description](#role-description)
 - [Role Variables](#role-variables)
   - [Installation](#installation)
   - [Configure](#configure)
+    - [108-set-sessionproperties](#108-set-sessionproperties)
+  - [Certificate](#certificate)
   - [Git](#git)
+    - [Files](#files)
+    - [Folders](#folders)
   - [Keystore](#keystore)
   - [Manual mode](#manual-mode)
 - [Dependencies](#dependencies)
@@ -126,6 +130,37 @@ am_amster_templates:
       # - 110-function-load-authentication-service
       # Set tree as default service
       # TODO uncomment when password reset works
+```
+
+#### 108-set-sessionproperties
+
+Using template `108-set-sessionproperties` authentication settings can be changed. Settings that you can find admin interface Via **<Realm>** → **AUthencation** → **Settings** 
+
+```yaml
+am_configure:
+  - name: MyRealm session properties
+    template: 108-set-sessionproperties
+    vars:
+      realmName: myRealm
+      sharedSecret: "{{ amster_realm_defaults['shared_secret'] }}"
+      loginSuccessUrl: https://myapp.com/index.html
+      keyAlias: dev
+```
+
+### Certificate
+
+It is recommended to replace the default secret stores that are created by AM during installation, see for example [Configuring Secrets, Certificates, and Keys](https://backstage.forgerock.com/docs/am/7/security-guide/keys-secrets.html#default-secret-stores).
+
+
+```yaml
+am_certificate:
+  dev:
+    cert: "{{ am_dev_cert }}"
+    key: "{{ am_dev_key }}"
+    keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
+    keystore_pass_file: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.storepass"
+    keytool: "{{ java_versions[suwinet_java_version|default(java_version)]['keytool'] }}"
+    notify: restart tomcat instance
 ```
 
 ### Git

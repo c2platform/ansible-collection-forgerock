@@ -21,8 +21,10 @@
     - name: Configure AM
       include: configure.yml
 
-    #- name: Certificate AM
-    #  include: certificate.yml
+    - name: Certificate AM
+      include: certificate.yml
+      with_items: "{{ am_certificate }}"
+      when: am_certificate is defined
 
     - name: Replace AM keystore
       include: keystore.yml

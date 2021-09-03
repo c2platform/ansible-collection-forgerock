@@ -1,61 +1,68 @@
 ---
-#am_keystore:
-#  certificates:
-#  - path: /var/tmp/am.p12
-#    url: file:///etc/ssl/certs/am.p12
-#    alias: acs_bto # acs_kit_suwinet_nl_20210820
-#    # checksum:
-#  keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
-#  keystore_pass_file: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.storepass"
-#  keytool: "{{ java_versions[suwinet_java_version|default(java_version)]['keytool'] }}"
+- name: Shared secrets
+  file:
+    path: "{{ am_shared_secrets  }}"
+    state: directory
+    mode: 0700
 
-- include_role:
-    name: c2platform.tasks
-    tasks_from: cert
-  when: cacerts_ca_domains is defined
+- name: AM cert
+  copy:
+    content: "{{ am_certificate[item]['cert'] }}"
+    dest: "{{ am_shared_secrets }}/{{ item }}.crt"
+    mode: '600'
+  register: am_c
 
-- block:
-  - name: Download certificate
-    get_url:
-      url: "{{ item['url'] }}"
-      checksum: "{{ item['checksum']|default(omit) }}"
-      dest: "{{ item['path'] }}"
-      validate_certs: no
-    with_items: "{{ am_keystore['certificates'] }}"
-    register: cert_download
-  when: am_keystore is defined
+- name: AM key
+  copy:
+    content: "{{ am_certificate[item]['key'] }}"
+    dest: "{{ am_shared_secrets }}/{{ item }}.key"
+    mode: '600'
+  register: am_k
+
+- debug:
+    msg: |
+     am_k: {{ am_k }}
+     am_c: {{ am_c }}
 
 - block:
   - name: Get password
     ansible.builtin.slurp:
-      src: "{{ am_keystore['keystore_pass_file'] }}"
+      src: "{{ am_certificate[item]['keystore_pass_file'] }}"
     register: keystore_password
 
-  - name: "Remove certificate"
-    java_cert:
-      cert_alias: "{{ item['alias'] }}"
-      #cert_path: "{{ item['path'] }}" # required but not sure why
-      pkcs12_path: "{{ item['path'] }}"
-      keystore_path: "{{ am_keystore['keystore_path'] }}"
-      keystore_pass: "{{ keystore_password['content']|b64decode }}"
-      keystore_type: JCEKS
-      executable: "{{ am_keystore['keytool'] }}"
-      state: absent
-    with_items: "{{ am_keystore['certificates'] }}"
-    ignore_errors: yes
+  - name: Create AM p12
+    shell:
+      cmd: >
+        openssl pkcs12 -export
+        -in {{ am_shared_secrets }}/{{ item }}.crt
+        -inkey {{ am_shared_secrets }}/{{ item }}.key
+        -out {{ am_shared_secrets }}/{{ item }}.p12
+        -name {{ am_certificate[item]['name']|default(item) }}
+        -password 'pass:{{ keystore_password['content']|b64decode }}'
 
-  - name: "Add certificate"
+  - name: Remove certificate
     java_cert:
-      pkcs12_path: "{{ item['path'] }}"
-      #pkcs12_alias: "{{ item['alias'] }}"
-      #pkcs12_password: somepass
-      cert_alias: "{{ item['alias'] }}"
-      #cert_path: "{{ item['path'] }}"
-      keystore_path: "{{ am_keystore['keystore_path'] }}"
+      cert_alias: "{{ am_certificate[item]['name']|default(item) }}"
+      #cert_path: "{{ item['path'] }}" # required but not sure why
+      pkcs12_path: "{{ am_shared_secrets }}/{{ item }}.p12"
+      keystore_path: "{{ am_certificate[item]['keystore_path'] }}"
       keystore_pass: "{{ keystore_password['content']|b64decode }}"
       keystore_type: JCEKS
-      executable: "{{ am_keystore['keytool'] }}"
+      executable: "{{ am_certificate[item]['keytool'] }}"
+      state: absent
+    ignore_errors: yes # might not exist
+
+  - name: Add certificate
+    java_cert:
+      pkcs12_path: "{{ am_shared_secrets }}/{{ item }}.p12"
+      pkcs12_alias: "{{ am_certificate[item]['name']|default(item) }}"
+      pkcs12_password: "{{ keystore_password['content']|b64decode }}"
+      cert_alias: "{{ am_certificate[item]['name']|default(item) }}"
+      #cert_path: "{{ item['path'] }}"
+      keystore_path: "{{ am_certificate[item]['keystore_path'] }}"
+      keystore_pass: "{{ keystore_password['content']|b64decode }}"
+      keystore_type: JCEKS
+      executable: "{{ am_certificate[item]['keytool'] }}"
       state: present
-    with_items: "{{ am_keystore['certificates'] }}"
     notify: restart tomcat instance
-  when: am_keystore is defined and cert_download.changed
+  when: am_c.changed or am_k.changed

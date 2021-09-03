@@ -21,6 +21,8 @@ am_home: /opt/am
 am_version: 6.5.3
 am_context: am
 
+am_shared_secrets: /root/.am-shared-secrets
+
 amster_versions:
   6.5.3:
     url: file:///vagrant/downloads/Amster-6.5.3.zip
