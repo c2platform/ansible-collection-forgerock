@@ -15,6 +15,9 @@
     - name: Install AM
       include: install.yml
 
+    - include: git_repos.yml
+      when: am_git_config is defined
+
     - name: Configure AM
       include: configure.yml
 

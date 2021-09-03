@@ -9,6 +9,7 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
 - [Role Variables](#role-variables)
   - [Installation](#installation)
   - [Configure](#configure)
+  - [Git](#git)
   - [Keystore](#keystore)
   - [Manual mode](#manual-mode)
 - [Dependencies](#dependencies)
@@ -127,6 +128,75 @@ am_amster_templates:
       # TODO uncomment when password reset works
 ```
 
+### Git
+
+Fetch arbitrary files from a Git repository and add them to DS filesystem. To configure the repo and the parent dir for this repository.
+
+```yaml
+am_git_config:
+  repo: https://myrepo
+  proxy: http://localhost:8888
+am_git_config_parent_dir: /tmp
+```
+This will create a folder `/tmp/ds-git-config-<hash>`. You can also create this clone on the control for example if nodes don't have internet access. In this case we configure a custom checkout script using `am_git_config_script` because the Ansible Git module does not allow any Git config.
+
+```yaml
+am_git_config_control_node: yes
+am_git_config_script: |
+  if [ ! -d "{{ am_git_config['dir'] }}" ]; then
+    git init {{ am_git_config['dir'] }}
+    cd {{ am_git_config['dir'] }}
+    git remote add origin {{ am_git_config['repo'] }}
+    git config http.proxy {{ am_git_config['proxy'] }}
+    git config pull.ff only
+  fi
+  cd {{ am_git_config['dir'] }}
+  git pull origin master
+```
+Configure where the files should be created using `am_git_files` or `am_git_folders`.
+
+#### Files
+
+You can use `am_git_files` to configure where files you should be copied to.
+
+```yaml
+am_git_files:
+- source: path/to/file/in/repo
+  dest: "{{ amster_home_link }}/path/to/destfile"
+```
+
+| parameter | required | default | choices | comments                                           |
+|-----------|----------|---------|---------|----------------------------------------------------|
+| source    | yes      |      |         | Relative path of file in Git repository   |
+| dest      | yes      |       |         | Absolute path of destination file 
+
+Note: this uses the Ansible [copy](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html) module so you can also use `am_git_files` to copy directories for example as follows:
+
+```yaml
+am_git_files:
+- source: suwinet_am/saml/bto/
+  dest: "{{ amster_home_link }}/saml-config/"
+```
+
+One drawback of [copy](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html) module is that it does not delete files. If you want that you can use `am_git_folders` which uses [synchronize](https://docs.ansible.com/ansible/2.3/synchronize_module.html) module.
+
+#### Folders
+
+You can use `am_git_folders` to configure where complete folders you should be copied to. This uses Ansible [synchronize](https://docs.ansible.com/ansible/2.3/synchronize_module.html) module.
+
+| parameter | required | default | choices | comments                                           |
+|-----------|----------|---------|---------|----------------------------------------------------|
+| source    | yes      |      |         | Relative path of source folder in Git repository   |
+| dest      | yes      |       |         | Absolute path of destination folder on file system |
+| recursive  | no      | yes      |         |  |
+| delete     | no      | yes      |         |  |
+
+```yaml
+am_git_folders:
+- source: suwinet_am/saml/bto/
+  dest: "{{ amster_home_link }}/saml-config/"
+```
+
 ### Keystore
 
 Using `am_keystore` it is possible to replace the AM generated keystore with your own keystore.
@@ -148,7 +218,7 @@ There are optional attribute to customize this behaviour:
 4. `backup` `yes` or `no` to save original backup / storepass files.
 5. `notify` if you want to notify some resource for example `restart tomcat instance`
 
-Note: for some reason the keystore is continually changing so we a cache copy is used to detect changes. The file is named for example `keystore.jceks.cache`.
+Note: for some reason the keystore is continually changing so a cache copy is used to detect changes. The file is named for example `keystore.jceks.cache`.
 
 ### Manual mode
 
