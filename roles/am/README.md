@@ -10,6 +10,7 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
   - [Installation](#installation)
   - [Configure](#configure)
     - [108-set-sessionproperties](#108-set-sessionproperties)
+    - [500-debug-logging](#500-debug-logging)
   - [Certificate](#certificate)
   - [Git](#git)
     - [Files](#files)
@@ -145,6 +146,16 @@ am_configure:
       sharedSecret: "{{ amster_realm_defaults['shared_secret'] }}"
       loginSuccessUrl: https://myapp.com/index.html
       keyAlias: dev
+```
+#### 500-debug-logging
+
+Using template `500-debug-logging` debug level can be configured. This is done globally and for each server.
+
+```yaml
+  - name: Debug level
+    template: 500-debug-logging
+    vars:
+      debuglevel: error # warning, message, off
 ```
 
 ### Certificate

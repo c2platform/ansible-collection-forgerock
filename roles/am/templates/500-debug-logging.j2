@@ -1,0 +1,56 @@
+{{ ansible_managed|comment(decoration="// ") }}
+{{ item|c2platform.forgerock.amster_script_header|comment(decoration="// ") }}
+:load 101-connect_To_AM.amster
+:load 102-set-common-functions.amster
+try {
+{{ lookup('template', './params.groovy.j2')|indent(2, True) }}
+
+  println blue("500: set debug level")
+
+  BODY="""{
+      "amconfig.header.debug": {
+        "com.iplanet.services.debug.level": "$debuglevel",
+        "com.sun.services.debug.mergeall": "off",
+        "com.iplanet.services.debug.directory": "%BASE_DIR%/%SERVER_URI%/debug"}}""";
+
+  if(isNull(eval("update DefaultGeneralProperties --global --body '$BODY'"))){
+    println red("{{ am_amster_stdout_tags['error'] }} in setting debug configuration in DefaultGeneralProperties.")
+  } else {
+    println green("{{ am_amster_stdout_tags['changed'] }} Setting debug configuration in DefaultGeneralProperties successful")
+  }
+
+  // Force inheritance of the default settings in the specific server configurations
+  allServersString = eval("query Servers --global --queryFilter true".toString())
+  if (isNull(allServersString)) {
+    println("{{ am_amster_stdout_tags['error'] }} Unable to update GeneralProperties as server configuration cannot be read")
+  } else {
+    slurpedServers = new groovy.json.JsonSlurper().parseText(allServersString)
+    slurpedServers.each {
+      serverID = it._id
+      println("Server ID is ${serverID}")
+      generalProperties = eval("read GeneralProperties --global --serverName ${serverID}".toString())
+      if (isNull(generalProperties)) {
+        println("{{ am_amster_stdout_tags['error'] }} Unable to update GeneralProperties of server ${serverID} as it cannot be read")
+      } else {
+        slurped = new groovy.json.JsonSlurper().parseText(generalProperties)
+        if (slurped["amconfig.header.debug"]["com.iplanet.services.debug.level"]["inherited"] != true || slurped["amconfig.header.debug"]["com.sun.services.debug.mergeall"]["inherited"] != true || slurped["amconfig.header.debug"]["com.iplanet.services.debug.directory"]["inherited"] != true) {
+          slurped["amconfig.header.debug"]["com.iplanet.services.debug.level"]["inherited"] = true
+          slurped["amconfig.header.debug"]["com.sun.services.debug.mergeall"]["inherited"] = true
+          slurped["amconfig.header.debug"]["com.iplanet.services.debug.directory"]["inherited"] = true
+          slurped.remove("_rev")
+          jsonOutput = groovy.json.JsonOutput.toJson(slurped)
+          if(isNull(eval("update GeneralProperties --global --serverName ${serverID} --body '$jsonOutput'"))) {
+            println red("{{ am_amster_stdout_tags['error'] }} updating GeneralProperties of server ${serverID}")
+          } else {
+            println green("{{ am_amster_stdout_tags['changed'] }} GeneralProperties of server ${serverID} updates")
+          }
+        } else {
+          println cyan("Nothing to do")
+        }
+      }
+    }
+  }
+} catch(Exception e) {
+   println("{{ am_amster_stdout_tags['error'] }} ${e.getMessage()} ")
+}
+:quit
