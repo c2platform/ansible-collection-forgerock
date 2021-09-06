@@ -11,6 +11,8 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
   - [Configure](#configure)
     - [108-set-sessionproperties](#108-set-sessionproperties)
     - [500-debug-logging](#500-debug-logging)
+  - [Configure JSON](#configure-json)
+  - [Configure raw](#configure-raw)
   - [Certificate](#certificate)
   - [Git](#git)
     - [Files](#files)
@@ -157,6 +159,25 @@ Using template `500-debug-logging` debug level can be configured. This is done g
     vars:
       debuglevel: error # warning, message, off
 ```
+### Configure JSON
+
+TODO `am_config_files` 
+
+### Configure raw
+
+Via `am_config_files_raw` various raw config files can be configured.
+
+```yaml
+am_config_files_raw:
+- dest: "{{ tomcat_home_link }}/webapps/{{ am_context }}/WEB-INF/classes/debugconfig.properties"
+  content: |
+    org.forgerock.openam.debug.prefix=
+    org.forgerock.openam.debug.suffix=-MM.dd.yyyy-HH.mm
+    org.forgerock.openam.debug.rotation=1440
+  notify: restart tomcat instance
+```
+
+Other attributes are owner, group and mode which default respectively to `tomcat`, `tomcat` and `0644`. 
 
 ### Certificate
 

@@ -16,9 +16,10 @@
     content: "{{ item['content'] }}"
     owner: "{{ amster_owner }}"
     group: "{{ amster_group }}"
-    mode: 0644
+    mode: "{{ item['mode']|default('0644') }}"
   with_items: "{{ am_config_files_raw }}"
   when: am_config_files_raw|default(False)
+  notify: "{{ item['notify']|default(omit) }}"
   no_log: "{{ am_no_log }}"
 
 - name: Prepare Amster scripts facts
