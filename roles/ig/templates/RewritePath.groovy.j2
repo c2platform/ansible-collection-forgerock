@@ -1,5 +1,5 @@
-logger.warn("Request.uri.path = " + request.uri.path);
-logger.warn("Request.uri = " + request.uri);
+// logger.warn("Request.uri.path = " + request.uri.path);
+// logger.warn("Request.uri = " + request.uri);
 
 String backendURI = '{{ item['backend'] }}';
 String path = request.uri.path;
@@ -16,19 +16,19 @@ if (request.uri.host == "{{ item['xmlgba-url'] }}") {
     replacement = "/${pathElements[2]}-${pathElements[1]}-${pathElements[3]}"
 }
 
-logger.warn("sf_RewritePath.groovy. property URI BEFORE= " + backendURI);
+// logger.warn("sf_RewritePath.groovy. property URI BEFORE= " + backendURI);
 
 String processed = path.replace(target,replacement);
-logger.warn("Processed URI = " + processed );
+// logger.warn("Processed URI = " + processed );
 
 request.uri.path = processed;
 request.uri.host = backendURI;
 request.uri.scheme="http";
 
 String reformedUri=backendURI + processed;
-logger.warn("sf_RewritePath: reformed newuri =" + reformedUri);
+// logger.warn("sf_RewritePath: reformed newuri =" + reformedUri);
 
 attributes.staticURL = reformedUri;
-logger.warn("Final static URL = " + attributes.staticURL);
+// logger.warn("Final static URL = " + attributes.staticURL);
 
 next.handle(context, request)
