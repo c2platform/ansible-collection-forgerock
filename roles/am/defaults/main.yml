@@ -76,7 +76,16 @@ am_amster_templates:
     # Note: realmAliases is used in json body so use for example
     # realmAliases: '[\"mydomain.com\"]'
   104-create-J2EE_Agent:
-    vars: ['agentName', 'agentPassword', 'igFQDN', 'igPORT', 'igPROTO', 'amFQDN', 'amURI', 'amPROTO', 'amPORT', 'realmName', 'realmFQDN']
+    vars: ['agentName', 'agentPassword', 'igFQDN', 'igPORT', 'igPROTO', 'amFQDN', 'amURI', 'amPROTO', 'amPORT', 'realmName', 'realmFQDN', 'amCookieName']
+    vars-optional:
+    - name: policyClientResourceComparators
+      value: serviceType=iPlanetAMWebAgentService|class=com.sun.identity.policy.plugins.HttpURLResourceName|wildcard=*|delimiter=/|caseSensitive=false
+    - name: policyEvaluationApplication
+      value: iPlanetAMWebAgentService
+    - name: policyClientCacheMode
+      value: self
+    - name: amLoginUrl
+      value: ""
   105-create-policy-set:
     vars: ['policySetName','realmName']
   106-create-policy:
