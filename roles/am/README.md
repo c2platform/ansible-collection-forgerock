@@ -139,6 +139,15 @@ am_amster_templates:
 
 Using template `108-set-sessionproperties` authentication settings can be changed. Settings that you can find admin interface Via **<Realm>** → **AUthencation** → **Settings** 
 
+|parameter|required                     |default|choices                                      |comments|
+|---------|-----------------------------|-------|---------------------------------------------|--------|
+|realmName|yes                          |       |                                             |        |
+|SharedSecret|yes                          |       |                                             |        |
+|loginSuccessUrl|yes                          |       |                                             |        |
+|loginFailureUrl|no                          |       |                                             |        |
+|KeyAlias |no                           |test   |                                             |        |
+
+
 ```yaml
 am_configure:
   - name: MyRealm session properties

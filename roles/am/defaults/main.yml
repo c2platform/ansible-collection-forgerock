@@ -126,6 +126,8 @@ am_amster_templates:
     vars-optional:
     - name: keyAlias
       value: test
+    - name: loginFailureUrl
+      value: ""
   109-configure-ValidationService:
     vars: ['realmName']
     vars-optional:

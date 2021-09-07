@@ -38,7 +38,7 @@ try {
           },
           "postauthprocess" : {
           "usernameGeneratorClass" : "com.sun.identity.authentication.spi.DefaultUserIDGenerator",
-          "loginFailureUrl" : [  ],
+          "loginFailureUrl" : [ "$loginFailureUrl" ],
           "userAttributeSessionMapping" : [ "uid|uidIdentifier", "dn|dnIdentifier", "businessCategory|roleIdentifier" ],
           "loginPostProcessClass" : [ ],
           "usernameGeneratorEnabled" : true,
