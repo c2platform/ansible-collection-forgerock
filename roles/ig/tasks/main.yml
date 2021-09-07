@@ -19,8 +19,17 @@
     dest:  "{{ ig_home }}/config/{{ item }}"
     owner: "{{ ig_owner  }}"
     group: "{{ ig_group }}"
-    mode: 0755
+    mode: 0640
   with_items: "{{ ig_config }}"
+
+- name: Get raw configs in place
+  copy:
+    content: "{{ ig_config_raw[item]['content'] }}"
+    dest:  "{{ ig_config_raw[item]['dest'] }}"
+    owner: "{{ ig_config_raw[item]['owner']|default(ig_owner) }}"
+    group: "{{ ig_config_raw[item]['group']|default(ig_group) }}"
+    mode: "{{ ig_config_raw[item]['mode']|default('0640') }}"
+  with_items: "{{ ig_config_raw }}"
 
 - name: Configure routes
   copy:

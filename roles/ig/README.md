@@ -7,6 +7,7 @@ This Ansible role is used to configure [ForgeRock Internet Gateway](https://www.
 - [Requirements](#requirements)
 - [Role Variables](#role-variables)
   - [Config](#config)
+  - [Config raw](#config-raw)
   - [Routes](#routes)
   - [Rewrite paths](#rewrite-paths)
   - [CaptureDecorator](#capturedecorator)
@@ -28,7 +29,44 @@ This role assumes that IG is installed using an Ansible role like `c2platform.to
 
 ### Config
 
-`ig_config` TODO
+Use `ig_config` to create [JSON](https://nl.wikipedia.org/wiki/JSON) config files in location `{{ ig_home }}/config`. For example the config 
+
+```yaml
+ig_config:
+  admin.json:
+    mode: DEVELOPMENT
+```
+will create a file `{{ ig_home }}/config/admin.json` with contents
+
+```json
+{
+  "mode": "DEVELOPMENT"
+}
+```
+
+### Config raw
+
+Variable `ig_config_raw` is similar to `ig_config` but will create any type of file. 
+
+```yaml
+ig_config_raw:
+  logback.xml:
+    dest: "{{ ig_home }}/config/logback.xml"
+    content: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration>
+      ...
+      </configuration>
+
+```
+
+|parameter|required|default |choices|comments                     |
+|---------|--------|--------|-------|-----------------------------|
+|dest     |yes     |        |       |Absolute path to config file |
+|content  |yes     |        |       |                             |
+|owner    |no      |ig_owner|       |                             |
+|group    |no      |ig_owner|       |                             |
+|mode     |no      |640     |       |                             |
 
 ### Routes
 
