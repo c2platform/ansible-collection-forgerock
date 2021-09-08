@@ -7,21 +7,35 @@
     ds_git_clone_delegate: localhost
   when: ds_git_config_control_node
 
-# Ansible Git module does support config
-- name: Git checkout ( custom )
-  shell: "{{ ds_git_config_script }}"
-  delegate_to: "{{ ds_git_clone_delegate|default(omit) }}"
-  changed_when: False
-  when: ds_git_config_script is defined
+# Two "identifical" blocks because delegate_to cannot be used with default(omit)
+- block:
+  - name: Git checkout ( delegated )
+    ansible.builtin.git:
+      repo: "{{ ds_git_config['repo'] }}"
+      dest: "{{ ds_git_config['dir'] }}"
+      version: "{{ ds_git_config['version']|default(omit) }}"
+    delegate_to: "{{ ds_git_clone_delegate }}"
+    when: not ds_git_config_script is defined
 
-- name: Git checkout
-  ansible.builtin.git:
-    repo: "{{ ds_git_config['repo'] }}"
-    dest: "{{ ds_git_config['dir'] }}"
-    version: "{{ ds_git_config['version']|default(omit) }}"
-  delegate_to: "{{ ds_git_clone_delegate|default(omit) }}"
-  changed_when: False
-  when: not ds_git_config_script is defined
+  # Ansible Git module does not support config
+  - name: Git checkout ( delegated and custom )
+    shell: "{{ ds_git_config_script }}"
+    delegate_to: "{{ ds_git_clone_delegate }}"
+    when: ds_git_config_script is defined
+  when: ds_git_config_control_node
+
+- block:
+  - name: Git checkout
+    ansible.builtin.git:
+      repo: "{{ ds_git_config['repo'] }}"
+      dest: "{{ ds_git_config['dir'] }}"
+      version: "{{ ds_git_config['version']|default(omit) }}"
+    when: not ds_git_config_script is defined
+
+  - name: Git checkout ( custom )
+    shell: "{{ ds_git_config_script }}"
+    when: ds_git_config_script is defined
+  when: not ds_git_config_control_node
 
 - name: Git files
   ansible.builtin.copy:
