@@ -31,11 +31,15 @@ try {
     dir.traverse(type: groovy.io.FileType.DIRECTORIES, maxDepth: 0) { it ->
         samlMetadataFile = "$it/meta.xml"
         samlMetadataExtFile = "$it/metaext.xml"
-        samlMetadata = new File(samlMetadataFile)?.text
-        samlMetadataExt = new File(samlMetadataExtFile)?.text
-        samlEntityName = new XmlParser().parseText(samlMetadata).@entityID
+        samlMetadata = new File(samlMetadataFile)
+        samlMetadataExt = new File(samlMetadataExtFile)
+        samlEntityName = new XmlParser().parseText(samlMetadata.text).@entityID
+        if (samlMetadataExt.exists()) {
+            bodyBuilder 'metadata': groovy.json.StringEscapeUtils.escapeJava(samlMetadata.text), 'entityConfig': groovy.json.StringEscapeUtils.escapeJava(samlMetadataExt.text)
+        } else {
+            bodyBuilder 'metadata': groovy.json.StringEscapeUtils.escapeJava(samlMetadata.text)
+        }
 
-        bodyBuilder 'metadata': groovy.json.StringEscapeUtils.escapeJava(samlMetadata), 'entityConfig': groovy.json.StringEscapeUtils.escapeJava(samlMetadataExt)
         // Check if SAML Entity exists
         saml_current = eval("read Saml2Entity --realm $realmName --id $samlEntityName")
         if (isNull(saml_current)) {
