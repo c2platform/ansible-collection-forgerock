@@ -46,9 +46,7 @@
 
 - name: Execute Amster script
   command: "./amster {{ item }}"
-  environment:
-    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
-    JAVA_HOME: "{{ am_java_home }}"
+  environment: "{{ am_environment }}"
   register: amster_script_exec
   args:
     chdir: "{{ amster_home_version }}"

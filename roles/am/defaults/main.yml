@@ -16,12 +16,15 @@ am_configure_manual: no
 am_no_log: no
 am_debug: no
 
-# TODO remove
-am_home: /opt/am
-am_version: 6.5.3
+am_home: /opt/am # TODO remove
+am_version: 6.5.3 # TODO not used
 am_context: am
 
 am_shared_secrets: /root/.am-shared-secrets
+
+am_environment:
+  OPENDJ_JAVA_HOME: "{{ am_java_home }}"
+  JAVA_HOME: "{{ am_java_home }}"
 
 amster_versions:
   6.5.3:
@@ -48,7 +51,6 @@ am_amster_scripts_default:
 #  - 100-configure_AM
   - 101-connect_To_AM
   - 102-set-common-functions
-#  - 111-configure-global-validation-service
 #  - 112-configure-top-level-realm
 #  - 201-configure-SAML
 #  - 208-function_create_federation_module
@@ -239,7 +241,7 @@ am_amster_templates:
     vars: ['realmName']
   209-function_load_all_saml:
     vars: ['realmName', 'cotName', 'fileCot', 'dirSaml']
-    vars-optional:
+    vars-optional: # TODO remove
     - name: amsterVersion
       value: "{{ am_version }}"
   210-function-load-authentication-settings:
@@ -255,17 +257,9 @@ am_amster_templates:
     - 401-set-global-locale
     - 400-set-global-security-settings
     - 402-update-cookie-domains
-    notify: restart tomcat instance
-#  400-set-global-security-settings:
-#    vars: ['cookieName']
-#    notify: restart tomcat instance # TODO
-#  401-set-global-locale:
-#  402-update-cookie-domains:
-#    vars: ['cookieDomains']
-#    notify: restart tomcat instance # TODO
+    notify: restart tomcat instance # TODO
 
-#402-update-cookie-domains.j2
-
+# Obsolete / not used:
 #  - 111-configure-global-validation-service
 #  - 112-configure-top-level-realm
 #  - 201-configure-SAML

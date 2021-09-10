@@ -1,9 +1,7 @@
 ---
 - name: Check setup
   shell: "{{ ds_home_version }}/bin/status --offline || true"
-  environment:
-    OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-    JAVA_HOME: "{{ ds_java_home }}"
+  environment: "{{ ds_environment }}"
   register: ds_status
   changed_when: False
 
@@ -13,18 +11,14 @@
 
 - name: Setup
   command: "./setup directory-server {{ ds_setup_config|c2platform.forgerock.ds_cmd }}"
-  environment:
-    OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-    JAVA_HOME: "{{ ds_java_home }}"
+  environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}"
   when:  ds_setup
 
 - name: Stop DS
   command: "./stop-ds"
-  environment:
-    OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-    JAVA_HOME: "{{ ds_java_home }}"
+  environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   when:  ds_setup

@@ -1,9 +1,7 @@
 ---
 - name: "Check {{ item|c2platform.forgerock.dn_from_modify_item }}"
   shell:  "./ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} {{ item|c2platform.forgerock.ds_modify_search }}"
-  environment:
-    OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-    JAVA_HOME: "{{ ds_java_home }}"
+  environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   register: ldapsearch_result
@@ -28,9 +26,7 @@
 
     - name: "item {{ item|c2platform.forgerock.dn_from_modify_item }}"
       shell:  "./ldapmodify {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --filename {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
-      environment:
-        OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-        JAVA_HOME: "{{ ds_java_home }}"
+      environment: "{{ ds_environment }}"
       args:
         chdir: "{{ ds_home_version }}/bin"
   when: ldapsearch_result is search("No Such Entry") or ldapsearch_result.stdout == ""

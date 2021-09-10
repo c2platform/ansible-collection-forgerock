@@ -16,9 +16,7 @@
 
 - name: execute 100-installAM_1 amster
   command: "./amster 100-installAM_1.amster"
-  environment:
-    OPENDJ_JAVA_HOME: "{{ am_java_home }}"
-    JAVA_HOME: "{{ am_java_home }}"
+  environment: "{{ am_environment }}"
   register: installam_amster
   args:
     chdir: "{{ amster_home_version }}"

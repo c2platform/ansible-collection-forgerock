@@ -4,9 +4,7 @@
 
 - name: Check replicas alive
   shell:  './ldapsearch {{ item|c2platform.forgerock.ds_cmd }} --baseDn "" --searchScope base "(&)" alive'
-  environment:
-    OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-    JAVA_HOME: "{{ ds_java_home }}"
+  environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   register: alive_check
@@ -26,9 +24,7 @@
 - block:
   - name:  Check replication Status
     shell:  "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }}"
-    environment:
-      OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-      JAVA_HOME: "{{ ds_java_home }}"
+    environment: "{{ ds_environment }}"
     args:
       chdir: "{{ ds_home_version }}/bin"
     register: replication_status
@@ -52,18 +48,14 @@
 
   - name:  Configure replication for fresh install # for all DNs, creates also global replication admin
     shell:  "./dsreplication configure {{ _ds_replication['configure']|c2platform.forgerock.ds_cmd }}"
-    environment:
-      OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-      JAVA_HOME: "{{ ds_java_home }}"
+    environment: "{{ ds_environment }}"
     args:
       chdir: "{{ ds_home_version }}/bin"
     when: replication_status.stderr is search("Invalid Credentials")
 
   - name:  Initialize replication for fresh install
     shell:  "./dsreplication initialize-all {{ _ds_replication['connect_global']|combine({'baseDn':ds_replication['baseDNs']})|c2platform.forgerock.ds_cmd }}"
-    environment:
-      OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-      JAVA_HOME: "{{ ds_java_home }}"
+    environment: "{{ ds_environment }}"
     args:
       chdir: "{{ ds_home_version }}/bin"
     when:  replication_status is search("Invalid Credentials")
@@ -73,9 +65,7 @@
 
   - name:  Check replication status for existing install # solely the 'true' lines
     shell:  "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
-    environment:
-      OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-      JAVA_HOME: "{{ ds_java_home }}"
+    environment: "{{ ds_environment }}"
     args:
       chdir: "{{ ds_home_version }}/bin"
     register: replication_status_existing
@@ -84,9 +74,7 @@
 
   - name:  Configure replication for existing install for new DNs
     shell:  "./dsreplication configure {{ _ds_replication['configure']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
-    environment:
-      OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-      JAVA_HOME: "{{ ds_java_home }}"
+    environment: "{{ ds_environment }}"
     args:
       chdir: "{{ ds_home_version }}/bin"
     with_items: "{{ ds_replication['baseDNs'] }}"
@@ -94,9 +82,7 @@
 
   - name:  Initialize replication, existing install
     shell:  "./dsreplication initialize-all {{  _ds_replication['connect_global']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
-    environment:
-      OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
-      JAVA_HOME: "{{ ds_java_home }}"
+    environment: "{{ ds_environment }}"
     args:
       chdir: "{{ ds_home_version }}/bin"
     with_items: "{{ ds_replication['baseDNs'] }}"

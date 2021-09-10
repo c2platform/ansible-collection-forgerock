@@ -38,3 +38,7 @@ ds_connect:
   no-prompt: ""
 
 ds_connect_ssl: '{{ ds_connect|combine({"useSsl":""}) }}'
+
+ds_environment:
+  OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
+  JAVA_HOME: "{{ ds_java_home }}"
