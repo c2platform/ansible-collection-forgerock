@@ -13,7 +13,7 @@
     - "{{ _ds_replication.connect_host1 }}"
     - "{{ _ds_replication.connect_host2 }}"
   changed_when: False
-  no_log: True
+  no_log: "{{ ds_no_log }}"
 
 - name: Message if not alive
   debug:
@@ -30,7 +30,7 @@
     register: replication_status
     ignore_errors: yes
     changed_when: False
-    no_log: True
+    no_log: "{{ ds_no_log }}"
 
   - name:  Check replication log
     stat:
@@ -70,7 +70,7 @@
       chdir: "{{ ds_home_version }}/bin"
     register: replication_status_existing
     changed_when: False
-    no_log: True
+    no_log: "{{ ds_no_log }}"
 
   - name:  Configure replication for existing install for new DNs
     shell:  "./dsreplication configure {{ _ds_replication['configure']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
