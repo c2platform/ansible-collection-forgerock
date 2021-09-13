@@ -52,7 +52,7 @@
       when: ds_scripts|default(False)
 
     - include: setup_replication.yml
-      when: ds_replication['replication-server']['hostname']|default('whatever') == ds_hostname and ds_replication_enable
+      when: ds_replication['replication-server']['inventory_hostname']|default('whatever') == inventory_hostname and ds_replication_enable
   when: ds_setup_config is defined
 
 #- include: certificate.yml
