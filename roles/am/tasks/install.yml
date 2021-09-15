@@ -43,5 +43,5 @@
     regexp: ^.*ssh-rsa
     replace: ssh-rsa
   with_items:
-    - /opt/tomcat/am/amster_rsa.pub
-    - /opt/tomcat/am/authorized_keys
+    - "{{ amster_am_install['cfgDir'] }}/amster_rsa.pub"
+    - "{{ amster_am_install['cfgDir'] }}/authorized_keys"
