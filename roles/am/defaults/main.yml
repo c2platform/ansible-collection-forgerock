@@ -40,7 +40,7 @@ am_config_directories:
   - "{{ amster_home_version }}"
 
 amster_am_connect:
-  private-key: /opt/tomcat/am/
+  private-key: "{{ amster_am_install['cfgDir']|default('/opt/tomcat/am/') }}"
 
 am_amster_scripts_default:
   - 090-connect-to-openam
