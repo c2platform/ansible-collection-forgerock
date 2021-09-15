@@ -70,8 +70,8 @@
   ansible.builtin.copy:
     src: "{{ am_git_config['dir'] }}/{{ item['source'] }}"
     dest: "{{ item['dest'] }}"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
     remote_src: "{{ not am_git_config_control_node }}"
   with_items: "{{ am_git_files }}"
   when: am_git_files is defined

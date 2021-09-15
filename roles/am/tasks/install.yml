@@ -14,6 +14,14 @@
     path: "{{ amster_am_install['cfgDir'] }}"
   register: cfgDir
 
+- name: Config directory parent
+  directory:
+    path: "{{ amster_am_install['cfgDir']|dirname }}"
+    state: directory
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
+    mode: 0755
+
 - name: execute 100-installAM_1 amster
   command: "./amster 100-installAM_1.amster"
   environment: "{{ am_environment }}"

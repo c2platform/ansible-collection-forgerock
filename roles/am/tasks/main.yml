@@ -7,8 +7,8 @@
       template:
         src: "{{ item }}.j2"
         dest: "{{ amster_home_version }}/{{ item }}.amster"
-        owner: "{{ amster_owner }}"
-        group: "{{ amster_group }}"
+        owner: "{{ am_owner }}"
+        group: "{{ am_group }}"
         mode: 0600
       with_items: "{{ am_amster_scripts_default + am_amster_subscripts }}"
 

@@ -3,8 +3,8 @@
   copy:
     dest: "{{ item['dest'] }}"
     content: "{{ item['content']|to_nice_json }}"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
     mode: 0644
   with_items: "{{ am_config_files }}"
   when: am_config_files|default(False)
@@ -14,8 +14,8 @@
   copy:
     dest: "{{ item['dest'] }}"
     content: "{{ item['content'] }}"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
     mode: "{{ item['mode']|default('0644') }}"
   with_items: "{{ am_config_files_raw }}"
   when: am_config_files_raw|default(False)
@@ -38,8 +38,8 @@
   template:
     src: "{{ item['template'] }}.j2"
     dest: "{{ amster_home_version }}/{{ item['script'] }}"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
     mode: 0600
   with_items: "{{ am_configure}}"
   no_log: "{{ am_no_log }}"

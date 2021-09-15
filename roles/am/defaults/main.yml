@@ -16,7 +16,6 @@ am_configure_manual: no
 am_no_log: no
 am_debug: no
 
-am_home: /opt/am # TODO remove
 am_version: 6.5.3 # TODO not used
 am_context: am
 
@@ -31,12 +30,10 @@ amster_versions:
     url: file:///vagrant/downloads/Amster-6.5.3.zip
     checksum: "sha256: 933f97cabd60ac37073229729668461993c99db4f56ff7ad02eb055f66slecae8"
 
-amster_owner: tomcat # TODO
-amster_group: tomcat
+am_owner: tomcat
+am_group: tomcat
 
 amster_download_dir: /tmp
-
-amster_code_location: /vagrant/downloads
 
 am_config_directories:
   - "{{ amster_home }}"

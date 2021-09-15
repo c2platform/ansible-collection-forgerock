@@ -1,7 +1,7 @@
 ---
 - name: Create owner
   user:
-    name: "{{ amster_owner }}"
+    name: "{{ am_owner }}"
     shell: /bin/bash
     system: true
 
@@ -9,8 +9,8 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
     mode: 0755
   with_items: "{{ am_config_directories }}"
   when: am_config_directories|default(False)
@@ -28,8 +28,8 @@
 - name: Unzip the zipfile
   unarchive:
     dest:  "{{ amster_home_version }}"
-    owner: "{{ amster_owner }}"
-    group: "{{ amster_group }}"
+    owner: "{{ am_owner }}"
+    group: "{{ am_group }}"
     remote_src: yes
     src: "{{ amster_download_dir }}/{{ amster_versions[amster_version]['url']|basename }}"
 
