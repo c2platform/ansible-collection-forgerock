@@ -15,7 +15,7 @@
   register: cfgDir
 
 - name: Config directory parent
-  directory:
+  file:
     path: "{{ amster_am_install['cfgDir']|dirname }}"
     state: directory
     owner: "{{ am_owner }}"
