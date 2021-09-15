@@ -21,6 +21,7 @@
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0755
+  when: am_manage_parent_config_dir|default(False)
 
 - name: execute 100-installAM_1 amster
   command: "./amster 100-installAM_1.amster"
