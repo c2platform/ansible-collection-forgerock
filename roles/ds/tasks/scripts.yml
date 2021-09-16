@@ -9,4 +9,4 @@
 
 - debug:
     msg: "ds_script_execute: {{ ds_script_execute }}"
-  when: "{{ ds_debug }}"
+  when: ds_debug
