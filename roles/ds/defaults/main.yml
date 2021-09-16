@@ -44,3 +44,4 @@ ds_environment:
   JAVA_HOME: "{{ ds_java_home }}"
 
 ds_no_log: yes
+ds_debug: no

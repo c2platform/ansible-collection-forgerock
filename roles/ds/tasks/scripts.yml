@@ -6,3 +6,7 @@
   register: ds_script_execute
   changed_when: ds_script_execute['stdout'] is search("Script changed system state")
   ignore_errors: yes
+
+- debug:
+    msg: "ds_script_execute: {{ ds_script_execute }}"
+  when: "{{ ds_debug }}"
