@@ -184,6 +184,8 @@ am_amster_templates:
       value: cn=Directory Manager
     - name: moduleName
       value: LDAP
+    - name: connectionMode
+      value: LDAPS
     body:
       primaryLdapServer:
       - "$primaryLdapServer"
@@ -195,7 +197,7 @@ am_amster_templates:
       userSearchAttributes:
       - uid
       searchScope: SUBTREE
-      openam-auth-ldap-connection-mode: LDAPS
+      openam-auth-ldap-connection-mode: $connectionMode
       returnUserDN: false
       profileAttributeMappings: []
       minimumPasswordLength: '8'
