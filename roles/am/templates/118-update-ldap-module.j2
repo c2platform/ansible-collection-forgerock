@@ -10,15 +10,12 @@ try {
   """
   currentLdapModule = eval("read LdapModule --realm $realmName --id $moduleName")
   if (isNull(currentLdapModule)) {
-      println red("Unable to update Ldap Module as it cannot be read")
+      println red("{{ am_amster_stdout_tags['error'] }} Unable to update Ldap Module as it cannot be read")
   } else {
-      println cyan("Update Ldap Module with the following bind user dn: ${userBindDN}")
       slurped = new groovy.json.JsonSlurper().parseText(currentLdapModule)
-      if (slurped.userSearchStartDN.contains(userSearchStartDN)) {
-          println cyan("Nothing to do")
-      } else {
-          eval("update LdapModule --realm $realmName --id $moduleName --body '$BODY'")
-          println green("{{ am_amster_stdout_tags['changed'] }} Ldap Module updated")
+      newLdapModule = eval("update LdapModule --realm $realmName --id $moduleName --body '$BODY'")
+      if (resourceChange(currentLdapModule, newLdapModule)) {
+        println(green("{{ am_amster_stdout_tags['changed'] }}  LDAP Module updated"))
       }
   }
 } catch(Exception e) {
