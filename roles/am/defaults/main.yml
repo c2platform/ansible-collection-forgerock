@@ -60,6 +60,7 @@ am_amster_subscripts:
   - 110-function-create-authentication-tree
   - 110-function-delete-authentication-tree
   - 110-function-load-authentication-service
+  - 300-set-default-advanced-props
   - 400-set-global-security-settings
   - 401-set-global-locale
   - 402-update-cookie-domains
@@ -253,6 +254,7 @@ am_amster_templates:
     - name: locale
       value: nl_NL
     scripts:
+    - 300-set-default-advanced-props
     - 401-set-global-locale
     - 400-set-global-security-settings
     - 402-update-cookie-domains
