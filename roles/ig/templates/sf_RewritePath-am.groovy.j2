@@ -1,7 +1,7 @@
 // logger.warn("Request.uri.path = " + request.uri.path);
 // logger.warn("Request.uri = " + request.uri);
 
-String backendURI = '{{ item['backendURI'] }}';
+String backendURI = 'acs.local';
 String path = request.uri.path;
 String target = "am/";
 String replacement = "acs/";
@@ -13,7 +13,7 @@ String processed = path.replace(target,replacement);
 
 request.uri.path = processed;
 request.uri.host = backendURI;
-request.uri.scheme="https";
+request.uri.scheme="http";
 
 String reformedUri=backendURI + processed;
 // logger.warn("sf_RewritePath: reformed newuri =" + reformedUri);

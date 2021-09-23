@@ -33,13 +33,11 @@ amster_versions:
 am_owner: tomcat
 am_group: tomcat
 
-amster_download_dir: /tmp
-
 am_config_directories:
   - "{{ amster_home }}"
   - "{{ amster_home_version }}"
 
-amster_am_connect:
+am_connect:
   private-key: "{{ amster_am_install['cfgDir']|default('/opt/tomcat/am/') }}"
 
 am_amster_scripts_default:
