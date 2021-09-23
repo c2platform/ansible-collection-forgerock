@@ -1,7 +1,7 @@
 // logger.warn("Request.uri.path = " + request.uri.path);
 // logger.warn("Request.uri = " + request.uri);
 
-String backendURI = 'acs.local';
+String backendURI = '{{ item['backendURI'] }}';
 String path = request.uri.path;
 String target = "am/";
 String replacement = "acs/";
