@@ -43,7 +43,7 @@ def format_ds_cmd_value(v):
 # Return ds config method e.g. set-connection-handler-prop
 def ds_config_method(component, config=None, get_set='set'):
     comp = component.split('_')[0]  # e.g. connection-handler
-    # pprint({'component': component, 'config': config, 'get_set': get_set})
+    pprint({'component': component, 'config': config, 'get_set': get_set})
     if get_set == 'set':
         if 'create' in component:
             return 'create-' + comp
@@ -57,10 +57,9 @@ def ds_config_method(component, config=None, get_set='set'):
         else:
             return 'get-{}-prop'.format(comp)
 
-
 # Return the command switches to get current config
 def ds_cmd_get(cmd_config, component):
-    # pprint({'component':component, 'cmd_config': cmd_config})
+    pprint({'component':component, 'cmd_config': cmd_config})
     comp = component.split('_')[0]  # e.g. connection-handler
     if 'when' in cmd_config:
         if 'switches' in cmd_config['when']:
@@ -74,6 +73,9 @@ def ds_cmd_get(cmd_config, component):
     elif comp == 'log-publisher':
         return '--publisher-name ' + \
             format_ds_cmd_value(cmd_config['publisher-name'])
+    elif comp == 'plugin':
+        return '--plugin-name ' + \
+            format_ds_cmd_value(cmd_config['plugin-name'])
     else:
         msg = "No get command defined for component {}. Use a fingerprint!?"
         raise Exception(msg.format(comp))
