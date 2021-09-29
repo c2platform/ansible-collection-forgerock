@@ -5,15 +5,15 @@
     shell: /bin/bash
     system: true
 
-- name: Create home
+- name: Create directories
   file:
     path: "{{ item }}"
     state: directory
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0755
-  with_items: "{{ am_config_directories }}"
-  when: am_config_directories|default(False)
+  with_items: "{{ am_directories }}"
+  when: am_directories|default(False)
 
 - name: Amster script
   stat:

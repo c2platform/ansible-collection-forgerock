@@ -30,14 +30,14 @@
 
 - name: Remove obsolete Amster scripts
   file:
-    path: "{{ amster_home_version }}/{{ item }}"
+    path: "{{ amster_scripts_dir }}/{{ item }}"
     state: absent
   with_items: "{{ am_configure|selectattr('script-obsolete', 'defined')|map(attribute='script-obsolete')|list }}"
 
 - name: Create Amster scripts
   template:
     src: "{{ item['template'] }}.j2"
-    dest: "{{ amster_home_version }}/{{ item['script'] }}"
+    dest: "{{ amster_scripts_dir }}/{{ item['script'] }}"
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0600
@@ -45,11 +45,11 @@
   no_log: "{{ am_no_log }}"
 
 - name: Execute Amster script
-  command: "./amster {{ item }}"
+  command: "{{ amster_exe }} {{ item }}"
   environment: "{{ am_environment }}"
   register: amster_script_exec
   args:
-    chdir: "{{ amster_home_version }}"
+    chdir: "{{ amster_scripts_dir }}"
   with_items: "{{ am_configure|map(attribute='script')|list }}"
   when: >
     (not am_configure_manual|default(False)) and

@@ -3,6 +3,8 @@ amster_version: 6.5.3
 amster_home: /opt/amster
 amster_home_version: "{{ amster_home }}/{{ amster_home|basename }}-{{ amster_version }}"
 amster_home_link: "{{ amster_home  }}/{{ amster_home|basename }}"
+amster_scripts_dir: "{{ amster_home_version }}/scripts"
+amster_exe: "{{ amster_home_version }}/amster"
 
 amster_ds_hostname: "{{ ansible_fqdn }}"
 amster_ds_rootpw: supersecret
@@ -33,9 +35,10 @@ amster_versions:
 am_owner: tomcat
 am_group: tomcat
 
-am_config_directories:
+am_directories:
   - "{{ amster_home }}"
   - "{{ amster_home_version }}"
+  - "{{ amster_scripts_dir }}"
 
 am_connect:
   private-key: "{{ amster_am_install['cfgDir']|default('/opt/tomcat/am/') }}"
