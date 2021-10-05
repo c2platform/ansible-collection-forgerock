@@ -1,0 +1,22 @@
+---
+- name: Cron jobs ( ds_cron ) # creates file under /etc/cron.d
+  ansible.builtin.cron:
+    name: "{{ ds_cron[item]['name']|default(item) }}"
+    weekday: "{{ ds_cron[item]['weekday']|default(omit) }}"
+    minute: "{{ ds_cron[item]['minute']|default(omit) }}"
+    hour: "{{ ds_cron[item]['hour']|default(omit) }}"
+    user: "{{ ds_cron[item]['user']|default('root') }}"
+    day: "{{ ds_cron[item]['day']|default(omit) }}"
+    month: "{{ ds_cron[item]['month']|default(omit) }}"
+    job: "{{ ds_cron[item]['job']|default(omit) }}"
+    cron_file: "{{ ds_cron[item]['cron_file']|default(omit) }}"
+    disabled: "{{ ds_cron[item]['disabled']|default(False) }}"
+    state: "{{ ds_cron[item]['state']|default('present') }}"
+    special_time: "{{ ds_cron[item]['special_time']|default(omit) }}"
+  with_items: "{{ ds_cron }}"
+  when: ds_cron is defined
+  register: fu
+
+- debug:
+    msg: "fu: {{ fu }}"
+

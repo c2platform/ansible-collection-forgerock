@@ -8,10 +8,12 @@ ds_java_home: "{{ java_versions[java_version]['java_home'] }}"
 ds_owner: forgerock
 ds_group: forgerock
 ds_rootpw:  supersecret
+ds_password_file: /root/.dspassword
 ds_replication_global_admin: admin
 ds_replication_global_admin_password: supersecret # Su12perSec34retIt5Is
 # Note: requires a "good" password e.g Su12perSec34retIt5Is
 #       see vault
+ds_adminport: 4444
 ds_replication_port: 8989
 ds_replication_enable: no
 ds_import_enable: no
@@ -31,7 +33,7 @@ ds_hostname: "{{ ansible_fqdn }}"
 
 ds_connect:
   hostname: "{{ ds_hostname }}"
-  port: 4444
+  port: "{{ ds_adminport }}"
   bindDN:  cn=Directory Manager
   bindPassword: "{{ ds_rootpw }}"
   trustAll: ""

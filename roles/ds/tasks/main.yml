@@ -1,6 +1,14 @@
 ---
 - include: install.yml
 
+- name: Password file
+  copy:
+    content: "{{ ds_rootpw }}"
+    owner: root
+    group: root
+    dest: "{{ ds_password_file }}"
+    mode: 0400
+
 - name: Create directories
   file:
     path: "{{ item }}"
@@ -17,6 +25,7 @@
 
 - block:
     - include: setup.yml
+    - include: cron.yml
     - include: service.yml
 
     - name: Wait for DS

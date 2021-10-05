@@ -37,7 +37,7 @@
     when: ds_git_config_script is defined
   when: not ds_git_config_control_node
 
-- name: Git files
+- name: Git files # TODO does not remove files!? # REMOTE directory iedere keer verwijderen.
   ansible.builtin.copy:
     src: "{{ ds_git_config['dir'] }}/{{ item['source'] }}"
     dest: "{{ item['dest'] }}"
@@ -48,3 +48,5 @@
   when: ds_git_files is defined
   notify: "{{ item['notify']|default(omit) }}"
   ignore_errors: "{{ item['ignore_errors']|default(False) }}"
+
+# TODO alleen changed when when het verandert

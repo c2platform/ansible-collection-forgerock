@@ -14,6 +14,8 @@ Note: on default - without additional configuration - this role will only instal
   - [Setup config](#setup-config)
   - [DB schema LDIF](#db-schema-ldif)
   - [Backends](#backends)
+  - [Attribute Uniqueness](#attribute-uniqueness)
+  - [Global ACI](#global-aci)
   - [Modify](#modify)
     - [Simple](#simple)
     - [Download](#download)
@@ -23,8 +25,11 @@ Note: on default - without additional configuration - this role will only instal
   - [Import](#import)
   - [Directories](#directories)
   - [Git](#git)
+  - [Files](#files)
+  - [Cron](#cron)
   - [Scripts](#scripts)
   - [Replication](#replication)
+  - [Backup](#backup)
 - [Dependencies](#dependencies)
 - [Example configuration](#example-configuration)
 - [Links](#links)
@@ -66,7 +71,7 @@ ds_setup_config:
   rootUserDN: '"cn=Directory Manager"'
   rootUserPassword: "{{ ds_rootpw }}"
   hostname: "{{ ds_hostname }}"
-  adminConnectorPort: 4444
+  adminConnectorPort: "{{ ds_adminport }}"
   ldapPort: 10389
   enableStartTls: ""
   productionMode: ""
@@ -75,6 +80,7 @@ ds_setup_config:
   set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
   acceptLicense: ""
 ```
+
 
 ### DB schema LDIF
 
@@ -116,6 +122,25 @@ ds_config:
       type: je
       backend-name: userRoot
 ```
+
+### Attribute Uniqueness
+
+TODO
+
+[Attribute Uniqueness](https://backstage.forgerock.com/docs/ds/7/config-guide/attribute-uniqueness.html)
+
+
+### Global ACI
+
+[Directory Services 7 > Security Guide > Access Control](https://backstage.forgerock.com/docs/ds/7/security-guide/access.html)
+
+
+  access-control-handler:
+    - add:
+        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)" 
+        - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
+        - global-aci:"(targetattr!=\"userPassword||authPassword||changes||changeNumber||changeType||changeTime||targetDN||newRDN||newSuperior||deleteOldRDN||targetEntryUUID||targetUniqueID||changeInitiatorsName||changeLogCookie\")(version 3.0; acl \"Anonymous read access\"; allow (read,search,compare) userdn=\"ldap:///dc=bkwi,dc=nl\";)"
+
 
 ### Modify
 
@@ -322,6 +347,14 @@ ds_directories:
 
 Note: if we want to execute those scripts, see [Scripts](#scripts) 
 
+### Files
+
+Using `ds_files` arbitrary files can be created. For example see [Backup](#backup).
+
+### Cron
+
+Using `ds_cron` cron jobs in `/etc/cron.d` can be created / managed. For example see [Backup](#backup).
+
 ### Scripts
 
 Use `ds_scripts` to configure execution of all kinds of scripts using Ansible [shell](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html) module.
@@ -371,8 +404,9 @@ ds_replication_port: 8989
 
 ds_replication: 
   replication-server:
-    hostname: "1.1.1.51.nip.io"
-    port: 4444
+    hostname: ""
+    inventory_hostname: "{{ groups['myapp_ds'][0] }}"
+    port: "{{ ds_adminport }}"
     bindDN:  cn=Directory Manager
     bindPassword: supersecret
     trustAll: ""
@@ -395,15 +429,16 @@ The possible settings under `replication-server`, `host1` and `host2` are mostly
 
 ```yaml
 ds_replication_enable: yes
-ds_replication: 
-  replication-server:
-    hostname: "1.1.1.51.nip.io"
-  host2: 
-    hostname: "1.1.1.58.nip.io"
-  baseDNs:
-    - ou=am-config
-    - c=NL
-    - dc=myapporg,dc=nl
+ds_replication:
+ replication-server:
+   hostname: "{{ groups['myapp_ds'][0] }}.bkwi.local"
+   inventory_hostname: "{{ groups['myapp_ds'][0] }}"
+ host2:
+   hostname: "{{ groups['myapp_ds'][1] }}.bkwi.local"
+ baseDNs:
+   - ou=am-config
+   - c=NL
+   - dc=bkwi,dc=nl
 ```
 Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc. Note that `ds_replication_enable` is default `no`. You can use this variable as a toggle to provision with / without replication.
 
@@ -434,6 +469,144 @@ of the dsreplication arguments.
 * status: _used_  for initial check and for listing the configured dn's if already something is running. _arguments_ adminUID and adminPassword.
 * configure: _used_ for creating (--baseDN is already an itemised list hence no loop needed), again for intial and for delta. _arguments_ basically all, notably bind and admin.
 * initialize-all: _used_ as a follow-up of configure, it activates the replication config. _arguments_ adminUID and adminPassword, baseDN
+
+### Backup
+
+There are no dedicated Ansible variables for creating a DS backup but it can be configured using `ds_files` and `ds_cron`. This section shows an actual example of how this was done on a project.
+
+First, for our convience, we created some dictionaries. This is of course not required.
+```yaml
+suwinet_ds_backup_incremental0:
+  port: "{{ ds_adminport }}"
+  bindDN: 'cn=Directory Manager'
+  bindPasswordFile: "{{ ds_password_file }}"
+  incremental: ""
+  backendID: suwiRoot
+  incrementalBaseID: full_daily
+  backupID: incremental0
+  backupDirectory: /opt/ds/ds/bak/current/suwiRoot/
+  recurringTask: "5,10,15,20,25,30,35,40,45,50,55 0 * * *"
+  errorNotify: "{{ suwinet_support_mail_address }}"
+  hostname: 127.0.0.1
+  trustAll:
+
+suwinet_ds_backup_incremental1:
+  backupID: incremental1
+  recurringTask: "0,5,10,15,20,25,30,35,40,45,50,55 1-23 * * *"
+
+suwinet_ds_manage_tasks:
+  port: "{{ ds_adminport }}"
+  bindDN: cn=Directory Manager
+  bindPasswordFile: "{{ ds_password_file }}"
+  hostname: 127.0.0.1
+  trustAll:
+
+suwinet_ds_backup:
+  port: "{{ ds_adminport }}"
+  bindDN: cn=Directory Manager
+  bindPasswordFile: "{{ ds_password_file }}"
+  hostname: 127.0.0.1
+  trustAll:
+  start: 0
+  backUpAll:
+  backupID: full_daily
+  backupDirectory: "{{ ds_home_link }}/bak/current"
+
+suwinet_ds_backup_scripts:
+  create_incr: /usr/local/bin/ds65-backup-incr.sh
+  list_incr: /usr/local/bin/ds65-backup-incr-list.sh
+  backup: /usr/local/bin/ds65-backup.sh
+```
+
+Now we us `ds_files` to configure some backup scripts.
+
+```yaml
+ds_files:
+  incremental-backup-create-script:
+    dest: "{{ suwinet_ds_backup_scripts['create_incr'] }}"
+    content: |
+      #!/bin/bash
+      # Create DS scheduled tasks for incremental backups
+
+      echo "## Create incremental0"
+      sudo {{ ds_home_link }}/bin/backup \
+      {{ suwinet_ds_backup_incremental0|c2platform.forgerock.ds_cmd_ml }}
+
+      echo "## Create incremental1"
+      sudo {{ ds_home_link }}/bin/backup \
+      {{ suwinet_ds_backup_incremental0|combine(suwinet_ds_backup_incremental1)|c2platform.forgerock.ds_cmd_ml }}
+    mode: '0755'
+  increment-backup-list-script:
+    dest: "{{ suwinet_ds_backup_scripts['list_incr'] }}"
+    content: |
+      #!/bin/bash
+      # List DS scheduled tasks
+      OUTPUTTMP=$(mktemp)
+
+      # List the summary of all tasks
+      echo "### show task summary"
+      sudo {{ ds_home_link }}/bin/manage-tasks --summary \
+      {{ suwinet_ds_manage_tasks|c2platform.forgerock.ds_cmd_ml }} > $OUTPUTTMP
+      cat $OUTPUTTMP
+      echo
+
+      # List the details of recurring tasks
+      RECURRING=$(awk '/Recurring/ {print $1}' ${OUTPUTTMP})
+      if [ -z "${RECURRING}" ]; then
+        echo "### no recurring tasks"
+       else
+        for TASK in $RECURRING; do
+          echo "### task $TASK"
+          sudo {{ ds_home_link }}/bin/manage-tasks --info $TASK \
+      {{ suwinet_ds_manage_tasks|c2platform.forgerock.ds_cmd_ml(8) }}
+        done
+      fi
+      # Cleanup
+      rm $OUTPUTTMP
+    mode: '0755'
+  backup-script:
+    dest: "{{ suwinet_ds_backup_scripts['backup'] }}"
+    content: |
+      #!/bin/bash
+
+      DATE=$(date +%Y%m%d)
+      DIR={{ ds_home_link }}/bak/
+      LINK=current
+
+      mkdir $DIR/$DATE
+      chown -R {{ ds_owner }}.{{ ds_owner }} $DIR/$DATE
+      rm -rf $DIR/$LINK
+      ln -s $DIR/$DATE $DIR/$LINK
+
+      {{ ds_home_link }}/bin/backup \
+      {{ suwinet_ds_backup|c2platform.forgerock.ds_cmd_ml }}
+    mode: '0755'
+```
+
+And some cron jobs using `ds_cron`
+
+```yaml
+ds_cron:
+  daily:
+    hour: "0"
+    minute: "0"
+    job: "{{ suwinet_ds_backup_scripts['backup'] }} >> /var/log/ds-daily-backup.log"
+    cron_file: ds-backup-daily
+  clean:
+    hour: "23"
+    minute: "0"
+    job: "find {{ ds_home_link }}/bak -mmin +2800 -delete 2>/dev/null"
+    cron_file: ds-backup-daily-cleanup
+  clean-incremental:
+    hour: "*"
+    minute: "*/30"
+    job: "find {{ ds_home_link }}/bak  -type f -mmin +60 -not -name *_daily -not -name backup.info -delete 2>/dev/null"
+    cron_file: ds-backup-incr-cleanup
+```
+
+* [FAQ: Backup and restore in DS 5.x and 6.x - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a89103342)
+* [DS 6.5 > Reference](https://backstage.forgerock.com/docs/ds/6.5/reference/index.html#backup-1)
+* [DS 6.5 > Administration Guide - To Schedule Incremental Backup](https://backstage.forgerock.com/docs/ds/6.5/admin-guide/#schedule-incremental-backup)
 
 ## Dependencies
 
@@ -472,7 +645,7 @@ ds_setup_config:
   rootUserDN: '"cn=Directory Manager"'
   rootUserPassword: "{{ ds_rootpw }}"
   hostname: "{{ ds_hostname }}"
-  adminConnectorPort: 4444
+  adminConnectorPort: "{{ ds_adminport }}"
   ldapPort: 10389
   enableStartTls: ""
   productionMode: ""

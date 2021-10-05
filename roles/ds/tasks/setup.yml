@@ -59,3 +59,14 @@
     path: "{{ ds_home_version }}/config/java.properties"
     regexp: ^start-ds.java-args=-server.*$
     replace: start-ds.java-args=-server -Xms1G -Xmx3G
+
+- name: Various files ( ds_files )
+  copy:
+    content: "{{ ds_files[item]['content'] }}"
+    dest: "{{ ds_files[item]['dest'] }}"
+    mode: "{{ ds_files[item]['mode']|default('0755') }}"
+    owner: "{{ ds_files[item]['owner']|default('root') }}"
+    group: "{{ ds_files[item]['group']|default('root') }}"
+  with_items: "{{ ds_files }}"
+  when: ds_files is defined
+

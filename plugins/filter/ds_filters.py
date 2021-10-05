@@ -12,7 +12,6 @@ import hashlib
 
 # Return command switches for ForgeRock CLI utilities
 def ds_cmd(cmd_config):
-    # pprint({'ds_cmd(cmd_config)': cmd_config})
     cmd_line = ''
     for key in cmd_config:
         if cmd_config[key] is None:
@@ -22,10 +21,21 @@ def ds_cmd(cmd_config):
         if isinstance(cmd_config[key], list):
             for v in cmd_config[key]:
                 vf = format_ds_cmd_value(v)
-                cmd_line += ' --{} {}'.format(key, vf)
+                cmd_line += '  --{} {}'.format(key, vf)
         else:
             vf = format_ds_cmd_value(cmd_config[key])
-            cmd_line += ' --{} {}'.format(key, vf)
+            cmd_line += '  --{} {}'.format(key, vf)
+    return cmd_line
+
+
+def ds_cmd_ml(cmd_config, ident=4):
+    itms = ds_cmd(cmd_config).split('--')
+    itms.pop(0)
+    cmd_line = ''
+    for itm in itms:
+        cmd_line += (' ' * ident) + '--{}'.format(itm.strip())
+        if not itm == itms[-1]:
+            cmd_line += " \\\n"
     return cmd_line
 
 
@@ -225,6 +235,7 @@ class FilterModule(object):
     def filters(self):
         return {
             'ds_cmd': ds_cmd,
+            'ds_cmd_ml': ds_cmd_ml,
             'ds_cmd_get': ds_cmd_get,
             'ds_config_method': ds_config_method,
             'ds_cmd_result_property_value': ds_cmd_result_property_value,

@@ -29,7 +29,6 @@
     - name: Replace AM keystore
       include: keystore.yml
       when: am_keystore is defined
-
   when: amster_am_install is defined
 
 - name: Fail manual mode
