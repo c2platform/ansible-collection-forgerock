@@ -19,16 +19,21 @@
     mode: '600'
   register: am_k
 
-- debug:
-    msg: |
-     am_k: {{ am_k }}
-     am_c: {{ am_c }}
-
 - block:
-  - name: Get password
+  - set_fact:
+      am_keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
+      am_storepass: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.storepass"
+      am_keypass: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.keypass"
+
+  - name: Get keystore password
     ansible.builtin.slurp:
-      src: "{{ am_certificate[item]['keystore_pass_file'] }}"
+      src: "{{ am_storepass }}"
     register: keystore_password
+
+  - name: Get keystore password
+    ansible.builtin.slurp:
+      src: "{{ am_keypass }}"
+    register: key_password
 
   - name: Create AM p12
     shell:
@@ -38,14 +43,13 @@
         -inkey {{ am_shared_secrets }}/{{ item }}.key
         -out {{ am_shared_secrets }}/{{ item }}.p12
         -name {{ am_certificate[item]['name']|default(item) }}
-        -password 'pass:{{ keystore_password['content']|b64decode }}'
+        -password 'pass:{{ key_password['content']|b64decode }}'
 
   - name: Remove certificate
     java_cert:
       cert_alias: "{{ am_certificate[item]['name']|default(item) }}"
-      #cert_path: "{{ item['path'] }}" # required but not sure why
       pkcs12_path: "{{ am_shared_secrets }}/{{ item }}.p12"
-      keystore_path: "{{ am_certificate[item]['keystore_path'] }}"
+      keystore_path: "{{ am_keystore_path }}"
       keystore_pass: "{{ keystore_password['content']|b64decode }}"
       keystore_type: JCEKS
       executable: "{{ am_certificate[item]['keytool'] }}"
@@ -56,13 +60,24 @@
     java_cert:
       pkcs12_path: "{{ am_shared_secrets }}/{{ item }}.p12"
       pkcs12_alias: "{{ am_certificate[item]['name']|default(item) }}"
-      pkcs12_password: "{{ keystore_password['content']|b64decode }}"
+      pkcs12_password: "{{ key_password['content']|b64decode }}"
       cert_alias: "{{ am_certificate[item]['name']|default(item) }}"
-      #cert_path: "{{ item['path'] }}"
-      keystore_path: "{{ am_certificate[item]['keystore_path'] }}"
+      keystore_path: "{{ am_keystore_path }}"
       keystore_pass: "{{ keystore_password['content']|b64decode }}"
       keystore_type: JCEKS
       executable: "{{ am_certificate[item]['keytool'] }}"
       state: present
-    notify: restart tomcat instance
-  when: am_c.changed or am_k.changed
+    notify: "{{ am_certificate[item]['notify']|default(omit) }}" # TODO
+    register: magweg
+
+  - name: Change key password
+    shell:
+      cmd: >
+        {{ am_certificate[item]['keytool'] }} -keypasswd
+        -keystore {{ am_keystore_path }}
+        -storetype jceks
+        -storepass {{ keystore_password['content']|b64decode }}
+        -alias {{ am_certificate[item]['name']|default(item) }}
+        -keypass {{ keystore_password['content']|b64decode }}
+        -new {{ key_password['content']|b64decode }}
+  when: am_c.changed or am_k.changed or am_certificate_force

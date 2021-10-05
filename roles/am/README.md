@@ -80,6 +80,8 @@ amster_am_install:
   userStoreRootSuffix: dc=bkwi,dc=NL
 ```
 
+`am_manage_parent_config_dir`
+
 ### Configure
 
 Use `am_configure` to configure AM using Amster. To create a realm `myapp` for domain `myapp.com`
@@ -192,6 +194,20 @@ Other attributes are owner, group and mode which default respectively to `tomcat
 
 It is recommended to replace the default secret stores that are created by AM during installation, see for example [Configuring Secrets, Certificates, and Keys](https://backstage.forgerock.com/docs/am/7/security-guide/keys-secrets.html#default-secret-stores).
 
+am_shared_secrets
+
+```yaml
+am_certificate:
+  dev:
+    cert: "{{ am_dev_cert }}"
+    key: "{{ am_dev_key }}"
+    keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
+    keystore_pass_file: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.storepass"
+    keytool: "{{ java_versions[suwinet_java_version|default(java_version)]['keytool'] }}"
+    notify: restart tomcat instance
+```
+
+`am_certificate_force: no`
 
 ```yaml
 am_certificate:

@@ -22,6 +22,7 @@ am_version: 6.5.3 # TODO not used
 am_context: am
 
 am_shared_secrets: /root/.am-shared-secrets
+am_certificate_force: no
 
 am_environment:
   OPENDJ_JAVA_HOME: "{{ am_java_home }}"
