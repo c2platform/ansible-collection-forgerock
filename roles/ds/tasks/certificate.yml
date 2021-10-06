@@ -39,12 +39,6 @@
 #-deststorepass cat /path/to/ds/config/keystore.pin 
 #-srckeystore server1.p12 -srcstoretype PKCS12 -destkeypass cat /path/to/ds/config/keystore.pin
 
-- debug:
-    msg: "keystore_password['content']: {{ keystore_password['content']|b64decode }}"
-
-- debug:
-    msg: "import_cert: {{ import_cert }}"
-
 #- name: DS config set certificate # TODO wordt niet uitgevoerd
 #  include_tasks: config_component.yml
 #  vars:

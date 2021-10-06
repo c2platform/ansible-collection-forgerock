@@ -248,6 +248,9 @@ am_amster_templates:
       value: "{{ am_version }}"
   210-function-load-authentication-settings:
     vars: ['realmName']
+    vars-optional:
+    - name: ignoreProfile
+      value: ignore
   500-debug-logging:
     vars: ['debuglevel']
   900-settings-with-restart:

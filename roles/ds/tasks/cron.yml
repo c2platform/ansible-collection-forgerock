@@ -15,8 +15,3 @@
     special_time: "{{ ds_cron[item]['special_time']|default(omit) }}"
   with_items: "{{ ds_cron }}"
   when: ds_cron is defined
-  register: fu
-
-- debug:
-    msg: "fu: {{ fu }}"
-
