@@ -11,6 +11,7 @@ This Ansible role is used to configure [ForgeRock Internet Gateway](https://www.
   - [Routes](#routes)
   - [Rewrite paths](#rewrite-paths)
   - [CaptureDecorator](#capturedecorator)
+  - [Alive check](#alive-check)
 - [Dependencies](#dependencies)
 - [Example Playbook](#example-playbook)
 - [Links](#links)
@@ -95,6 +96,37 @@ The var `suwinet_ig_capture:` can be used to create verbose logging to help with
 
 [ForgeRock Identity Gateway 7 > Configuration Reference > CaptureDecorator
 https://backstage.forgerock.com/docs/ig/7/reference/CaptureDecorator.html#CaptureDecorator-usage-object
+
+### Alive check
+
+To check if ForgeRock IG is fine as part of provision you can configure an `ig_alive_check` for example as shown below. 
+
+```yaml
+ig_alive_check:
+  url: "https://localhost:{{ tomcat_ssl_connector_port }}/alive/"
+  content: "IG is alive!"
+```
+
+Next create a alive route using `ig_routes`
+
+```yaml
+ig_routes:
+  000-alive.json:
+    name: 000-alive
+    capture: all
+    condition: "${ request.uri.path == '/alive/' }"
+    handler:
+      type: StaticResponseHandler
+      config:
+        status: 200
+        entity: |
+          IG is alive!
+          contexts.client.remoteAddress: ${contexts.client.remoteAddress}
+          request.uri.host: ${request.uri.host}
+          request.headers['X-Forwarded-For']:${request.headers['X-Forwarded-For']}
+```
+
+Note: IG might for example fail to start because it cannot reach AM or run around in circles because of a redirect loop and crash.
 
 ## Dependencies
 

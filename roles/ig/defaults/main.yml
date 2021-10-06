@@ -1,11 +1,6 @@
 ---
 ig_home: /home/tomcat/.openig # created with IG deploy
-
 ig_owner: tomcat
 ig_group: tomcat
-ig_agent_password: supersecure
-
-uri_broker: http://broker.local
-uri_inkijk: http://inkijk.local
-uri_xmlgba: http://utils.local
-uri_900route: https:////bkwtapp5.bkwt.local:8443
+ig_config_disabled: []
+ig_routes_disabled: []

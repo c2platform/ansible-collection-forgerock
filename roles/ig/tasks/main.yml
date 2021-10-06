@@ -21,6 +21,13 @@
     group: "{{ ig_group }}"
     mode: 0640
   with_items: "{{ ig_config }}"
+  when: not item in ig_config_disabled
+
+- name: Disable configs
+  file:
+    dest:  "{{ ig_home }}/config/{{ item }}"
+    state: absent
+  with_items: "{{ ig_config_disabled }}"
 
 - name: Get raw configs in place
   copy:
@@ -39,6 +46,13 @@
     group: "{{ ig_group }}"
     mode: 0755
   with_items: "{{ ig_routes }}"
+  when: not item in ig_routes_disabled
+
+- name: Disable routes
+  file:
+    dest: "{{ ig_home }}/config/routes/{{ item }}"
+    state: absent
+  with_items: "{{ ig_config_disabled }}"
 
 - name: Rewrite paths
   template:
