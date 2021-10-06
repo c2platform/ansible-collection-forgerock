@@ -19,7 +19,7 @@ ds_replication_enable: no
 ds_import_enable: no
 ds_db_schema_ldifs_enable: no
 ds_packages: []
-
+ds_passwords_force: no
 ds_versions:
   6.5.4:
     url: https://backstage.forgerock.com/downloads/

@@ -13,4 +13,4 @@
   args:
     chdir: "{{ ds_home_version }}/bin"
   with_items: "{{ ds_passwords }}"
-  when: passwords_fingerprint.changed
+  when: passwords_fingerprint.changed or ds_passwords_force

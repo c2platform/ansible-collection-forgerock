@@ -249,6 +249,12 @@ ds_passwords: # see also secrets.yml
       newPassword: supersecure
 ```
 
+This feature also a fingerprint file `ds_passwords` that will prevent Ansible resetting the password each run. You can force password reset using `ds_passwords_force`. This might be for example necessary when for example `ds_import` imports accounts with wrong / other passwords.
+
+```yaml
+ds_passwords_force: yes
+```
+
 ### Import
 
 To download and import LDIF files using [import-ldif](https://backstage.forgerock.com/docs/ds/7/tools-reference/import-ldif-1.html) use `ds_import` for example as follows:
@@ -607,6 +613,7 @@ ds_cron:
 * [FAQ: Backup and restore in DS 5.x and 6.x - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a89103342)
 * [DS 6.5 > Reference](https://backstage.forgerock.com/docs/ds/6.5/reference/index.html#backup-1)
 * [DS 6.5 > Administration Guide - To Schedule Incremental Backup](https://backstage.forgerock.com/docs/ds/6.5/admin-guide/#schedule-incremental-backup)
+* [Chapter 34. manage-tasks — manage server administration tasks](https://backstage.forgerock.com/docs/ds/6.5/reference/#manage-tasks-1)
 
 ## Dependencies
 
