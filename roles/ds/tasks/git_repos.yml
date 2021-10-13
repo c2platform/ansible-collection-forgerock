@@ -1,7 +1,7 @@
 ---
 - set_fact:
     ds_git_config:
-      dir:  "{{ ds_git_config_parent_dir }}/ds-git-config-{{ ds_git_config['repo']|hash('sha1') }}"
+      dir:  "{{ ds_git_config_parent_dir }}/ds-git-config-{{ inventory_hostname }}-{{ ds_git_config['repo']|hash('sha1') }}"
 
 - set_fact:
     ds_git_clone_delegate: localhost

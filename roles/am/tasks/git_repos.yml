@@ -1,7 +1,7 @@
 ---
 - set_fact:
     am_git_config:
-      dir:  "{{ am_git_config_parent_dir }}/am-git-config-{{ am_git_config['repo']|hash('sha1') }}"
+      dir:  "{{ am_git_config_parent_dir }}/am-git-config-{{ inventory_hostname }}-{{ am_git_config['repo']|hash('sha1') }}"
 
 - set_fact:
     am_git_config_clone_delegate: localhost
