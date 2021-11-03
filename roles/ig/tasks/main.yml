@@ -63,3 +63,16 @@
     mode: 0644
   with_items: "{{ ig_rewrite_paths }}"
   when: ig_rewrite_paths is defined
+
+- name: Wait for IG
+  ansible.builtin.uri:
+    url: "{{ ig_alive_check['url'] }}"
+    status_code: [200]
+    return_content: yes
+    timeout: 300
+    validate_certs: no
+  retries: 10
+  delay: 20
+  register: ig_uri
+  until: "{{ ig_alive_check['content'] }}' in ig_uri.content"
+  when: ig_alive_check is defined
