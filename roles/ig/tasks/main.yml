@@ -74,5 +74,5 @@
   retries: 10
   delay: 20
   register: ig_uri
-  until: "{{ ig_alive_check['content'] }}' in ig_uri.content"
+  until: "'{{ ig_alive_check['content'] }}' in ig_uri.content"
   when: ig_alive_check is defined
