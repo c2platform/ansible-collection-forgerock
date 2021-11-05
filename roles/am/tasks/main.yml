@@ -21,6 +21,17 @@
     - name: Configure AM
       include: configure.yml
 
+    - name: Files
+      include_role:
+        name: c2platform.core.files
+        tasks_from: main
+      vars:
+        role_name: am # role_name
+        common_files: "{{ am_files|default([]) }}"
+        common_directories: "{{ am_directories|default([]) }}"
+        common_acl: "{{ am_acl|default([]) }}"
+        common_unarchive: "{{ am_unarchive|default([]) }}"
+
     - name: Certificate AM
       include: certificate.yml
       with_items: "{{ am_certificate }}"

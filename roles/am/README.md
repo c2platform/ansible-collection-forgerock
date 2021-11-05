@@ -13,6 +13,7 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
     - [500-debug-logging](#500-debug-logging)
   - [Configure JSON](#configure-json)
   - [Configure raw](#configure-raw)
+  - [Files, directories and ACL](#files-directories-and-acl)
   - [Certificate](#certificate)
   - [Git](#git)
     - [Files](#files)
@@ -189,6 +190,10 @@ am_config_files_raw:
 ```
 
 Other attributes are owner, group and mode which default respectively to `tomcat`, `tomcat` and `0644`. 
+
+### Files, directories and ACL
+
+Use dicts `am_files`, `am_directories`, `am_ac`l to create / manage any other files, directories and ACL. See [c2platform.core.files](https://github.com/c2platform/ansible-collection-core/tree/master/roles/files) for more information
 
 ### Certificate
 

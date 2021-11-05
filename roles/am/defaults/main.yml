@@ -36,10 +36,14 @@ amster_versions:
 am_owner: tomcat
 am_group: tomcat
 
-am_directories:
+am_amster_directories:
   - "{{ amster_home }}"
   - "{{ amster_home_version }}"
   - "{{ amster_scripts_dir }}"
+
+am_files: []
+am_directories: []
+am_acl: []
 
 am_connect:
   private-key: "{{ amster_am_install['cfgDir']|default('/opt/tomcat/am/') }}"

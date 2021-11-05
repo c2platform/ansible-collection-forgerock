@@ -12,8 +12,8 @@
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0755
-  with_items: "{{ am_directories }}"
-  when: am_directories|default(False)
+  with_items: "{{ am_amster_directories }}"
+  when: am_amster_directories|default(False)
 
 - name: Amster script
   stat:
