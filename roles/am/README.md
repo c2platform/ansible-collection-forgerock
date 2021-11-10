@@ -1,6 +1,8 @@
 # Ansible Role ForgeRock Access Management (AM)
 
-This Ansible role is used to setup and configure [AM](https://go.forgerock.com/Access-Management.html) usig [Amster](https://backstage.forgerock.com/docs/amster/6.5/user-guide/).
+This Ansible role is used to setup and configure [AM](https://go.forgerock.com/Access-Management.html) usig [Amster](https://backstage.forgerock.com/docs/amster/6.5/user-guide/). 
+
+Note: Amster is a strange tool and at this point maybe not really intended and suitable for use with Ansible. It is an automation tool but when an error occurs Amster will be put in *interactive* console mode! So your Ansible / AWX job will hang indefinitely waiting for user input. There is no way currently to tell Amster to run in *non-interactive* mode. An exception to this is when an Amster scripts tries to load another Amster script using `:load` that it cannot find. In this case Amster will *not* go in interactive console mode and wait for user input that will never come. It will instead just continue without reporting an error. The exit code will be 0 and you and Ansible won't know that something was wrong.
 
 <!-- MarkdownTOC levels="2,3,4" autolink="true" -->
 

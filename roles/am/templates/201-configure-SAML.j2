@@ -8,18 +8,18 @@ fileCot=System.getenv("AMSTER_COT_FILE")
 dirSaml=System.getenv("SAML_DIR")
 
 // Load utils for amster
-:load '{{ amster_home_version }}/102-set-common-functions.amster'
+:load '{{ amster_scripts_dir }}/102-set-common-functions.amster'
 
 // Connect to AM via amster
-:load '{{ amster_home_version }}/101-connect_To_AM.amster'
+:load '{{ amster_scripts_dir }}/101-connect_To_AM.amster'
 
 // Create federation module
-:load '{{ amster_home_version }}/208-function_create_federation_module.amster' 
+:load '{{ amster_scripts_dir }}/208-function_create_federation_module.amster'
 
 // Start working on SAML
-:load '{{ amster_home_version }}/209-function_load_all_saml.amster'
+:load '{{ amster_scripts_dir }}/209-function_load_all_saml.amster'
 
 // Work on authentication settings
-:load '{{ amster_home_version }}/210-function-load-authentication-settings.amster'
+:load '{{ amster_scripts_dir }}/210-function-load-authentication-settings.amster'
 
 eval(":exit")

@@ -2,9 +2,9 @@
 println("Configure global validation service")
 validationURLs = ["https://suwinet-inkijk.bto.suwinet.nl/*?*"]
 
-:load '{{ amster_home_version }}/102-set-common-functions.amster'
+:load '{{ amster_scripts_dir }}/102-set-common-functions.amster'
 
-:load '{{ amster_home_version }}/101-connect_To_AM.amster'
+:load '{{ amster_scripts_dir }}/101-connect_To_AM.amster'
 
 // GET Realm
 currentValidation = eval("read ValidationService --global".toString())
