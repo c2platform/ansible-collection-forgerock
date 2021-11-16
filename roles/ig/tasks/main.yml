@@ -75,4 +75,4 @@
   delay: 20
   register: ig_uri
   until: ig_alive_check['content'] in ig_uri.content
-  when: ig_alive_check is defined
+  when: ig_alive_check is defined and ig_alive_check_enabled|default(True)
