@@ -11,6 +11,7 @@ ds_rootpw:  supersecret
 ds_password_file: /root/.dspassword
 ds_replication_global_admin: admin
 ds_replication_global_admin_password: supersecret # Su12perSec34retIt5Is
+ds_replication_global_admin_password_file: /root/.ds-replication-password
 # Note: requires a "good" password e.g Su12perSec34retIt5Is
 #       see vault
 ds_adminport: 4444

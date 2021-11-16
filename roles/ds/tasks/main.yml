@@ -1,13 +1,18 @@
 ---
 - include: install.yml
 
-- name: Password file
+- name: Password files
   copy:
-    content: "{{ ds_rootpw }}"
+    content: "{{ item['pw'] }}"
     owner: root
     group: root
-    dest: "{{ ds_password_file }}"
+    dest: "{{ item['file'] }}"
     mode: 0400
+  with_items:
+    - file: "{{ ds_password_file }}"
+      pw: "{{ ds_rootpw }}"
+    - file: "{{ ds_replication_global_admin_password_file }}"
+      pw: "{{ ds_replication_global_admin_password }}"
 
 - name: Create directories
   file:
