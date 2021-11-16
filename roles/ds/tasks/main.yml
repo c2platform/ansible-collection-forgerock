@@ -13,6 +13,7 @@
       pw: "{{ ds_rootpw }}"
     - file: "{{ ds_replication_global_admin_password_file }}"
       pw: "{{ ds_replication_global_admin_password }}"
+  no_log: yes
 
 - name: Create directories
   file:
