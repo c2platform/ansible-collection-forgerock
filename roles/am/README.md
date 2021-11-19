@@ -140,6 +140,41 @@ am_amster_templates:
       # TODO uncomment when password reset works
 ```
 
+Scripts will only be executed if they change. This behaviour can be changed. For example if I want to a 500 script each time use `force` attribute as shown below.
+
+```yaml
+am_configure:
+  - name: Debug level
+    template: 500-debug-logging
+    vars:
+      debuglevel: "{{ siwunet_am_configure_500_debug_level }}"
+```
+
+You can also force all script to run each time
+
+```yaml
+am_amster_force: yes
+```
+
+Note: disabled scripts will never run. A `force` attribute or `am_amster_force` don't override attribute `enabled: no`
+
+```yaml
+am_configure:
+  - name: siwunet-policy
+    template: 106-create-policy
+    enabled: no
+    vars:
+      policyName: siwunet-policy
+      policySetName: siwunet-policy-set
+      realmName: siwunet
+      realms: ['siwunet']
+      resources:
+        - https://some.url/*
+        - https://some.url/*?
+        - https://some.url/*?*
+      am.protected.uidIdentifier: whatever
+```
+
 #### 108-set-sessionproperties
 
 Using template `108-set-sessionproperties` authentication settings can be changed. Settings that you can find admin interface Via **<Realm>** → **AUthencation** → **Settings** 

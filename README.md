@@ -13,6 +13,7 @@ Roles for [ForgeRock](https://www.forgerock.com/) platform.
 Module plugins:
 
 * [amster_scripts_prepare](./plugins/modules/amster_script_prepare.py) facts for Amster scripts to create
+* [amster_scripts_prepare_execute](./plugins/modules/amster_script_prepare_execute.py) determine if scripts should run by setting `execute` fact
 
 Filter plugins:
 

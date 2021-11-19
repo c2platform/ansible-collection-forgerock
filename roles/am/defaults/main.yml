@@ -41,6 +41,8 @@ am_amster_directories:
   - "{{ amster_home_version }}"
   - "{{ amster_scripts_dir }}"
 
+am_amster_force: no
+
 am_files: []
 am_directories: []
 am_acl: []

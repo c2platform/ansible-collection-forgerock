@@ -43,6 +43,23 @@
     mode: 0600
   with_items: "{{ am_configure}}"
   no_log: "{{ am_no_log }}"
+  register: _amster_scripts
+
+- copy: # debug
+    content: "{{ {'_amster_scripts': _amster_scripts }|to_nice_yaml }}"
+    dest: /vagrant/_amster_scripts.yml
+
+- name: Prepare Amster scripts execution
+  c2platform.forgerock.amster_script_prepare_execute:
+    dest: "{{ amster_home_version }}"
+    configure: "{{ am_configure }}"
+    templates: "{{ am_amster_templates }}"
+    scripts: "{{ _amster_scripts }}"
+    force: "{{ am_amster_force }}"
+
+- copy: # debug
+    content: "{{ {'am_configure': am_configure }|to_nice_yaml }}"
+    dest: /vagrant/am_configure.yml
 
 - name: Execute Amster script
   command: "{{ amster_exe }} {{ item }}"
@@ -53,7 +70,7 @@
   with_items: "{{ am_configure|map(attribute='script')|list }}"
   when: >
     (not am_configure_manual|default(False)) and
-    am_configure|selectattr('script', 'equalto', item)|list|map(attribute='enabled')|first|default(True) and
+    am_configure|selectattr('script', 'equalto', item)|list|map(attribute='execute')|first|default(True) and
     am_configure_enabled|default(True)
   changed_when: am_amster_stdout_tags['changed'] in amster_script_exec.stdout
   failed_when: am_amster_stdout_tags['error'] in amster_script_exec.stdout
