@@ -19,6 +19,12 @@
     mode: '600'
   register: am_k
 
+- debug:
+    msg: |
+     am_c: {{ am_c }}
+     am_k: {{ am_k }}
+     am_certificate_force: {{ am_certificate_force }}
+
 - block:
   - set_fact:
       am_keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
