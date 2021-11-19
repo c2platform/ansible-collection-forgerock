@@ -45,10 +45,6 @@
   no_log: "{{ am_no_log }}"
   register: _amster_scripts
 
-- copy: # debug
-    content: "{{ {'_amster_scripts': _amster_scripts }|to_nice_yaml }}"
-    dest: /vagrant/_amster_scripts.yml
-
 - name: Prepare Amster scripts execution
   c2platform.forgerock.amster_script_prepare_execute:
     dest: "{{ amster_home_version }}"
