@@ -148,6 +148,7 @@ am_configure:
     template: 500-debug-logging
     vars:
       debuglevel: "{{ siwunet_am_configure_500_debug_level }}"
+    force: yes
 ```
 
 You can also force all script to run each time
