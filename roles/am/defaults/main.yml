@@ -142,12 +142,10 @@ am_amster_templates:
       value: []
       string: no
   110-create-authentication-LdapTree:
-    vars: ['realmName','defaultTreeName','defaultAuthenticationService', 'primaryLDAPServer','bindUserPassword']
+    vars: ['realmName','defaultTreeName','defaultAuthenticationService', 'primaryLDAPServer','bindUserPassword', 'dnToStartUserSearch']
     vars-optional:
     - name: startDN
       value: cn=Directory Manager
-    - name: dnToStartUserSearch
-      value: o=suwi,c=NL
     - name: bindUserDN
       value: cn=Directory Manager
     - name: attributeUsedtoRetrieveUserProfile
