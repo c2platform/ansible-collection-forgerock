@@ -80,7 +80,7 @@ amster_am_install:
   userStoreType: LDAPv3ForOpenDS
   userStoreSsl: SSL
   userStorePort: 10636
-  userStoreRootSuffix: dc=bkwi,dc=NL
+  userStoreRootSuffix: dc=iwkb,dc=NL
 ```
 
 `am_manage_parent_config_dir`
@@ -91,7 +91,7 @@ Use `am_configure` to configure AM using Amster. To create a realm `myapp` for d
 
 ```yaml
 am_configure:
-  - name: Create Suwinet realm
+  - name: Create Siwunet realm
     template: 103-configure_realm
     vars:
       realmName: myapp
@@ -246,7 +246,7 @@ am_certificate:
     key: "{{ am_dev_key }}"
     keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
     keystore_pass_file: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.storepass"
-    keytool: "{{ java_versions[suwinet_java_version|default(java_version)]['keytool'] }}"
+    keytool: "{{ java_versions[siwunet_java_version|default(java_version)]['keytool'] }}"
     notify: restart tomcat instance
 ```
 
@@ -259,7 +259,7 @@ am_certificate:
     key: "{{ am_dev_key }}"
     keystore_path: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/keystore.jceks"
     keystore_pass_file: "{{ amster_am_install['cfgDir'] }}/{{ am_context }}/.storepass"
-    keytool: "{{ java_versions[suwinet_java_version|default(java_version)]['keytool'] }}"
+    keytool: "{{ java_versions[siwunet_java_version|default(java_version)]['keytool'] }}"
     notify: restart tomcat instance
 ```
 
@@ -309,7 +309,7 @@ Note: this uses the Ansible [copy](https://docs.ansible.com/ansible/latest/colle
 
 ```yaml
 am_git_files:
-- source: suwinet_am/saml/bto/
+- source: siwunet_am/saml/bto/
   dest: "{{ amster_home_link }}/saml-config/"
 ```
 
@@ -328,7 +328,7 @@ You can use `am_git_folders` to configure where complete folders you should be c
 
 ```yaml
 am_git_folders:
-- source: suwinet_am/saml/bto/
+- source: siwunet_am/saml/bto/
   dest: "{{ amster_home_link }}/saml-config/"
 ```
 
@@ -399,7 +399,7 @@ Create realm
     "active": true,
     "parentPath": "/",
     "aliases": [
-        "suwinet.nl"
+        "siwunet.nl"
     ],
     "_rev": "369290511",
     "_id": "L3N1d2luZXQ"
