@@ -28,7 +28,7 @@ if (isNull(eval("read AuthTree --realm $realmName --id $defaultTreeName"))) {
         eval("create PageNode --realm $realmName --id $authenticationNodeGUID --body '$authNodebuilder'")
     }
 
-    if (isNull(eval("read PageNode --realm $realmName --id $ldapSuwinetNodeGUID"))) {
+    if (isNull(eval("read PageNode --realm $realmName --id $ldapAppNodeGUID"))) {
         // first create a LDAP Decision node
         builder = new groovy.json.JsonBuilder()
         builder 'primaryServers': [
@@ -71,7 +71,7 @@ if (isNull(eval("read AuthTree --realm $realmName --id $defaultTreeName"))) {
         'adminPassword' :
         bindUserPassword
 
-        eval("create LDAPDecision --realm $realmName --id $ldapSuwinetNodeGUID --body '$builder'")
+        eval("create LDAPDecision --realm $realmName --id $ldapAppNodeGUID --body '$builder'")
     }
 
 
@@ -82,10 +82,10 @@ if (isNull(eval("read AuthTree --realm $realmName --id $defaultTreeName"))) {
                             'displayName': 'Authentication Node',
                             'nodeType'   : 'PageNode',
                             'connections': [
-                                    'outcome': ldapSuwinetNodeGUID
+                                    'outcome': ldapAppNodeGUID
                             ]
                     ],
-                    "$ldapSuwinetNodeGUID"   : [
+                    "$ldapAppNodeGUID"   : [
                             'displayName': 'LdapDecision Node',
                             'nodeType'   : 'LdapDecisionNode',
                             'connections': [

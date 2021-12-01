@@ -21,7 +21,7 @@ if (deleteTree) {
 
     println yellow("Deleting authentication tree and it's nodes in realm '$realmName'")
     listWithNodes = [["AuthTree", "$defaultTreeName"],
-                     ["PageNode", "$authenticationNodeGUID"], ["LDAPDecision", "$ldapSuwinetNodeGUID"],
+                     ["PageNode", "$authenticationNodeGUID"], ["LDAPDecision", "$ldapAppNodeGUID"],
                      ["UsernameCollector", "$usernameCollectorGUID"], ["PasswordCollector", "$passwordCollectorGUID"]]
 
     listWithNodes.each {
