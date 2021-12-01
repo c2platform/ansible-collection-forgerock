@@ -61,13 +61,13 @@ Use `amster_am_install` var to control installation
 ```yaml
 amster_am_install:
   serverUrl: TODO
-  adminPwd: "{{ amster_amadmin_pw }}"
+  adminPwd: "{{ am_amster_amadmin_pw }}"
   acceptLicense: ''
-  pwdEncKey: "{{ amster_encryptpw }}"
+  pwdEncKey: "{{ am_amster_encryptpw }}"
   cfgStoreDirMgr: 'uid=am-config,ou=admins,ou=am-config'
-  cfgStoreDirMgrPwd: '{{ amster_ds_rootpw }}'
+  cfgStoreDirMgrPwd: '{{ am_amster_ds_rootpw }}'
   cfgStore: dirServer
-  cfgStoreHost: "{{ amster_ds_hostname }}"
+  cfgStoreHost: "{{ am_amster_ds_hostname }}"
   cfgStoreAdminPort: 4444
   cfgStoreSsl: SSL
   cfgStorePort: 10636
@@ -75,8 +75,8 @@ amster_am_install:
   cookieDomain: TODO
   cfgDir: /opt/tomcat/am # default $HOME/openam
   userStoreDirMgr: "cn=Directory Manager"
-  userStoreDirMgrPwd: "{{ amster_ds_rootpw }}"
-  userStoreHost: "{{ amster_ds_hostname  }}"
+  userStoreDirMgrPwd: "{{ am_amster_ds_rootpw }}"
+  userStoreHost: "{{ am_amster_ds_hostname  }}"
   userStoreType: LDAPv3ForOpenDS
   userStoreSsl: SSL
   userStorePort: 10636
@@ -297,7 +297,7 @@ You can use `am_git_files` to configure where files you should be copied to.
 ```yaml
 am_git_files:
 - source: path/to/file/in/repo
-  dest: "{{ amster_home_link }}/path/to/destfile"
+  dest: "{{ am_amster_home_link }}/path/to/destfile"
 ```
 
 | parameter | required | default | choices | comments                                           |
@@ -310,7 +310,7 @@ Note: this uses the Ansible [copy](https://docs.ansible.com/ansible/latest/colle
 ```yaml
 am_git_files:
 - source: siwunet_am/saml/bto/
-  dest: "{{ amster_home_link }}/saml-config/"
+  dest: "{{ am_amster_home_link }}/saml-config/"
 ```
 
 One drawback of [copy](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html) module is that it does not delete files. If you want that you can use `am_git_folders` which uses [synchronize](https://docs.ansible.com/ansible/2.3/synchronize_module.html) module.
@@ -329,7 +329,7 @@ You can use `am_git_folders` to configure where complete folders you should be c
 ```yaml
 am_git_folders:
 - source: siwunet_am/saml/bto/
-  dest: "{{ amster_home_link }}/saml-config/"
+  dest: "{{ am_amster_home_link }}/saml-config/"
 ```
 
 ### Keystore

@@ -24,20 +24,20 @@
 
 - name: Prepare Amster scripts facts
   c2platform.forgerock.amster_script_prepare:
-    dest: "{{ amster_home_version }}"
+    dest: "{{ am_amster_home_version }}"
     configure: "{{ am_configure }}"
     templates: "{{ am_amster_templates }}"
 
 - name: Remove obsolete Amster scripts
   file:
-    path: "{{ amster_scripts_dir }}/{{ item }}"
+    path: "{{ am_amster_scripts_dir }}/{{ item }}"
     state: absent
   with_items: "{{ am_configure|selectattr('script-obsolete', 'defined')|map(attribute='script-obsolete')|list }}"
 
 - name: Create Amster scripts
   template:
     src: "{{ item['template'] }}.j2"
-    dest: "{{ amster_scripts_dir }}/{{ item['script'] }}"
+    dest: "{{ am_amster_scripts_dir }}/{{ item['script'] }}"
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0600
@@ -47,7 +47,7 @@
 
 - name: Prepare Amster scripts execution
   c2platform.forgerock.amster_script_prepare_execute:
-    dest: "{{ amster_home_version }}"
+    dest: "{{ am_amster_home_version }}"
     configure: "{{ am_configure }}"
     templates: "{{ am_amster_templates }}"
     scripts: "{{ _amster_scripts }}"
@@ -55,14 +55,14 @@
 
 - copy:
     content: "{{ {'am_configure': am_configure }|to_nice_yaml }}"
-    dest: "{{ amster_scripts_dir }}/am_configure.yml"
+    dest: "{{ am_amster_scripts_dir }}/am_configure.yml"
 
 - name: Execute Amster script
-  command: "{{ amster_exe }} {{ item }}"
+  command: "{{ am_amster_exe }} {{ item }}"
   environment: "{{ am_environment }}"
   register: amster_script_exec
   args:
-    chdir: "{{ amster_scripts_dir }}"
+    chdir: "{{ am_amster_scripts_dir }}"
   with_items: "{{ am_configure|map(attribute='script')|list }}"
   when: >
     (not am_configure_manual|default(False)) and

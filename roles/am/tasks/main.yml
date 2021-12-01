@@ -6,7 +6,7 @@
     - name: Create Amster scripts
       template:
         src: "{{ item }}.j2"
-        dest: "{{ amster_scripts_dir }}/{{ item }}.amster"
+        dest: "{{ am_amster_scripts_dir }}/{{ item }}.amster"
         owner: "{{ am_owner }}"
         group: "{{ am_group }}"
         mode: 0600

@@ -24,11 +24,11 @@
   when: am_manage_parent_config_dir|default(False)
 
 - name: execute 100-installAM_1 amster
-  command: "{{ amster_exe }} 100-installAM_1.amster"
+  command: "{{ am_amster_exe }} 100-installAM_1.amster"
   environment: "{{ am_environment }}"
   register: installam_amster
   args:
-    chdir: "{{ amster_scripts_dir }}"
+    chdir: "{{ am_amster_scripts_dir }}"
   when: not cfgDir.stat.exists
 
 - debug:
