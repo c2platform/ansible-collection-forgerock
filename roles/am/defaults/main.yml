@@ -103,7 +103,7 @@ am_amster_templates:
     - name: userSearchAttribute
       value: uid
     - name: userObjectclass
-      value: ["organizationalPerson","top","person","inetorgperson","suwinetPerson"]
+      value: ["organizationalPerson","top","person","inetorgperson"]
       string: no
     - name: userAttributes
       value: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
