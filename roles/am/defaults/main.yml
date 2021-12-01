@@ -53,7 +53,6 @@ am_connect:
 am_amster_scripts_default:
   - 090-connect-to-openam
   - 100-installAM_1
-#  - 100-configure_AM
   - 101-connect_To_AM
   - 102-set-common-functions
 #  - 112-configure-top-level-realm
@@ -272,7 +271,6 @@ am_amster_templates:
     notify: restart tomcat instance # TODO
 
 # Obsolete / not used:
-#  - 111-configure-global-validation-service
 #  - 112-configure-top-level-realm
 #  - 201-configure-SAML
 #  - 209-function_load_all_saml
