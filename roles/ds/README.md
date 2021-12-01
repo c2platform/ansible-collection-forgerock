@@ -139,7 +139,7 @@ TODO
     - add:
         - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)" 
         - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
-        - global-aci:"(targetattr!=\"userPassword||authPassword||changes||changeNumber||changeType||changeTime||targetDN||newRDN||newSuperior||deleteOldRDN||targetEntryUUID||targetUniqueID||changeInitiatorsName||changeLogCookie\")(version 3.0; acl \"Anonymous read access\"; allow (read,search,compare) userdn=\"ldap:///dc=bkwi,dc=nl\";)"
+        - global-aci:"(targetattr!=\"userPassword||authPassword||changes||changeNumber||changeType||changeTime||targetDN||newRDN||newSuperior||deleteOldRDN||targetEntryUUID||targetUniqueID||changeInitiatorsName||changeLogCookie\")(version 3.0; acl \"Anonymous read access\"; allow (read,search,compare) userdn=\"ldap:///dc=iwkb,dc=nl\";)"
 
 
 ### Modify
@@ -340,8 +340,8 @@ ds_git_files:
   dest: "{{ ds_home_version }}/scripts/ldap_wrapper.py"
 - source: ds/scripts/migrate-admin-aci.py
   dest: "{{ ds_home_version }}/scripts/migrate-admin-aci.py"
-- source: ds/scripts/migrate-suwinet-expiry.py
-  dest: "{{ ds_home_version }}/scripts/migrate-suwinet-expiry.py"
+- source: ds/scripts/migrate-siwunet-expiry.py
+  dest: "{{ ds_home_version }}/scripts/migrate-siwunet-expiry.py"
 ```
 
 In the above example we are putting the files in a directory `scripts` that does not exist. To create it we can use `ds_directories`.
@@ -437,14 +437,14 @@ The possible settings under `replication-server`, `host1` and `host2` are mostly
 ds_replication_enable: yes
 ds_replication:
  replication-server:
-   hostname: "{{ groups['myapp_ds'][0] }}.bkwi.local"
+   hostname: "{{ groups['myapp_ds'][0] }}.iwkb.local"
    inventory_hostname: "{{ groups['myapp_ds'][0] }}"
  host2:
-   hostname: "{{ groups['myapp_ds'][1] }}.bkwi.local"
+   hostname: "{{ groups['myapp_ds'][1] }}.iwkb.local"
  baseDNs:
    - ou=am-config
    - c=NL
-   - dc=bkwi,dc=nl
+   - dc=iwkb,dc=nl
 ```
 Which implies that host 1 will also be the replication server with hostname `1.1.1.51.nip.io` etc. Note that `ds_replication_enable` is default `no`. You can use this variable as a toggle to provision with / without replication.
 
@@ -482,32 +482,32 @@ There are no dedicated Ansible variables for creating a DS backup but it can be 
 
 First, for our convience, we created some dictionaries. This is of course not required.
 ```yaml
-suwinet_ds_backup_incremental0:
+siwunet_ds_backup_incremental0:
   port: "{{ ds_adminport }}"
   bindDN: 'cn=Directory Manager'
   bindPasswordFile: "{{ ds_password_file }}"
   incremental: ""
-  backendID: suwiRoot
+  backendID: siwuRoot
   incrementalBaseID: full_daily
   backupID: incremental0
-  backupDirectory: /opt/ds/ds/bak/current/suwiRoot/
+  backupDirectory: /opt/ds/ds/bak/current/siwuRoot/
   recurringTask: "5,10,15,20,25,30,35,40,45,50,55 0 * * *"
-  errorNotify: "{{ suwinet_support_mail_address }}"
+  errorNotify: "{{ siwunet_support_mail_address }}"
   hostname: 127.0.0.1
   trustAll:
 
-suwinet_ds_backup_incremental1:
+siwunet_ds_backup_incremental1:
   backupID: incremental1
   recurringTask: "0,5,10,15,20,25,30,35,40,45,50,55 1-23 * * *"
 
-suwinet_ds_manage_tasks:
+siwunet_ds_manage_tasks:
   port: "{{ ds_adminport }}"
   bindDN: cn=Directory Manager
   bindPasswordFile: "{{ ds_password_file }}"
   hostname: 127.0.0.1
   trustAll:
 
-suwinet_ds_backup:
+siwunet_ds_backup:
   port: "{{ ds_adminport }}"
   bindDN: cn=Directory Manager
   bindPasswordFile: "{{ ds_password_file }}"
@@ -518,7 +518,7 @@ suwinet_ds_backup:
   backupID: full_daily
   backupDirectory: "{{ ds_home_link }}/bak/current"
 
-suwinet_ds_backup_scripts:
+siwunet_ds_backup_scripts:
   create_incr: /usr/local/bin/ds65-backup-incr.sh
   list_incr: /usr/local/bin/ds65-backup-incr-list.sh
   backup: /usr/local/bin/ds65-backup.sh
@@ -529,21 +529,21 @@ Now we us `ds_files` to configure some backup scripts.
 ```yaml
 ds_files:
   incremental-backup-create-script:
-    dest: "{{ suwinet_ds_backup_scripts['create_incr'] }}"
+    dest: "{{ siwunet_ds_backup_scripts['create_incr'] }}"
     content: |
       #!/bin/bash
       # Create DS scheduled tasks for incremental backups
 
       echo "## Create incremental0"
       sudo {{ ds_home_link }}/bin/backup \
-      {{ suwinet_ds_backup_incremental0|c2platform.forgerock.ds_cmd_ml }}
+      {{ siwunet_ds_backup_incremental0|c2platform.forgerock.ds_cmd_ml }}
 
       echo "## Create incremental1"
       sudo {{ ds_home_link }}/bin/backup \
-      {{ suwinet_ds_backup_incremental0|combine(suwinet_ds_backup_incremental1)|c2platform.forgerock.ds_cmd_ml }}
+      {{ siwunet_ds_backup_incremental0|combine(siwunet_ds_backup_incremental1)|c2platform.forgerock.ds_cmd_ml }}
     mode: '0755'
   increment-backup-list-script:
-    dest: "{{ suwinet_ds_backup_scripts['list_incr'] }}"
+    dest: "{{ siwunet_ds_backup_scripts['list_incr'] }}"
     content: |
       #!/bin/bash
       # List DS scheduled tasks
@@ -552,7 +552,7 @@ ds_files:
       # List the summary of all tasks
       echo "### show task summary"
       sudo {{ ds_home_link }}/bin/manage-tasks --summary \
-      {{ suwinet_ds_manage_tasks|c2platform.forgerock.ds_cmd_ml }} > $OUTPUTTMP
+      {{ siwunet_ds_manage_tasks|c2platform.forgerock.ds_cmd_ml }} > $OUTPUTTMP
       cat $OUTPUTTMP
       echo
 
@@ -564,14 +564,14 @@ ds_files:
         for TASK in $RECURRING; do
           echo "### task $TASK"
           sudo {{ ds_home_link }}/bin/manage-tasks --info $TASK \
-      {{ suwinet_ds_manage_tasks|c2platform.forgerock.ds_cmd_ml(8) }}
+      {{ siwunet_ds_manage_tasks|c2platform.forgerock.ds_cmd_ml(8) }}
         done
       fi
       # Cleanup
       rm $OUTPUTTMP
     mode: '0755'
   backup-script:
-    dest: "{{ suwinet_ds_backup_scripts['backup'] }}"
+    dest: "{{ siwunet_ds_backup_scripts['backup'] }}"
     content: |
       #!/bin/bash
 
@@ -585,7 +585,7 @@ ds_files:
       ln -s $DIR/$DATE $DIR/$LINK
 
       {{ ds_home_link }}/bin/backup \
-      {{ suwinet_ds_backup|c2platform.forgerock.ds_cmd_ml }}
+      {{ siwunet_ds_backup|c2platform.forgerock.ds_cmd_ml }}
     mode: '0755'
 ```
 
@@ -596,7 +596,7 @@ ds_cron:
   daily:
     hour: "0"
     minute: "0"
-    job: "{{ suwinet_ds_backup_scripts['backup'] }} >> /var/log/ds-daily-backup.log"
+    job: "{{ siwunet_ds_backup_scripts['backup'] }} >> /var/log/ds-daily-backup.log"
     cron_file: ds-backup-daily
   clean:
     hour: "23"
