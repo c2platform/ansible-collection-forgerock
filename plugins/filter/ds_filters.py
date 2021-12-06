@@ -86,6 +86,9 @@ def ds_cmd_get(cmd_config, component):
     elif comp == 'plugin':
         return '--plugin-name ' + \
             format_ds_cmd_value(cmd_config['plugin-name'])
+    elif comp == 'replication-server':
+        return '--provider-name ' + \
+            format_ds_cmd_value(cmd_config['provider-name'])
     else:
         msg = "No get command defined for component {}. Use a fingerprint!?"
         raise Exception(msg.format(comp))
