@@ -7,7 +7,7 @@ pathElements = path.split("/")
 String target = {{ item['target'] }};
 String replacement = {{ item['replacement'] }};
 
-String processed = path.replace(target,replacement);
+String processed = path.replace(target,replacement).replace(' ', '%20');
 // logger.debug("Processed URI = " + processed );
 request.uri.path = processed;
 

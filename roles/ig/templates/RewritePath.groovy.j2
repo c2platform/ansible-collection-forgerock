@@ -18,7 +18,7 @@ if (request.uri.host == "{{ item['xmlgba-url'] }}") {
 
 // logger.warn("sf_RewritePath.groovy. property URI BEFORE= " + backendURI);
 
-String processed = path.replace(target,replacement);
+String processed = path.replace(target,replacement).replace(' ', '%20');
 // logger.warn("Processed URI = " + processed );
 
 request.uri.path = processed;
