@@ -1,7 +1,7 @@
 ---
 - include_tasks: config_component.yml
   with_items: "{{ ds_config_components }}"
-  when: ds_config_components is defined
+  when: ds_config_components is defined and ds_config_enabled|default(True)
   vars:
     use_fingerprint: "{{ component in ds_config_components_fingerprint }}"
   loop_control:

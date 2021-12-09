@@ -68,6 +68,14 @@
 
     - include: setup_replication.yml
       when: ds_replication['replication-server']['inventory_hostname']|default('whatever') == inventory_hostname and ds_replication_enable
+
+    - include_tasks: config_component.yml
+      with_items: "{{ ds_config_components_replication }}"
+      when: ds_config_components_replication is defined and ds_config_enabled|default(True) and ds_replication_enable
+      vars:
+        use_fingerprint: "{{ component in ds_config_components_fingerprint }}"
+      loop_control:
+        loop_var: component
   when: ds_setup_config is defined
 
 #- include: certificate.yml

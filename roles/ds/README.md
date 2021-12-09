@@ -476,6 +476,19 @@ of the dsreplication arguments.
 * configure: _used_ for creating (--baseDN is already an itemised list hence no loop needed), again for intial and for delta. _arguments_ basically all, notably bind and admin.
 * initialize-all: _used_ as a follow-up of configure, it activates the replication config. _arguments_ adminUID and adminPassword, baseDN
 
+To configure replication you can use `ds_configure_components_replication` for example:
+
+```yaml
+ds_config:
+  replication-server:
+    - provider-name: Multimaster Synchronization
+      set:
+        - changelog-enabled:disabled
+
+ds_configure_components_replication:
+  - replication-server
+```
+
 ### Backup
 
 There are no dedicated Ansible variables for creating a DS backup but it can be configured using `ds_files` and `ds_cron`. This section shows an actual example of how this was done on a project.
