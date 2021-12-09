@@ -1,8 +1,6 @@
 # Ansible Role ForgeRock Access Management (AM)
 
-This Ansible role is used to setup and configure [AM](https://go.forgerock.com/Access-Management.html) usig [Amster](https://backstage.forgerock.com/docs/amster/6.5/user-guide/). 
-
-Note: Amster is a strange tool and at this point maybe not really intended and suitable for use with Ansible. It is an automation tool but when an error occurs Amster will be put in *interactive* console mode! So your Ansible / AWX job will hang indefinitely waiting for user input. There is no way currently to tell Amster to run in *non-interactive* mode. An exception to this is when an Amster scripts tries to load another Amster script using `:load` that it cannot find. In this case Amster will *not* go in interactive console mode and wait for user input that will never come. It will instead just continue without reporting an error. The exit code will be 0 and you and Ansible won't know that something was wrong.
+This Ansible role is used to setup and configure [AM](https://go.forgerock.com/Access-Management.html) using [Amster](https://backstage.forgerock.com/docs/amster/6.5/user-guide/) and other means. 
 
 <!-- MarkdownTOC levels="2,3,4" autolink="true" -->
 
@@ -23,6 +21,8 @@ Note: Amster is a strange tool and at this point maybe not really intended and s
   - [Keystore](#keystore)
   - [Manual mode](#manual-mode)
 - [Dependencies](#dependencies)
+- [Notes](#notes)
+  - [Amster](#amster)
 - [Links](#links)
 
 <!-- /MarkdownTOC -->
@@ -30,11 +30,6 @@ Note: Amster is a strange tool and at this point maybe not really intended and s
 ## Requirements
 
 ForgeRock uses zip files mostly - not tarballs, so to use this role `unzip` is required on target nodes.
-
-Note that the 'Amster' utility part of the AM install connects with a ForgeRock DS server and expects a proxied AM adsress.
-Hence requirement is that the configured DS server and IG proxy server already are up and running. In a 2-server setup as is now the standard, provisioning of the DS node goes first. The role does a check whether the DS instance is up and running, using the ldapsearch utility which checks on DS content level.
-
-Designed 'patterns' are initial install (clean DS and clean AM) and running the play several times in case something changes, e.g. an Amster file other than 100-install. If however the 100-install changes, make sure both DS and AM get a full clean install; as otherwise the configuration in DS used by AM is not guaranteed as you want it to be. Note that there is no tight coupling between AM and Amster running on the same machine; though we never tested it a pattern with separate servers for AM and Amster could work. However as the usage scenarios are radically different, AM has the production load and Amster is solely for provisioning, the current co-hosting seems to work fine.
 
 ## Role description
 
@@ -195,7 +190,7 @@ am_configure:
     template: 108-set-sessionproperties
     vars:
       realmName: myRealm
-      sharedSecret: "{{ amster_realm_defaults['shared_secret'] }}"
+      sharedSecret: l8wOCob/UBw26X62nS5xEawumOBP3GYo5WG7nJ2PSvU= #       openssl rand -base64 32
       loginSuccessUrl: https://myapp.com/index.html
       keyAlias: dev
 ```
@@ -409,6 +404,18 @@ no delta, skipping realm creation/update
 ```
 
 ## Dependencies
+
+## Notes
+
+### Amster
+
+This Ansible role relies on [Amster](https://backstage.forgerock.com/docs/amster/6.5/user-guide/) to do most of the configuration work.
+
+> Amster is a command-line interface built upon the ForgeRock Access Management REST interface. Use Amster in DevOps processes, such as continuous integration, command-line installations, and scripted cloud deployments.
+
+There are some issues with Amster when used from Ansible. There are some indications that Amster was designed with a _human_ operator in mind. And not a _non human_ operator like Ansible / AWX.  For example for some type of errors Amster will be put in *interactive* console mode. So your Ansible / AWX job will hang indefinitely waiting for user input. 
+
+On the other hand other error conditions will be completely ignored. As a matter of fact the exit code of running an Amster script is always 0.  For example when you load another Amster script using `:load` that Amster cannot find this will be ignored. In this case Amster will *not* go in interactive console mode , it will instead just continue without reporting an error. The exit code will be 0 and you and Ansible won't know that something was wrong.
 
 ## Links
 

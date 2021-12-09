@@ -157,7 +157,9 @@ am_amster_templates:
     scripts:
       - 110-function-delete-authentication-tree
       - 110-function-create-authentication-tree
-      - 110-function-load-authentication-service
+      # - 110-function-load-authentication-service
+      # Set tree as default service
+      # TODO uncomment when password reset works
   112-configure-top-level-realm:
     vars: ['newChainName','realm']
     vars-optional:
@@ -314,10 +316,3 @@ am_amster_common_functions: |
 am_amster_stdout_tags:
   changed: "[CHANGED]"
   error: "[ERROR]"
-
-# https://backstage.forgerock.com/knowledge/kb/article/a47894244
-am_security_advisory_202104: |
-  <!--<servlet-mapping>
-      <servlet-name>VersionServlet</servlet-name>
-      <url-pattern>/ccversion/*</url-pattern>
-  </servlet-mapping>-->
