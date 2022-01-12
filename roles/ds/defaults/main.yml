@@ -36,7 +36,7 @@ ds_connect:
   hostname: "{{ ds_hostname }}"
   port: "{{ ds_adminport }}"
   bindDN:  cn=Directory Manager
-  bindPassword: "{{ ds_rootpw }}"
+  bindPasswordFile: "{{ ds_password_file }}"
   trustAll: ""
   no-prompt: ""
 
