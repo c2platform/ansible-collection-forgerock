@@ -225,11 +225,15 @@ def dn_from_modify_item(itm):
 # Return search string for ds_modify config
 def ds_modify_search(itm):
     dn = dn_from_modify_item(itm)
-    base_dn = dn.rsplit(',', 1)[-1]  # e.g. c=NL
+    if 'base_dn' in itm:
+        base_dn = itm['base_dn']
+    else:
+        base_dn = dn.rsplit(',', 1)[-1]  # e.g. c=NL
     if 'search' in itm:
         return '--baseDn ' + base_dn + ' "' + itm['search'] + '"'
     else:
-        return '--baseDn "' + dn + '" --searchScope base objectclass=*  || true'
+        return '--baseDn "' + dn + \
+            '" --searchScope base objectclass=*  || true'
 
 
 class FilterModule(object):
