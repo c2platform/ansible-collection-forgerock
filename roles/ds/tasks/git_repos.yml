@@ -45,6 +45,8 @@
     group: "{{ ds_group }}"
     remote_src: "{{ not ds_git_config_control_node }}"
   with_items: "{{ ds_git_files }}"
+  loop_control:
+    label: "{{ ds_git_config['dir'] }}/{{ item['source'] }} → {{ item['dest'] }}"
   when: ds_git_files is defined
   notify: "{{ item['notify']|default(omit) }}"
   ignore_errors: "{{ item['ignore_errors']|default(False) }}"

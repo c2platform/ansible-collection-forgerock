@@ -57,6 +57,8 @@
     - name: Import using import-ldif
       include_tasks: import.yml
       with_items: "{{ ds_import }}"
+      loop_control:
+        label: "{{ item['ldif-url'] }}"
       when: ds_import|default(False) and ds_import_enable
 
     - name: Execute scripts
