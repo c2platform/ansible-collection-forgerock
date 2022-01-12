@@ -21,8 +21,6 @@
       register: current_config
       when: not use_fingerprint
       changed_when: False
-      become: yes
-      become_user: forgerock
   when: not skip_state_check|default(False)
 
 - name: "Set component {{ component }}"
@@ -36,6 +34,3 @@
     - item|c2platform.forgerock.ds_config_state_diff(current_config,component_fingerprint,use_fingerprint,skip_state_check|default(False))
   args:
     chdir: "{{ ds_home_version }}/bin"
-  become: yes
-  become_user: forgerock
-  # ignore_errors: yes
