@@ -5,12 +5,12 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
 <!-- MarkdownTOC levels="2,3,4" autolink="true" -->
 
 - [Requirements](#requirements)
-- [Role description](#role-description)
 - [Role Variables](#role-variables)
   - [Installation](#installation)
   - [Configure](#configure)
     - [108-set-sessionproperties](#108-set-sessionproperties)
     - [500-debug-logging](#500-debug-logging)
+  - [Configure REST](#configure-rest)
   - [Configure JSON](#configure-json)
   - [Configure raw](#configure-raw)
   - [Files, directories and ACL](#files-directories-and-acl)
@@ -30,22 +30,6 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
 ## Requirements
 
 ForgeRock uses zip files mostly - not tarballs, so to use this role `unzip` is required on target nodes.
-
-## Role description
-
-1. Download and unpack Amster tool
-2. Run the Amster tool, calling the associated DS server (which solely has the 'config' instance, used for configuration and users)
-
-Note that due to the content of the (Groovy) .amster scripts, functional errors can appear during execution. Just like in the old Chef system these aren't trapped or analysed, it's up to the operators to watch these. In a user story for future extension trapping of functional errors is considered. Also for this reason debug statements (to give the outcome of all Amster commands on the screen and hence also in the AWX logfile) are kept in the Ansible code.
-
-# Filesystem before and after situation
-Before: no opt/amster and anything below it. No /opt/tomcat/am.
-
-After situation for Amster:
-/opt/amster/amster-[version] has the tool.
-/opt/tomcat/am/openamcfg is created after a succesful run of Amster 
-And amster tool makes a lot of changes in how AM works; probably most of them are stored in the associated DS server.
-
 
 ## Role Variables
 
@@ -204,6 +188,96 @@ Using template `500-debug-logging` debug level can be configured. This is done g
     vars:
       debuglevel: error # warning, message, off
 ```
+
+### Configure REST
+
+The REST interface of AM can also be used directly of course ( rather than indirectly via Amster ). To make this more convenient this role integrates the [c2platform.core.rest](https://github.com/c2platform/ansible-collection-core/tree/master/roles/rest) role. The configuration is an example of the use of this role. It defines two *groups* of REST requests `01_authenticate` and `02_amUserAdmin` that achieves the following:
+
+1. The `id: Authenticate` request performs login and returns a token that is used in `02_amUserAdmin` group requests by setting in the default `samb` header.
+2. `id: amUserAdmin` creates the user `amUserAdmin`.
+3. `id: amDelegates` create the group `amDelegates`.
+4. `id: amUserAdmin_amDelegates` add the user `amUserAdmin` to the group.
+5. `id: amDelegates_privileges` updates the privileges of the group `amDelegates`.
+
+```yaml
+am_rest_headers:
+  samb: "{{ rest_responses['01_authenticate'][0]['json']['tokenId']|default(omit) }}"
+  Content-Type: application/json
+  Accept-API-Version: resource=4.0, protocol=2.0
+am_rest_base_url: "https://{{ ansible_fqdn }}:{{ tomcat_ssl_connector_port }}/{{ am_context }}/"
+am_rest_resources:
+  01_authenticate:
+    headers: 
+      X-OpenAM-Username: amadmin
+      X-OpenAM-Password: "{{ am_amster_amadmin_pw }}"
+      Content-Type: application/json
+      Accept-API-Version: resource=2.0, protocol=1.0
+    resources:
+      - id: Authenticate
+        url: json/realms/root/authenticate
+  02_amUserAdmin:
+    resources:
+      - id: amUserAdmin # user
+        url: json/realms/root/users/?_action=create
+        body_format: json
+        body:
+          username: amUserAdmin
+          userpassword: supersecret
+        status_code: [201,409] # 409 is conflict / resource exists
+      - id: amDelegates # group
+        url: json/realms/root/groups?_action=create
+        body_format: json
+        body:
+          username: amDelegates
+        status_code: [201,409] # 409 idem, is conflict
+      - id: amUserAdmin_amDelegates
+        url: json/realms/root/groups/amDelegates
+        method: PUT
+        body_format: json
+        body:
+          uniquemember:
+            - uid=amUserAdmin,ou=people,dc=bkwi,dc=nl
+        status_code: [200] # always 200
+      - id: amDelegates_privileges
+        url: json/realms/root/groups/amDelegates
+        method: PUT
+        body_format: json
+        body:
+          _id: amDelegates
+          username: amDelegates
+          realm: "/"
+          universalid:
+          - id=amDelegates,ou=group,ou=am-config
+          members:
+            uniqueMember:
+            - amUserAdmin
+          cn:
+          - amDelegates
+          privileges:
+            RealmAdmin: true
+            LogAdmin: false
+            LogRead: false
+            LogWrite: true
+            AgentAdmin: false
+            FederationAdmin: false
+            RealmReadAccess: false
+            PolicyAdmin: true
+            EntitlementRestAccess: false
+            PrivilegeRestReadAccess: true
+            PrivilegeRestAccess: true
+            ApplicationReadAccess: false
+            ApplicationModifyAccess: false
+            ResourceTypeReadAccess: false
+            ResourceTypeModifyAccess: false
+            ApplicationTypesReadAccess: false
+            ConditionTypesReadAccess: false
+            SubjectTypesReadAccess: false
+            DecisionCombinersReadAccess: false
+            SubjectAttributesReadAccess: false
+            SessionPropertyModifyAccess: false
+        status_code: [200] # always 200
+```
+
 ### Configure JSON
 
 TODO `am_config_files` 

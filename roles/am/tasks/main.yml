@@ -21,6 +21,13 @@
     - name: Configure AM
       include: configure.yml
 
+    - name: Configure using REST
+      include_role:
+        name: c2platform.core.rest
+        tasks_from: main
+      vars:
+        rest_ansible_role: am # role_name
+
     - name: Files
       include_role:
         name: c2platform.core.files

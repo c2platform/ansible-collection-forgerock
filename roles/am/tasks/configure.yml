@@ -42,6 +42,8 @@
     group: "{{ am_group }}"
     mode: 0600
   with_items: "{{ am_configure}}"
+  loop_control:
+    label: "{{ item['script'] }}"
   no_log: "{{ am_no_log }}"
   register: _amster_scripts
 
