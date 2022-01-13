@@ -49,7 +49,6 @@
 
     - include_tasks: modify.yml
       when: ds_modify|default(False)
-      with_items: "{{ ds_modify + (ds_modify_extra|default([])) }}"
 
     - include_tasks: modify_pw.yml
       when: ds_passwords|default(False)

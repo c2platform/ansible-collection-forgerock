@@ -1,32 +1,50 @@
 ---
-- name: "Check {{ item|c2platform.forgerock.dn_from_modify_item }}"
-  shell:  "./ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} {{ item|c2platform.forgerock.ds_modify_search }}"
+- name: ds_modify_all
+  set_fact:
+    ds_modify_all: "{{ ds_modify + (ds_modify_extra|default([])) }}"
+
+- name: Check not if ( ldapsearch )
+  shell:  "{{ ds_home_version }}/bin/ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} {{ item|c2platform.forgerock.ds_modify_search }}"
   environment: "{{ ds_environment }}"
-  args:
-    chdir: "{{ ds_home_version }}/bin"
-  register: ldapsearch_result
+  with_items: "{{ ds_modify_all }}"
+  loop_control:
+    label: "{{ item['name'] }}"
+  register: _not_if
   changed_when: false
 
-- block:
-    - name: "Download {{ item['ldif-url'] }}"
-      get_url:
-        url: "{{ item['ldif-url'] }}"
-        dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
-      when: item['ldif-url'] is defined
+- name: Check only_if ( ldapsearch )
+  shell:  "{{ ds_home_version }}/bin/ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} {{ item|c2platform.forgerock.ds_modify_search('only_if') }}"
+  environment: "{{ ds_environment }}"
+  with_items: "{{ ds_modify_all|selectattr('only_if', 'defined')|list }}"
+  loop_control:
+    label: "{{ item['name'] }}"
+  register: _only_if
+  changed_when: false
 
-    - name: "{{ item['name'] }}.ldif"
-      copy:
-        content: "{{ item['ldif'] }}"
-        remote_src: yes
-        dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
-        owner: "{{ ds_owner }}"
-        group: "{{ ds_group }}"
-        mode: '0640'
-      when: item['ldif'] is defined
+- name: Download LDIF
+  get_url:
+    url: "{{ item['ldif-url'] }}"
+    dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+  with_items: "{{ ds_modify_all|selectattr('ldif-url','defined')|list }}"
+  loop_control:
+    label: "{{ item['name'] }}: {{ item['ldif-url'] }} →  {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
 
-    - name: "item {{ item|c2platform.forgerock.dn_from_modify_item }}"
-      shell:  "./ldapmodify {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --filename {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
-      environment: "{{ ds_environment }}"
-      args:
-        chdir: "{{ ds_home_version }}/bin"
-  when: ldapsearch_result is search("No Such Entry") or ldapsearch_result.stdout == ""
+- name: Write LDIF
+  copy:
+    content: "{{ item['ldif'] }}"
+    remote_src: yes
+    dest: "{{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: '0640'
+  with_items: "{{ ds_modify_all|selectattr('ldif', 'defined')|list }}"
+  loop_control:
+    label: "{{ item['name'] }} →  {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+
+- name: Apply LDIF
+  shell:  "{{ ds_home_version }}/bin/ldapmodify {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} --filename {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+  environment: "{{ ds_environment }}"
+  with_items: "{{ ds_modify_all }}"
+  loop_control:
+    label: "{{ item['name'] }}: {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif"
+  when: item|c2platform.forgerock.ds_modify_when(_not_if.results, _only_if.results)

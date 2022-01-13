@@ -165,6 +165,7 @@ ds_modify:
       objectClass: top
       dc: org
 ```
+
 #### Download
 
 Optionally you can also configure the LDIF to be downloaded using `ldif-url`. Let's say we have an LDIF file `file:///vagrant/downloads/akaufman.ldif` with following contents
@@ -215,7 +216,7 @@ ds_modify:
     dn: cn=akaufman,o=special,c=NL
 ```
 
-Other LDIF than simple adding require you to specifiy a `search` attribute to check for existence. For example when adding an attribute as shown below
+Other LDIF than simple adding require you to specifiy a `not_if` attribute to check for existence as shown below. Note the default DN check is an example of a `not_if` condition. 
 
 ```yaml
 ds_modify:
@@ -225,7 +226,21 @@ ds_modify:
           changetype: modify
           add: aci
           aci: (target="ldap:///o=myapp,c=nl")(targetattr ="*")(version 3.0; acl "Allow apps proxiedauth"; allow(all, proxy)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
-        search: "&(objectclass=top)(c=NL)(aci=*)"
+        not_if: "&(objectclass=top)(c=NL)(aci=*)"
+```
+
+You can also configure an `only_if` condition. The example below shows both `not_if` and `only_if` being used. The particular account `amUserAdmin` is not created using LDIF, it is created using ForgeRock AM. We only want to use LDIF to add an attribute to the user *if* the user exists.
+
+```yaml
+  - name: amUserAdmin
+    base_dn: dc=iwkb,dc=nl
+    ldif: |
+      dn: uid=amUserAdmin,ou=people,dc=iwkb,dc=nl
+      changetype: modify
+      add: ds-pwp-password-policy-dn
+      ds-pwp-password-policy-dn: cn=Password Policy Service Accounts,cn=Password Policies,cn=config
+    not_if: "&(objectclass=top)(uid=amUserAdmin)(ds-pwp-password-policy-dn=*)"
+    only_if: "uid=amUserAdmin"
 ```
 
 #### Extra

@@ -223,17 +223,38 @@ def dn_from_modify_item(itm):
 
 
 # Return search string for ds_modify config
-def ds_modify_search(itm):
+def ds_modify_search(itm, attr='not_if'):
     dn = dn_from_modify_item(itm)
     if 'base_dn' in itm:
         base_dn = itm['base_dn']
     else:
         base_dn = dn.rsplit(',', 1)[-1]  # e.g. c=NL
-    if 'search' in itm:
-        return '--baseDn ' + base_dn + ' "' + itm['search'] + '"'
+    if attr in itm:
+        return '--baseDn ' + base_dn + ' "' + itm[attr] + '"'
     else:
         return '--baseDn "' + dn + \
             '" --searchScope base objectclass=*  || true'
+
+
+# Should LDIF be applied or skipped
+def ds_modify_when(item, not_if_results, only_if_results):
+    rslt = [itm for itm in not_if_results if itm['item'] == item]
+    rslt = rslt[0]
+    not_if = False
+    only_if = False
+    if rslt['stdout'] == "":
+        not_if = True
+    if "No Such Entry" in rslt['stdout']:
+        not_if = True
+    if 'only_if' in item:
+        rslt = [itm for itm in only_if_results if itm['item'] == item]
+        rslt = rslt[0]
+        if rslt['stdout'] != "":
+            only_if = True
+    if 'enabled' in item:
+        if not item['enabled']:
+            not_if = False
+    return not_if and only_if
 
 
 class FilterModule(object):
@@ -255,5 +276,6 @@ class FilterModule(object):
             ds_config_fingerprint_component_path,
             'ds_pop': ds_pop,
             'dn_from_modify_item': dn_from_modify_item,
-            'ds_modify_search': ds_modify_search
+            'ds_modify_search': ds_modify_search,
+            'ds_modify_when': ds_modify_when
         }
