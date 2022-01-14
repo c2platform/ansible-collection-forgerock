@@ -33,6 +33,16 @@ ForgeRock uses zip files mostly - not tarballs, so to use this role `unzip` is r
 
 ## Role Variables
 
+|var                      |required|default|choices|comments                                                                                                                      |
+|-------------------------|--------|-------|-------|------------------------------------------------------------------------------------------------------------------------------|
+|am_amster_scripts_default|no      |yes    |       |List of Amster scripts that are always created and executed.                                                                  |
+|am_amster_subscripts     |no      |yes    |       |List of Amster scripts that are called by other Amster scripts. These will always be created regardless of what you configure.|
+|am_amster_templates      |no      |yes    |       |List of templates for creating Amster scripts. It also defines the scripts with required and optional variables.              |
+|am_configure             |no      |no     |       |List of Amster scripts that defines the scripts to actually execute in order with the actual arguments values.                |
+|amster_am_install        |no      |no     |       |This dict basically describes the install command to run using Ansible to install AM. See [Installation](#installation)       |
+              |
+
+
 ### Installation
 
 Use `amster_am_install` var to control installation
@@ -66,7 +76,14 @@ amster_am_install:
 
 ### Configure
 
-Use `am_configure` to configure AM using Amster. To create a realm `myapp` for domain `myapp.com`
+Use `am_configure` to configure AM using Amster. There is an important note to be made about idempotancy with regards to the Amster scripts. 
+
+A script will run when the script changes. The scripts 
+
+`am_amster_force`
+
+
+To create a realm `myapp` for domain `myapp.com`
 
 ```yaml
 am_configure:
@@ -174,7 +191,7 @@ am_configure:
     template: 108-set-sessionproperties
     vars:
       realmName: myRealm
-      sharedSecret: l8wOCob/UBw26X62nS5xEawumOBP3GYo5WG7nJ2PSvU= #       openssl rand -base64 32
+      sharedSecret: l8wOCob/UBw26X62nS5xEawumOBP3GYo5WG7nJ2PSvU= # openssl rand -base64 32
       loginSuccessUrl: https://myapp.com/index.html
       keyAlias: dev
 ```
