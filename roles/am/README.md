@@ -8,8 +8,31 @@ This Ansible role is used to setup and configure [AM](https://go.forgerock.com/A
 - [Role Variables](#role-variables)
   - [Installation](#installation)
   - [Configure](#configure)
+    - [090-connect-to-openam](#090-connect-to-openam)
+    - [100-installAM_1](#100-installam_1)
+    - [100-configure_AM](#100-configure_am)
+    - [101-connect_To_AM](#101-connect_to_am)
+    - [102-set-common-functions](#102-set-common-functions)
+    - [103-configure_realm](#103-configure_realm)
+    - [104-create-J2EE_Agent](#104-create-j2ee_agent)
+    - [105-create-policy-set](#105-create-policy-set)
+    - [106-create-policy](#106-create-policy)
+    - [107-update-identity-store](#107-update-identity-store)
     - [108-set-sessionproperties](#108-set-sessionproperties)
+    - [109-configure-ValidationService](#109-configure-validationservice)
+    - [110-create-authentication-LdapTree](#110-create-authentication-ldaptree)
+    - [112-configure-top-level-realm](#112-configure-top-level-realm)
+    - [113-disable-module-and-zeropage-authentication](#113-disable-module-and-zeropage-authentication)
+    - [114-set-session-limits](#114-set-session-limits)
+    - [118-update-ldap-module](#118-update-ldap-module)
+    - [115-set-global-session-quotas](#115-set-global-session-quotas)
+    - [116-configure-signing-secret](#116-configure-signing-secret)
+    - [117-configure-amlbcookie](#117-configure-amlbcookie)
+    - [208-function_create_federation_module](#208-function_create_federation_module)
+    - [209-function_load_all_saml](#209-function_load_all_saml)
+    - [210-function-load-authentication-settings](#210-function-load-authentication-settings)
     - [500-debug-logging](#500-debug-logging)
+    - [900-settings-with-restart](#900-settings-with-restart)
   - [Configure REST](#configure-rest)
   - [Configure JSON](#configure-json)
   - [Configure raw](#configure-raw)
@@ -35,13 +58,12 @@ ForgeRock uses zip files mostly - not tarballs, so to use this role `unzip` is r
 
 |var                      |required|default|choices|comments                                                                                                                      |
 |-------------------------|--------|-------|-------|------------------------------------------------------------------------------------------------------------------------------|
-|am_amster_scripts_default|no      |yes    |       |List of Amster scripts that are always created and executed.                                                                  |
-|am_amster_subscripts     |no      |yes    |       |List of Amster scripts that are called by other Amster scripts. These will always be created regardless of what you configure.|
-|am_amster_templates      |no      |yes    |       |List of templates for creating Amster scripts. It also defines the scripts with required and optional variables.              |
-|am_configure             |no      |no     |       |List of Amster scripts that defines the scripts to actually execute in order with the actual arguments values.                |
-|amster_am_install        |no      |no     |       |This dict basically describes the install command to run using Ansible to install AM. See [Installation](#installation)       |
-              |
-
+|am_amster_scripts_default|no      |[see](./defaults.mainl.yml)|       |List of Amster scripts that are always created. These type of scripts will not run multiple times but not or once. This is different from scripts defined in `am_amster_templates`.|
+|am_amster_subscripts     |no      |[see](./defaults.mainl.yml)|       |List of Amster scripts that are called by other Amster scripts. These will always be created regardless of what you configure.|
+|am_amster_templates      |no      |[see](./defaults.mainl.yml)|       |List of templates for creating Amster scripts. It also defines the scripts with required and optional variables.              |
+|am_configure             |no      |       |       |List of Amster scripts that defines the scripts to actually execute in order with the actual arguments values. See [Configure](#configure)|
+|amster_am_install        |no      |       |       |This dict basically defines the arguments for the Amster install command `install-openam` in `100-InstallAM_1.amster` that is used install AM. See [Installation](#installation)|
+|am_amster_force          |no      |no     |       |Amster scripts will only execute when they are created or changed. So they run once. Setting `am_amster_force` to `yes` will ensure scripts are executed always. See [Configure](#configure) for note on idempotancy.|
 
 ### Installation
 
@@ -76,14 +98,14 @@ amster_am_install:
 
 ### Configure
 
-Use `am_configure` to configure AM using Amster. There is an important note to be made about idempotancy with regards to the Amster scripts. 
+Use `am_configure` to configure AM using Amster scripts. Note that Amster scripts on default will only run if they are created or changed. This default "idempotancy" behaviour can be changed / is influenced in a number of ways:
 
-A script will run when the script changes. The scripts 
+1. Setting `am_amster_force` to `yes` will ensure scripts run each time. Regardless of whether scripts change. The scripts have they are own idempotancy checks. This varies on a per script basis.
+2. Scripts configured using `am_configure` can be configured with attribute `force` `yes`. An example is shown below for `500-debug-logging` script. This will force a particular script to run always.
+3. Scripts change when optional or required variables change because the variables are rendered in the scripts. This is includes the `enabled` attribute. So if a script changes from `enabled` `no` to `yes` it will run.
+4. The scripts that loads federation data from a directory currently will not detect changes and so will not run if federation data changes. 
 
-`am_amster_force`
-
-
-To create a realm `myapp` for domain `myapp.com`
+A simple example of `am_configure` is below. This will create a realm `myapp` for domain `myapp.com` using Amster template `103-configure_realm`.
 
 ```yaml
 am_configure:
@@ -92,21 +114,6 @@ am_configure:
     vars:
       realmName: myapp
       realmAliases: '[\"myapp.nl\"]' # escape for json body
-```
-
-Each entry in the list `am_configured` will create an Amster script on the file system that will be executed by Ansible. These scripts are self-contained: each script can be run individually.
-
-```bash
-root@bkd-am:/opt/amster/amster# ls | grep s0
-s01-103-configure-realm.amster
-s02-104-create-j2ee-agent.amster
-s03-105-create-policy-set.amster
-s04-106-create-policy.amster
-s05-107-update-identity-store.amster
-s06-108-set-sessionproperties.amster
-s07-103-configure-realm.amster
-s08-107-update-identity-store.amster
-s09-108-set-sessionproperties.amster
 ```
 
 `template` is above item refers to items in list `am_amster_templates`. The dict `am_amster_templates` specifies the mandatory and / or optional variables the scripts has. It can also specify additional subscripts to call as is the case for `110-create-authentication-LdapTree`
@@ -172,6 +179,61 @@ am_configure:
       am.protected.uidIdentifier: whatever
 ```
 
+Each entry in the list `am_configured` will create an Amster script on the file system that will be executed by Ansible. These scripts are self-contained: each script can be run individually.
+
+```bash
+root@bkd-am:/opt/amster/amster# ls | grep s0
+s01-103-configure-realm.amster
+s02-104-create-j2ee-agent.amster
+s03-105-create-policy-set.amster
+s04-106-create-policy.amster
+s05-107-update-identity-store.amster
+s06-108-set-sessionproperties.amster
+s07-103-configure-realm.amster
+s08-107-update-identity-store.amster
+s09-108-set-sessionproperties.amster
+```
+
+#### 090-connect-to-openam
+
+TODO
+
+#### 100-installAM_1
+
+TODO
+
+#### 100-configure_AM
+
+TODO
+
+#### 101-connect_To_AM
+
+TODO
+
+#### 102-set-common-functions
+
+TODO
+
+#### 103-configure_realm
+
+TODO
+
+#### 104-create-J2EE_Agent
+
+TODO
+
+#### 105-create-policy-set
+
+TODO
+
+#### 106-create-policy
+
+TODO
+
+#### 107-update-identity-store
+
+TODO
+
 #### 108-set-sessionproperties
 
 Using template `108-set-sessionproperties` authentication settings can be changed. Settings that you can find admin interface Via **<Realm>** → **AUthencation** → **Settings** 
@@ -195,6 +257,55 @@ am_configure:
       loginSuccessUrl: https://myapp.com/index.html
       keyAlias: dev
 ```
+
+#### 109-configure-ValidationService
+
+TODO
+
+#### 110-create-authentication-LdapTree
+
+TODO
+
+#### 112-configure-top-level-realm
+
+TODO
+
+#### 113-disable-module-and-zeropage-authentication
+
+TODO
+
+#### 114-set-session-limits
+
+TODO
+
+#### 118-update-ldap-module
+
+TODO
+
+#### 115-set-global-session-quotas
+
+TODO
+
+#### 116-configure-signing-secret
+
+TODO
+
+#### 117-configure-amlbcookie
+
+TODO
+
+#### 208-function_create_federation_module
+
+TODO
+
+#### 209-function_load_all_saml
+
+TODO
+
+#### 210-function-load-authentication-settings
+
+TODO
+
 #### 500-debug-logging
 
 Using template `500-debug-logging` debug level can be configured. This is done globally and for each server.
@@ -205,6 +316,10 @@ Using template `500-debug-logging` debug level can be configured. This is done g
     vars:
       debuglevel: error # warning, message, off
 ```
+
+#### 900-settings-with-restart
+
+TODO
 
 ### Configure REST
 
