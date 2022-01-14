@@ -11,9 +11,12 @@ def amster_param_quotes(var):
 
 
 def amster_script_header(item):
+    enbld = True
+    if 'enabled' in item:
+        enbld = item['enabled']
     if 'template' in item:
-        return "Script: {}\nTemplate: {}".format(
-            item['script'], item['template'])
+        return "Script: {}\nTemplate: {}\nEnabled: {}".format(
+            item['script'], item['template'], enbld)
     return "Subscript: {}".format(item)
 
 
