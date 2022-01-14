@@ -67,6 +67,7 @@ def ds_config_method(component, config=None, get_set='set'):
         else:
             return 'get-{}-prop'.format(comp)
 
+
 # Return the command switches to get current config
 def ds_cmd_get(cmd_config, component):
     # pprint({'component':component, 'cmd_config': cmd_config})
@@ -92,7 +93,6 @@ def ds_cmd_get(cmd_config, component):
     else:
         msg = "No get command defined for component {}. Use a fingerprint!?"
         raise Exception(msg.format(comp))
-
 
 # Return value from property from get results
 # returns None if property does not exist
@@ -224,37 +224,55 @@ def dn_from_modify_item(itm):
 
 # Return search string for ds_modify config
 def ds_modify_search(itm, attr='not_if'):
+    ss = ''
     dn = dn_from_modify_item(itm)
     if 'base_dn' in itm:
         base_dn = itm['base_dn']
     else:
         base_dn = dn.rsplit(',', 1)[-1]  # e.g. c=NL
     if attr in itm:
-        return '--baseDn ' + base_dn + ' "' + itm[attr] + '"'
+        if '"' in itm[attr]:
+            ss = '--baseDn ' + base_dn + ' ' + itm[attr] + '  || true'
+        else:
+            ss = '--baseDn ' + base_dn + ' "' + itm[attr] + '"  || true'
     else:
-        return '--baseDn "' + dn + \
+        ss = '--baseDn "' + dn + \
             '" --searchScope base objectclass=*  || true'
+    return ss
 
 
 # Should LDIF be applied or skipped
 def ds_modify_when(item, not_if_results, only_if_results):
-    rslt = [itm for itm in not_if_results if itm['item'] == item]
-    rslt = rslt[0]
-    not_if = False
-    only_if = False
-    if rslt['stdout'] == "":
-        not_if = True
-    if "No Such Entry" in rslt['stdout']:
-        not_if = True
+    not_if_rslt = [itm for itm in not_if_results if itm['item'] == item]
+    not_if_rslt = not_if_rslt[0]
+    not_if = True
+    only_if = True
+    # pprint({'item': item, 'not_if_rslt': not_if_rslt})
+    if not_if_rslt['stdout'] == "":
+        not_if = False
+    if "No Such Entry" in not_if_rslt['stdout']:
+        not_if = False
+    if 'not_if_checksum' in item:
+        if item['not_if_checksum'] in not_if_rslt['stdout']:
+            not_if = True
+        else:
+            print("Checksum {}: {}".format(item['name'],
+                                           not_if_rslt['stdout']))
+            not_if = False
     if 'only_if' in item:
-        rslt = [itm for itm in only_if_results if itm['item'] == item]
-        rslt = rslt[0]
-        if rslt['stdout'] != "":
+        only_if = False
+        only_if_rslt = [itm for itm in only_if_results if itm['item'] == item]
+        # pprint({'item': item, 'only_if_rslt': only_if_rslt})
+        only_if_rslt = only_if_rslt[0]
+        if only_if_rslt['stdout'] != "":
             only_if = True
+        if "No Such Entry" in only_if_rslt['stdout']:
+            not_if = True
     if 'enabled' in item:
         if not item['enabled']:
             not_if = False
-    return not_if and only_if
+    # pprint({'not_if': not_if, 'only_if': only_if})
+    return (not not_if) and only_if
 
 
 class FilterModule(object):

@@ -3,7 +3,7 @@
   set_fact:
     ds_modify_all: "{{ ds_modify + (ds_modify_extra|default([])) }}"
 
-- name: Check not if ( ldapsearch )
+- name: Check not_if ( ldapsearch )
   shell:  "{{ ds_home_version }}/bin/ldapsearch {{ ds_connect_ssl|c2platform.forgerock.ds_cmd }} {{ item|c2platform.forgerock.ds_modify_search }}"
   environment: "{{ ds_environment }}"
   with_items: "{{ ds_modify_all }}"
