@@ -58,9 +58,9 @@ ForgeRock uses zip files mostly - not tarballs, so to use this role `unzip` is r
 
 |var                      |required|default|choices|comments                                                                                                                      |
 |-------------------------|--------|-------|-------|------------------------------------------------------------------------------------------------------------------------------|
-|am_amster_scripts_default|no      |[see](./defaults.mainl.yml)|       |List of Amster scripts that are always created. These type of scripts will not run multiple times but not or once. This is different from scripts defined in `am_amster_templates`.|
-|am_amster_subscripts     |no      |[see](./defaults.mainl.yml)|       |List of Amster scripts that are called by other Amster scripts. These will always be created regardless of what you configure.|
-|am_amster_templates      |no      |[see](./defaults.mainl.yml)|       |List of templates for creating Amster scripts. It also defines the scripts with required and optional variables.              |
+|am_amster_scripts_default|no      |[see](./defaults/main.yml)|       |List of Amster scripts that are always created. These type of scripts will not run multiple times but not or once. This is different from scripts defined in `am_amster_templates`.|
+|am_amster_subscripts     |no      |[see](./defaults/main.yml)|       |List of Amster scripts that are called by other Amster scripts. These will always be created regardless of what you configure.|
+|am_amster_templates      |no      |[see](./defaults/main.yml)|       |List of templates for creating Amster scripts. It also defines the scripts with required and optional variables.              |
 |am_configure             |no      |       |       |List of Amster scripts that defines the scripts to actually execute in order with the actual arguments values. See [Configure](#configure)|
 |amster_am_install        |no      |       |       |This dict basically defines the arguments for the Amster install command `install-openam` in `100-InstallAM_1.amster` that is used install AM. See [Installation](#installation)|
 |am_amster_force          |no      |no     |       |Amster scripts will only execute when they are created or changed. So they run once. Setting `am_amster_force` to `yes` will ensure scripts are executed always. See [Configure](#configure) for note on idempotancy.|
