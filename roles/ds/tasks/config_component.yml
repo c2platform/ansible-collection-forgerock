@@ -34,3 +34,4 @@
     - item|c2platform.forgerock.ds_config_state_diff(current_config,component_fingerprint,use_fingerprint,skip_state_check|default(False))
   args:
     chdir: "{{ ds_home_version }}/bin"
+  ignore_errors: "{{ ds_config_ignore_errors|default(False) }}"
