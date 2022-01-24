@@ -48,7 +48,7 @@
     - include: config.yml
 
     - include_tasks: modify.yml
-      when: ds_modify|default(False)
+      when: ds_modify|default(False) and ds_modify_enabled|default(True)
 
     - include_tasks: modify_pw.yml
       when: ds_passwords|default(False)

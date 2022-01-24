@@ -62,6 +62,8 @@
     group: "{{ ig_group }}"
     mode: 0644
   with_items: "{{ ig_rewrite_paths }}"
+  loop_control:
+    label: "{{ item['name'] }}"
   when: ig_rewrite_paths is defined
 
 - name: Wait for IG

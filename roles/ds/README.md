@@ -146,6 +146,8 @@ TODO
 
 Modify the directory using [LDIF](https://en.wikipedia.org/wiki/LDAP_Data_Interchange_Format) by using `ds_modify`. This holds an ordered list of ldifs to be used to modify DS using `./ldapmodify`.
 
+Use `ds_modify_enabled: false` to disable apply of LDIF. 
+
 #### Simple
 
 DS is checked for the existence of the DN as present on the first line of the LDIF. If the DN does not exist, the LDIF is applied.
