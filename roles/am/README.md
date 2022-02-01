@@ -410,6 +410,12 @@ am_rest_resources:
         status_code: [200] # always 200
 ```
 
+You can toggle the creation of REST resources using dict `am_rest_resources` on / off using `am_rest_resources_enabled`. This if for example useful in case you have failover / replication configured and you only need to the creation of REST resources on one node.
+
+```yaml
+am_rest_resources_enabled: "{{ inventory_hostname in groups['am_main'] }}"
+```
+
 ### Configure JSON
 
 TODO `am_config_files` 
