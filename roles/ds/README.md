@@ -25,7 +25,7 @@ Note: on default - without additional configuration - this role will only instal
   - [Import](#import)
   - [Directories](#directories)
   - [Git](#git)
-  - [Files](#files)
+  - [Files, directories and ACL](#files-directories-and-acl)
   - [Cron](#cron)
   - [Scripts](#scripts)
   - [Replication](#replication)
@@ -34,8 +34,7 @@ Note: on default - without additional configuration - this role will only instal
 - [Example configuration](#example-configuration)
 - [Links](#links)
 - [Notes](#notes)
-  - [Fingerprint](#fingerprint)
-  - [DS service checks](#ds-service-checks)
+  - [Idempotancy](#idempotancy)
   - [Upgrade](#upgrade)
   - [Backup / restore](#backup--restore)
   - [dsconfig add](#dsconfig-add)
@@ -89,7 +88,7 @@ Using `ds_db_schema_ldifs` ldifs files can be created in `db/schema`. For exampl
 ```yaml
 ds_db_schema_ldifs_enable: yes
 ds_db_schema_ldifs:
- appPerson: |  
+ appPerson: |
    dn: cn=schema
    changetype: modify
    add: attributeTypes
@@ -370,9 +369,9 @@ ds_directories:
 
 Note: if we want to execute those scripts, see [Scripts](#scripts) 
 
-### Files
+### Files, directories and ACL
 
-Using `ds_files` arbitrary files can be created. For example see [Backup](#backup).
+Use dicts `ds_files`, `ds_directories`, `ds_acl` to create / manage any other files, directories and ACL. See [c2platform.core.files](https://github.com/c2platform/ansible-collection-core/tree/master/roles/files) for more information For example see [Backup](#backup).
 
 ### Cron
 
@@ -1176,18 +1175,40 @@ ds_scripts:
 
 ## Notes
 
-### Fingerprint
+### Idempotancy
 
-If in some testing situation it is needed to make changes in DS, e.g. using dsconfig but also commands like ldapmodify, manually (outside Ansible), beware that the next Ansible run could not work as intended due to it relying on now outdated fingerprints.
-The solution if you really needed to make manual changes in DS: manually remove the related fingerprint file, or simply all fingerprints, in /opt/ds/.fingerprint/6.5.4 directory. It causes Ansible to run a bit slower than it should, but it guarantees that it works as intended even in this 'manual' scenario.
+The bulk of DS configuration is done using the `dsconfig` command which poses some challenges 
+when it comes to implementing idempotancy. Currently only a few "components" support checking
+"current" configuration. This can be seen in `ds_cmd_get` filter which shows that the following
+components support a current check:
 
-`ds_config`
-Note that the configbase module (running dsconfig command) for some parts uses 'fingerprints': signatures of the last result stored on disk, to prevent unnecessary calls to dsconfig. 
+* global-configuration
+* password-validator
+* log-publisher
+* plugin
+* replication-server
 
-### DS service checks
+Other components you configure using `ds_config` dict will fail with message like
 
-There are limited checks in the role, e.g. to see whether the DS service was already installed and configured. However more checks could be helpful,
-this also makes the chance less that in AM and IG rollout errors are found related to mistakes in the DS install/config.
+> No get command defined for component <name>. Use a fingerprint!?
+
+You can fix this by adding the component name to list `ds_config_components_fingerprint`. For this
+component then a fingerprint file will be used that is stored in folder `/opt/ds/.fingerprint/6.5.4`.
+The `dsconfig` command will then only run if the fingerprint file changes. See example below.
+
+```bash
+root:~# ls /opt/ds/.fingerprint/6.5.5/
+access-control-handler         password-policy
+backend_create                 password-policy_service-accounts
+backend-index_suwiroot-create  password-policy_service-accounts-create
+backend-index_userroot-create  password-policy_service-accounts-jmx
+connection-handler             password-policy_service-accounts-jmx-create
+ds_passwords                   plugin
+root:~# 
+```
+If the fingerprint files are lost provision will fail for each component configured. Using `ds_config_ignore_errors`
+you can temporarily ignore errors so that the fingerprint files are created. Of course, then you should review the
+errors to make sure all are the result of this and not some other issue.
 
 ### Upgrade
 

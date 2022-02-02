@@ -15,17 +15,6 @@
       pw: "{{ ds_replication_global_admin_password }}"
   no_log: yes
 
-- name: Create directories
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ds_owner }}"
-    group: "{{ ds_group }}"
-    mode: 0755
-    recurse: yes
-  with_items: "{{ ds_directories }}"
-  when: ds_directories is defined
-
 - include: git_repos.yml
   when: ds_git_config is defined
 
@@ -44,6 +33,16 @@
         chdir: "{{ ds_home_version }}/bin"
       register: result
       until: result.rc == 0
+
+    - name: Files
+      include_role:
+        name: c2platform.core.files
+        tasks_from: main
+      vars:
+        role_name: ds # role_name
+        common_files: "{{ ds_files|default({}) }}"
+        common_directories: "{{ ds_directories|default({}) }}"
+        common_acl: "{{ ds_acl|default({}) }}"
 
     - include: config.yml
 
