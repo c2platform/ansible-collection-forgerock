@@ -13,10 +13,16 @@ try {
         "com.sun.services.debug.mergeall": "off",
         "com.iplanet.services.debug.directory": "%BASE_DIR%/%SERVER_URI%/debug"}}""";
 
-  if(isNull(eval("update DefaultGeneralProperties --global --body '$BODY'"))){
+  curDefaultProps = eval("read DefaultGeneralProperties --global")
+  newDefaultProps = eval("update DefaultGeneralProperties --global --body '$BODY'")
+  if(isNull(newDefaultProps)){
     println red("{{ am_amster_stdout_tags['error'] }} in setting debug configuration in DefaultGeneralProperties.")
   } else {
-    println green("{{ am_amster_stdout_tags['changed'] }} Setting debug configuration in DefaultGeneralProperties successful")
+    if (resourceChange(curDefaultProps,newDefaultProps, true )) {
+      println green("{{ am_amster_stdout_tags['changed'] }} Setting debug configuration in DefaultGeneralProperties successful")
+    } else {
+      println green("Setting debug configuration in DefaultGeneralProperties successful but not changed")
+    }
   }
 
   // Force inheritance of the default settings in the specific server configurations

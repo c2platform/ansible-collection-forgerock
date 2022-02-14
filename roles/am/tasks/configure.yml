@@ -62,6 +62,7 @@
 - copy:
     content: "{{ {'am_configure': am_configure }|to_nice_yaml }}"
     dest: "{{ am_amster_scripts_dir }}/am_configure.yml"
+    changed_when: false
 
 - name: Execute Amster script
   command: "{{ am_amster_exe }} {{ item }}"
