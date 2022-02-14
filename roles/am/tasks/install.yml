@@ -31,10 +31,6 @@
     chdir: "{{ am_amster_scripts_dir }}"
   when: not cfgDir.stat.exists
 
-- debug:
-    msg: "installam_amster: {{ installam_amster }}"
-  when: am_debug|default(False)
-
 # See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause
 # in Authorized keys fails for our setup
 - name: Fix bug

@@ -7,6 +7,8 @@
     group: "{{ am_group }}"
     mode: 0644
   with_items: "{{ am_config_files }}"
+  loop_control:
+    label: "{{ item['dest'] }}"
   when: am_config_files|default(False)
   no_log: "{{ am_no_log }}"
 
@@ -18,6 +20,8 @@
     group: "{{ am_group }}"
     mode: "{{ item['mode']|default('0644') }}"
   with_items: "{{ am_config_files_raw }}"
+  loop_control:
+    label: "{{ item['dest'] }}"
   when: am_config_files_raw|default(False)
   notify: "{{ item['notify']|default(omit) }}"
   no_log: "{{ am_no_log }}"
