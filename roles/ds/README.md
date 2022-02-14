@@ -492,7 +492,7 @@ of the dsreplication arguments.
 * configure: _used_ for creating (--baseDN is already an itemised list hence no loop needed), again for intial and for delta. _arguments_ basically all, notably bind and admin.
 * initialize-all: _used_ as a follow-up of configure, it activates the replication config. _arguments_ adminUID and adminPassword, baseDN
 
-To configure replication you can use `ds_configure_components_replication` for example:
+To configure replication you can use `ds_config_components_replication` for example:
 
 ```yaml
 ds_config:
@@ -501,7 +501,7 @@ ds_config:
       set:
         - changelog-enabled:disabled
 
-ds_configure_components_replication:
+ds_config_components_replication:
   - replication-server
 ```
 

@@ -13,7 +13,8 @@
       pw: "{{ ds_rootpw }}"
     - file: "{{ ds_replication_global_admin_password_file }}"
       pw: "{{ ds_replication_global_admin_password }}"
-  no_log: yes
+  loop_control:
+    label: "{{ item['file'] }}"
 
 - include: git_repos.yml
   when: ds_git_config is defined
@@ -33,6 +34,7 @@
         chdir: "{{ ds_home_version }}/bin"
       register: result
       until: result.rc == 0
+      changed_when: false
 
     - name: Files
       include_role:
