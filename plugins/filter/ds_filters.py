@@ -151,15 +151,18 @@ def ds_config_state_diff(set_item, current_config, component_fingerprint,
     if skip_state_check:
         return True
     elif 'when' in set_item:
+        mtch = False
+        if 'match' in set_item['when']:
+            mtch = set_item['when']['match']
         rslt = current_config_select(current_config, set_item)
         p = re.compile(set_item['when']['regex'], re.MULTILINE)
         r = p.search(rslt['stdout'])
         # pprint({'p': p, 'r': r, 'stdout': rslt['stdout'],
         #       'set_item': set_item})
         if r is None:
-            return not set_item['when']['match']
+            return not mtch
         else:
-            return set_item['when']['match']
+            return mtch
         return True
     elif use_component_fingerprint:
         return component_fingerprint['changed']
