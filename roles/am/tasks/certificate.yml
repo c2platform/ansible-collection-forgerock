@@ -67,8 +67,7 @@
       keystore_type: JCEKS
       executable: "{{ am_certificate[item]['keytool'] }}"
       state: present
-    notify: "{{ am_certificate[item]['notify']|default(omit) }}" # TODO
-    register: magweg
+    notify: "{{ am_certificate[item]['notify']|default(omit) }}"
 
   - name: Change key password
     shell:

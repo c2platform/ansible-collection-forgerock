@@ -22,6 +22,8 @@
     shell: "{{ ds_git_config_script }}"
     delegate_to: "{{ ds_git_clone_delegate }}"
     when: ds_git_config_script is defined
+    register: _git_checkout_delegated_custom
+    changed_when: not 'Already up to date' in _git_checkout_delegated_custom.stdout
   when: ds_git_config_control_node
 
 - block:
@@ -35,6 +37,8 @@
   - name: Git checkout ( custom )
     shell: "{{ ds_git_config_script }}"
     when: ds_git_config_script is defined
+    register: _git_checkout_custom
+    changed_when: not 'Already up to date' in _git_checkout_custom.stdout
   when: not ds_git_config_control_node
 
 - name: Git files # TODO does not remove files!? # REMOTE directory iedere keer verwijderen.

@@ -18,14 +18,14 @@
       force: yes
     delegate_to: "{{ am_git_config_clone_delegate }}"
     when: not am_git_config_script is defined
-    register: todo
 
   # Ansible Git module does support config
   - name: Git checkout ( delegated and custom )
     shell: "{{ am_git_config_script }}"
     delegate_to: "{{ am_git_config_clone_delegate }}"
     when: am_git_config_script is defined
-    register: todo
+    register: _git_checkout_delegated_custom
+    changed_when: not 'Already up to date' in _git_checkout_delegated_custom.stdout
 
   - name: Git folders ( delegated )
     synchronize:
@@ -52,6 +52,8 @@
   - name: Git checkout ( custom )
     shell: "{{ am_git_config_script }}"
     when: am_git_config_script is defined
+    register: _git_checkout_custom
+    changed_when: not 'Already up to date' in _git_checkout_custom.stdout
 
   - name: Git folders
     synchronize:
