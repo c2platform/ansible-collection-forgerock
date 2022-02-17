@@ -1,37 +1,54 @@
 ---
-- block:
-    - name: "Fingerprint {{ component }}"
-      copy:
-        content: "{{ ds_config[component]|c2platform.forgerock.ds_config_fingerprint }}"
-        dest: "{{ component|c2platform.forgerock.ds_config_fingerprint_component_path(ds_home,ds_version) }}"
-        group: "{{ ds_owner }}"
-        owner: "{{ ds_group }}"
-      when: use_fingerprint
-      register: component_fingerprint
+- name: "Prepare config {{ component }}"
+  c2platform.forgerock.ds_config_component:
+    component: "{{ component }}"
+    config: "{{ ds_config[component] }}"
+    get: "{{ ds_component_get }}"
+  register: _dscc
 
-    - name: "Get current configuration {{ component }}"
-      shell: >
-        ./dsconfig {{ component|c2platform.forgerock.ds_config_method(item,'get') }}
-        {{ ds_connect|c2platform.forgerock.ds_cmd }}
-        {{ item|c2platform.forgerock.ds_cmd_get(component) }}
-      environment: "{{ ds_environment }}"
-      with_items: "{{ ds_config[component] }}"
-      args:
-        chdir: "{{ ds_home_version }}/bin"
-      register: current_config
-      when: not use_fingerprint
-      changed_when: False
-  when: not skip_state_check|default(False)
-
-- name: "Set component {{ component }}"
+- name: Get current config
   shell: >
-    ./dsconfig {{ component|c2platform.forgerock.ds_config_method }}
+    ./dsconfig {{ item['get-cmd'] }}
     {{ ds_connect|c2platform.forgerock.ds_cmd }}
-    {{ item|c2platform.forgerock.ds_cmd }}
   environment: "{{ ds_environment }}"
-  with_items: "{{ ds_config[component] }}"
-  when:
-    - item|c2platform.forgerock.ds_config_state_diff(current_config,component_fingerprint,use_fingerprint,skip_state_check|default(False))
+  with_items: "{{ _dscc['config']|selectattr('get-cmd', 'defined')|list }}"
+  loop_control:
+    label: "{{ component }}-{{ item['step'] }} {{ item['method'] }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
-  ignore_errors: "{{ ds_config_ignore_errors|default(False) }}"
+  register: ds_config_current
+  changed_when: False
+
+- name: Prepare config ( add current )
+  c2platform.forgerock.ds_config_component:
+    component: "{{ component }}"
+    config: "{{ ds_config[component] }}"
+    get: "{{ ds_component_get }}"
+    config_current: "{{ ds_config_current.results|list }}"
+  register: ds_config_prepared
+
+- name: Change config
+  shell: >
+    {{ ds_home_version }}/bin/dsconfig {{ item['cmd'] }}
+    {{ ds_connect|c2platform.forgerock.ds_cmd }}
+  environment: "{{ ds_environment }}"
+  with_items: "{{ ds_config_prepared['config']|list }}"
+  loop_control:
+    label: "{{ component }}-{{ item['step'] }} {{ item['method'] }}"
+  when: ds_component_when[item['method']]['when']
+  changed_when: ds_component_when[item['method']]['changed_when']|default(omit)
+  register: ds_config_changes
+
+- name: "Prepare config ( add results )"
+  c2platform.forgerock.ds_config_component:
+    component: "{{ component }}"
+    config: "{{ ds_config[component] }}"
+    get: "{{ ds_component_get }}"
+    config_current: "{{ ds_config_current.results|list }}"
+    config_changes: "{{ ds_config_changes.results|list }}"
+  register: ds_config_changes
+
+- name: Log config
+  copy: # debug
+    content: "{{ ds_config_changes['config']|to_nice_yaml }}"
+    dest: "{{ ds_home_version }}/logs/dsconfig-{{ component }}.yml"

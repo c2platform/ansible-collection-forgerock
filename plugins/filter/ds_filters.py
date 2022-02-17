@@ -16,7 +16,7 @@ def ds_cmd(cmd_config):
     for key in cmd_config:
         if cmd_config[key] is None:
             cmd_config[key] = ''
-        if key == 'when':
+        if key in ['when','get']:
             continue
         if isinstance(cmd_config[key], list):
             for v in cmd_config[key]:
