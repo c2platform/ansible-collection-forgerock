@@ -36,7 +36,7 @@
         src: "{{ am_keypass }}"
       register: key_password
 
-    - name: Create AM p12
+    - name: Create AM p12  # noqa no-changed-when
       shell:
         cmd: >
           openssl pkcs12 -export
@@ -70,7 +70,7 @@
         state: present
       notify: "{{ am_certificate[item]['notify']|default(omit) }}"
 
-    - name: Change key password
+    - name: Change key password  # noqa no-changed-when
       shell:
         cmd: >
           {{ am_certificate[item]['keytool'] }} -keypasswd

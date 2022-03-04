@@ -27,7 +27,7 @@
       loop_control:
         loop_var: sed_expression
 
-    - name: Import LDIF file
+    - name: Import LDIF file  # noqa no-changed-when
       shell: >
           ./import-ldif --ldifFile {{ ds_home_version }}/import-tmp/{{ item['name'] }}.ldif
           {{ item['properties']|c2platform.forgerock.ds_cmd }}
