@@ -1,5 +1,5 @@
 ---
-- name: Create config routes # note: ig_home is created by IG
+- name: Create config routes  # note: ig_home is created by IG
   file:
     path: "{{ item }}"
     state: directory
@@ -16,7 +16,7 @@
 - name: Get configs in place
   copy:
     content: "{{ ig_config[item]|to_nice_json(ensure_ascii=False,indent=2) }}"
-    dest:  "{{ ig_home }}/config/{{ item }}"
+    dest: "{{ ig_home }}/config/{{ item }}"
     owner: "{{ ig_owner  }}"
     group: "{{ ig_group }}"
     mode: 0640
@@ -25,14 +25,14 @@
 
 - name: Disable configs
   file:
-    dest:  "{{ ig_home }}/config/{{ item }}"
+    dest: "{{ ig_home }}/config/{{ item }}"
     state: absent
   with_items: "{{ ig_config_disabled }}"
 
 - name: Get raw configs in place
   copy:
     content: "{{ ig_config_raw[item]['content'] }}"
-    dest:  "{{ ig_config_raw[item]['dest'] }}"
+    dest: "{{ ig_config_raw[item]['dest'] }}"
     owner: "{{ ig_config_raw[item]['owner']|default(ig_owner) }}"
     group: "{{ ig_config_raw[item]['group']|default(ig_group) }}"
     mode: "{{ ig_config_raw[item]['mode']|default('0640') }}"
@@ -41,7 +41,7 @@
 - name: Configure routes
   copy:
     content: "{{ ig_routes[item]|to_nice_json(ensure_ascii=False,indent=2) }}"
-    dest:  "{{ ig_home }}/config/routes/{{ item }}"
+    dest: "{{ ig_home }}/config/routes/{{ item }}"
     owner: "{{ ig_owner  }}"
     group: "{{ ig_group }}"
     mode: 0755

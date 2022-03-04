@@ -5,10 +5,11 @@
     dest: "{{ 'ds_passwords'|c2platform.forgerock.ds_config_fingerprint_component_path(ds_home,ds_version) }}"
     group: "{{ ds_owner }}"
     owner: "{{ ds_group }}"
+    mode: 0664
   register: passwords_fingerprint
 
-- name: "Modify password"
-  shell:  "./ldappasswordmodify  {{ ds_connect_ssl|combine(ds_passwords[item])|c2platform.forgerock.ds_cmd }}"
+- name: "Modify password"  # noqa command-instead-of-shell no-handler
+  shell: "./ldappasswordmodify  {{ ds_connect_ssl|combine(ds_passwords[item])|c2platform.forgerock.ds_cmd }}"
   environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}/bin"

@@ -6,6 +6,7 @@
         dest: "{{ component|c2platform.forgerock.ds_config_fingerprint_component_path(ds_home,ds_version) }}"
         group: "{{ ds_owner }}"
         owner: "{{ ds_group }}"
+        mode: 0664
       when: use_fingerprint
       register: component_fingerprint
 
@@ -23,7 +24,7 @@
       changed_when: False
   when: not skip_state_check|default(False)
 
-- name: "Set component {{ component }}"
+- name: "Set component {{ component }}"  # noqa ignore-errors
   shell: >
     ./dsconfig {{ component|c2platform.forgerock.ds_config_method }}
     {{ ds_connect|c2platform.forgerock.ds_cmd }}

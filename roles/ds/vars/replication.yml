@@ -13,13 +13,13 @@ _ds_replication:
   configure:
     host1: "{{ ds_replication['host1']['hostname']|default(ds_connect['hostname']) }}"
     port1: "{{ ds_replication['host1']['port']|default(ds_connect['port']) }}"
-    bindDn1:  "{{ ds_replication['host1']['bindDN']|default(ds_connect['bindDN']) }}"
+    bindDn1: "{{ ds_replication['host1']['bindDN']|default(ds_connect['bindDN']) }}"
     bindPassword1: "{{ ds_replication['host1']['bindPassword']|default(ds_rootpw) }}"
     replicationPort1: "{{ ds_replication['host1']['replication_port']|default(ds_replication_port) }}"
     secureReplication1: ""
     host2: "{{ ds_replication['host2']['hostname'] }}"
     port2: "{{ ds_replication['host2']['port']|default(ds_connect['port']) }}"
-    bindDn2:  "{{ ds_replication['host2']['bindDN']|default(ds_connect['bindDN']) }}"
+    bindDn2: "{{ ds_replication['host2']['bindDN']|default(ds_connect['bindDN']) }}"
     bindPassword2: "{{ ds_replication['host2']['bindPassword']|default(ds_rootpw) }}"
     secureReplication2: ""
     replicationPort2: "{{ ds_replication['host2']['replication_port']|default(ds_replication_port) }}"
@@ -31,4 +31,3 @@ _ds_replication:
 
 _ds_replication_connect_admin: >
   {{ _ds_replication['replconnect']|combine(_ds_replication['connect_admin']) }}
-

@@ -7,12 +7,12 @@
   register: am_up_result
   until: am_up_result.status == 200
   retries: 10
-  delay: 10 # seconds
+  delay: 10  # seconds
 
 - name: Stat cfgDir
   stat:
     path: "{{ amster_am_install['cfgDir'] }}"
-  register: cfgDir
+  register: cfg_dir
 
 - name: Config directory parent
   file:
@@ -29,7 +29,7 @@
   register: installam_amster
   args:
     chdir: "{{ am_amster_scripts_dir }}"
-  when: not cfgDir.stat.exists
+  when: not cfg_dir.stat.exists
 
 # See https://bugster.forgerock.org/jira/browse/OPENAM-11134, the 'from' clause
 # in Authorized keys fails for our setup

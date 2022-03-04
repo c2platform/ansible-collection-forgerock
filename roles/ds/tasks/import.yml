@@ -17,7 +17,7 @@
         name: ds-config
         state: stopped
 
-    - name: Process LDIF using sed
+    - name: Process LDIF using sed  # noqa command-instead-of-module
       shell:
         cmd: >
           sed -i '{{ sed_expression }}'

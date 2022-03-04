@@ -3,7 +3,7 @@
   include_vars: "replication.yml"
 
 - name: Check replicas alive
-  shell:  './ldapsearch {{ item|c2platform.forgerock.ds_cmd }} --baseDn "" --searchScope base "(&)" alive'
+  shell: './ldapsearch {{ item|c2platform.forgerock.ds_cmd }} --baseDn "" --searchScope base "(&)" alive'
   environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
@@ -18,73 +18,73 @@
 - name: Message if not alive
   debug:
     msg: "Alive check failed. Skipping replication setup"
-  #when: 'not item is search("alive: true")'
+  # when: 'not item is search("alive: true")'
   when: 'not (alive_check.results[0] is search("alive: true") and alive_check.results[1] is search("alive: true"))'
 
 - block:
-  - name:  Check replication Status
-    shell:  "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }}"
-    environment: "{{ ds_environment }}"
-    args:
-      chdir: "{{ ds_home_version }}/bin"
-    register: replication_status
-    ignore_errors: yes
-    changed_when: False
-    no_log: "{{ ds_no_log }}"
+    - name: Check replication Status  # noqa command-instead-of-shell
+      shell: "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }}"
+      environment: "{{ ds_environment }}"
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      register: replication_status
+      ignore_errors: yes
+      changed_when: False
+      no_log: "{{ ds_no_log }}"
 
-  - name:  Check replication log
-    stat:
-      path:  "{{ ds_home_version }}/logs/replication"
-    register: replication_log
+    - name: Check replication log
+      stat:
+        path: "{{ ds_home_version }}/logs/replication"
+      register: replication_log
 
-  - name: Fail if size of log is >0 and Invalid Credentials, as this means it is a real error
-    fail:
-      msg: "DSR gives Invalid Credentials but replication log indicates it's not a fresh install"
-    when:
-      - replication_status.stderr is search("Invalid Credentials")
-      - replication_log.stat.size > 0
-  # Invalid credentials message and empty replication log indicates a fresh install
-  # If there is a non-empty replication log something is wrong.
+    - name: Fail if size of log is >0 and Invalid Credentials, as this means it is a real error
+      fail:
+        msg: "DSR gives Invalid Credentials but replication log indicates it's not a fresh install"
+      when:
+        - replication_status.stderr is search("Invalid Credentials")
+        - replication_log.stat.size > 0
+    # Invalid credentials message and empty replication log indicates a fresh install
+    # If there is a non-empty replication log something is wrong.
 
-  - name:  Configure replication for fresh install # for all DNs, creates also global replication admin
-    shell:  "./dsreplication configure {{ _ds_replication['configure']|c2platform.forgerock.ds_cmd }}"
-    environment: "{{ ds_environment }}"
-    args:
-      chdir: "{{ ds_home_version }}/bin"
-    when: replication_status.stderr is search("Invalid Credentials")
+    # for all DNs, creates also global replication admin
+    - name: Configure replication for fresh install  # noqa command-instead-of-shell
+      shell: "./dsreplication configure {{ _ds_replication['configure']|c2platform.forgerock.ds_cmd }}"
+      environment: "{{ ds_environment }}"
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      when: replication_status.stderr is search("Invalid Credentials")
 
-  - name:  Initialize replication for fresh install
-    shell:  "./dsreplication initialize-all {{ _ds_replication['connect_global']|combine({'baseDn':ds_replication['baseDNs']})|c2platform.forgerock.ds_cmd }}"
-    environment: "{{ ds_environment }}"
-    args:
-      chdir: "{{ ds_home_version }}/bin"
-    when:  replication_status is search("Invalid Credentials")
+    - name: Initialize replication for fresh install  # noqa command-instead-of-shell
+      shell: "./dsreplication initialize-all {{ _ds_replication['connect_global']|combine({'baseDn':ds_replication['baseDNs']})|c2platform.forgerock.ds_cmd }}"
+      environment: "{{ ds_environment }}"
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      when: replication_status is search("Invalid Credentials")
+      # In the fresh install scenario the next tasks would be skipped
+      # These tasks are executed when a replication DN is added to ds_replication['baseDNs']
 
-  # In the fresh install scenario the next tasks would be skipped
-  # These tasks are executed when a replication DN is added to ds_replication['baseDNs']
+    - name: Check replication status for existing install  # solely the 'true' lines
+      shell: "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
+      environment: "{{ ds_environment }}"
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      register: replication_status_existing
+      changed_when: False
+      no_log: "{{ ds_no_log }}"
 
-  - name:  Check replication status for existing install # solely the 'true' lines
-    shell:  "./dsreplication status {{ _ds_replication['connect_global']|c2platform.forgerock.ds_cmd }} | grep ' : true                :'"
-    environment: "{{ ds_environment }}"
-    args:
-      chdir: "{{ ds_home_version }}/bin"
-    register: replication_status_existing
-    changed_when: False
-    no_log: "{{ ds_no_log }}"
+    - name: Configure replication for existing install for new DNs  # noqa command-instead-of-shell
+      shell: "./dsreplication configure {{ _ds_replication['configure']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
+      environment: "{{ ds_environment }}"
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      with_items: "{{ ds_replication['baseDNs'] }}"
+      when: not replication_status_existing is search(item)
 
-  - name:  Configure replication for existing install for new DNs
-    shell:  "./dsreplication configure {{ _ds_replication['configure']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
-    environment: "{{ ds_environment }}"
-    args:
-      chdir: "{{ ds_home_version }}/bin"
-    with_items: "{{ ds_replication['baseDNs'] }}"
-    when: not replication_status_existing is search(item)
-
-  - name:  Initialize replication, existing install
-    shell:  "./dsreplication initialize-all {{  _ds_replication['connect_global']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
-    environment: "{{ ds_environment }}"
-    args:
-      chdir: "{{ ds_home_version }}/bin"
-    with_items: "{{ ds_replication['baseDNs'] }}"
-    when: not replication_status_existing is search(item)
+    - name: Initialize replication, existing install  # noqa command-instead-of-shell
+      shell: "./dsreplication initialize-all {{  _ds_replication['connect_global']|combine({'baseDn':item})|c2platform.forgerock.ds_cmd }}"
+      environment: "{{ ds_environment }}"
+      args:
+        chdir: "{{ ds_home_version }}/bin"
+      with_items: "{{ ds_replication['baseDNs'] }}"
+      when: not replication_status_existing is search(item)
   when: 'alive_check.results[0] is search("alive: true") and alive_check.results[1] is search("alive: true")'

@@ -1,5 +1,5 @@
 ---
-- name: systemctl-daemon-reload #noqa 303
+- name: systemctl-daemon-reload  # noqa 303
   command: systemctl daemon-reload
 
 - name: restart ds

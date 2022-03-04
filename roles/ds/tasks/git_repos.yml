@@ -1,58 +1,59 @@
 ---
-- set_fact:
+- name: Fact ds_git_config
+  set_fact:
     ds_git_config:
-      dir:  "{{ ds_git_config_parent_dir }}/ds-git-config-{{ inventory_hostname }}-{{ ds_git_config['repo']|hash('sha1') }}"
+      dir: "{{ ds_git_config_parent_dir }}/ds-git-config-{{ inventory_hostname }}-{{ ds_git_config['repo']|hash('sha1') }}"
 
-- set_fact:
+- name: Fact ds_git_clone_delegate
+  set_fact:
     ds_git_clone_delegate: localhost
   when: ds_git_config_control_node
 
 # Two "identifical" blocks because delegate_to cannot be used with default(omit)
 - block:
-  - name: Git checkout ( delegated )
-    ansible.builtin.git:
-      repo: "{{ ds_git_config['repo'] }}"
-      dest: "{{ ds_git_config['dir'] }}"
-      version: "{{ ds_git_config['version']|default(omit) }}"
-    delegate_to: "{{ ds_git_clone_delegate }}"
-    when: not ds_git_config_script is defined
+    - name: Git checkout ( delegated )
+      ansible.builtin.git:
+        repo: "{{ ds_git_config['repo'] }}"
+        dest: "{{ ds_git_config['dir'] }}"
+        version: "{{ ds_git_config['version']|default(omit) }}"
+      delegate_to: "{{ ds_git_clone_delegate }}"
+      when: not ds_git_config_script is defined
 
-  # Ansible Git module does not support config
-  - name: Git checkout ( delegated and custom )
-    shell: "{{ ds_git_config_script }}"
-    delegate_to: "{{ ds_git_clone_delegate }}"
-    when: ds_git_config_script is defined
-    register: _git_checkout_delegated_custom
-    changed_when: not 'Already up to date' in _git_checkout_delegated_custom.stdout
+    # Ansible Git module does not support config
+    - name: Git checkout ( delegated and custom )  # noqa command-instead-of-shell
+      shell: "{{ ds_git_config_script }}"
+      delegate_to: "{{ ds_git_clone_delegate }}"
+      when: ds_git_config_script is defined
+      register: _git_checkout_delegated_custom
+      changed_when: not 'Already up to date' in _git_checkout_delegated_custom.stdout
   when: ds_git_config_control_node
 
 - block:
-  - name: Git checkout
-    ansible.builtin.git:
-      repo: "{{ ds_git_config['repo'] }}"
-      dest: "{{ ds_git_config['dir'] }}"
-      version: "{{ ds_git_config['version']|default(omit) }}"
-    when: not ds_git_config_script is defined
+    - name: Git checkout
+      ansible.builtin.git:
+        repo: "{{ ds_git_config['repo'] }}"
+        dest: "{{ ds_git_config['dir'] }}"
+        version: "{{ ds_git_config['version']|default(omit) }}"
+      when: not ds_git_config_script is defined
 
-  - name: Git checkout ( custom )
-    shell: "{{ ds_git_config_script }}"
-    when: ds_git_config_script is defined
-    register: _git_checkout_custom
-    changed_when: not 'Already up to date' in _git_checkout_custom.stdout
+    - name: Git checkout ( custom )  # noqa command-instead-of-shell
+      shell: "{{ ds_git_config_script }}"
+      when: ds_git_config_script is defined
+      register: _git_checkout_custom
+      changed_when: not 'Already up to date' in _git_checkout_custom.stdout
   when: not ds_git_config_control_node
 
-- name: Git files # TODO does not remove files!? # REMOTE directory iedere keer verwijderen.
+- name: Git files  # noqa ignore-errors
   ansible.builtin.copy:
     src: "{{ ds_git_config['dir'] }}/{{ item['source'] }}"
     dest: "{{ item['dest'] }}"
     owner: "{{ ds_owner }}"
     group: "{{ ds_group }}"
     remote_src: "{{ not ds_git_config_control_node }}"
+    mode: 0664
   with_items: "{{ ds_git_files }}"
   loop_control:
     label: "{{ ds_git_config['dir'] }}/{{ item['source'] }} → {{ item['dest'] }}"
   when: ds_git_files is defined
   notify: "{{ item['notify']|default(omit) }}"
   ignore_errors: "{{ item['ignore_errors']|default(False) }}"
-
-# TODO alleen changed when when het verandert

@@ -41,7 +41,7 @@
         name: c2platform.core.files
         tasks_from: main
       vars:
-        role_name: ds # role_name
+        role_name: ds  # role_name
         common_files: "{{ ds_files|default({}) }}"
         common_directories: "{{ ds_directories|default({}) }}"
         common_acl: "{{ ds_acl|default({}) }}"
@@ -80,5 +80,5 @@
         loop_var: component
   when: ds_setup_config is defined
 
-#- include: certificate.yml
-#  when: ds_certificate is defined
+# - include: certificate.yml
+#   when: ds_certificate is defined
