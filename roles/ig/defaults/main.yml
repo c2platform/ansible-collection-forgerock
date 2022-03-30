@@ -1,5 +1,5 @@
 ---
-ig_home: /home/tomcat/.openig # created with IG deploy
+ig_home: /home/tomcat/.openig  # created with IG deploy
 ig_owner: tomcat
 ig_group: tomcat
 ig_config_disabled: []

@@ -8,7 +8,7 @@ am_amster_exe: "{{ am_amster_home_version }}/amster"
 
 am_amster_ds_hostname: "{{ ansible_fqdn }}"
 am_amster_ds_rootpw: supersecret
-am_amster_amadmin_pw: supersecure # password that Amster sets amAdmin
+am_amster_amadmin_pw: supersecure  # password that Amster sets amAdmin
 
 am_java_home: "{{ java_versions[java_version]['java_home'] }}"
 
@@ -18,7 +18,7 @@ am_configure_manual: no
 am_no_log: no
 am_debug: no
 
-am_version: 6.5.3 # TODO not used
+am_version: 6.5.3  # TODO not used
 am_context: am
 
 am_shared_secrets: /root/.am-shared-secrets
@@ -85,75 +85,75 @@ am_amster_templates:
   104-create-J2EE_Agent:
     vars: ['agentName', 'agentPassword', 'igFQDN', 'igPORT', 'igPROTO', 'amFQDN', 'amURI', 'amPROTO', 'amPORT', 'realmName', 'realmFQDN', 'amCookieName']
     vars-optional:
-    - name: policyClientResourceComparators
-      value: serviceType=iPlanetAMWebAgentService|class=com.sun.identity.policy.plugins.HttpURLResourceName|wildcard=*|delimiter=/|caseSensitive=false
-    - name: policyEvaluationApplication
-      value: iPlanetAMWebAgentService
-    - name: policyClientCacheMode
-      value: self
-    - name: amLoginUrl
-      value: ""
+      - name: policyClientResourceComparators
+        value: serviceType=iPlanetAMWebAgentService|class=com.sun.identity.policy.plugins.HttpURLResourceName|wildcard=*|delimiter=/|caseSensitive=false
+      - name: policyEvaluationApplication
+        value: iPlanetAMWebAgentService
+      - name: policyClientCacheMode
+        value: self
+      - name: amLoginUrl
+        value: ""
   105-create-policy-set:
-    vars: ['policySetName','realmName']
+    vars: ['policySetName', 'realmName']
   106-create-policy:
-    vars: ['policySetName', 'policyName','realmName']
+    vars: ['policySetName', 'policyName', 'realmName']
   107-update-identity-store:
     vars: ['realmName', 'usersBackend', 'authPwd']
     vars-optional:
-    - name: userSearchAttribute
-      value: uid
-    - name: userObjectclass
-      value: ["organizationalPerson","top","person","inetorgperson"]
-      string: no
-    - name: userAttributes
-      value: ["uid","givenName","objectClass","dn","cn","sn","mail","telephoneNumber","businessCategory","facsimileTelephoneNumber","description"]
-      string: no
-    - name: authNamingAttr
-      value: uid
-    - name: peopleContainerName
-      value: cn
-    - name: peopleContainerValue
-      value:
-    - name: authKbaAttr
-      value: []
-      string: no
-    - name: authKbaIndexAttr
-      value:
-    - name: authKbaAttemptsAttr
-      value: []
-      string: no
-    - name: groupContainerName
-      value:
-    - name: groupContainerValue
-      value:
-    - name: memberof
-      value: isMemberOf
+      - name: userSearchAttribute
+        value: uid
+      - name: userObjectclass
+        value: ["organizationalPerson", "top", "person", "inetorgperson"]
+        string: no
+      - name: userAttributes
+        value: ["uid", "givenName", "objectClass", "dn", "cn", "sn", "mail", "telephoneNumber", "businessCategory", "facsimileTelephoneNumber", "description"]
+        string: no
+      - name: authNamingAttr
+        value: uid
+      - name: peopleContainerName
+        value: cn
+      - name: peopleContainerValue
+        value:
+      - name: authKbaAttr
+        value: []
+        string: no
+      - name: authKbaIndexAttr
+        value:
+      - name: authKbaAttemptsAttr
+        value: []
+        string: no
+      - name: groupContainerName
+        value:
+      - name: groupContainerValue
+        value:
+      - name: memberof
+        value: isMemberOf
   108-set-sessionproperties:
     vars: ['realmName', 'sharedSecret', 'loginSuccessUrl']
     vars-optional:
-    - name: keyAlias
-      value: test
-    - name: loginFailureUrl
-      value: ""
+      - name: keyAlias
+        value: test
+      - name: loginFailureUrl
+        value: ""
   109-configure-ValidationService:
     vars: ['realmName']
     vars-optional:
-    - name: validGotoDestinations
-      value: []
-      string: no
+      - name: validGotoDestinations
+        value: []
+        string: no
   110-create-authentication-LdapTree:
-    vars: ['realmName','defaultTreeName','defaultAuthenticationService', 'primaryLDAPServer','bindUserPassword', 'dnToStartUserSearch']
+    vars: ['realmName', 'defaultTreeName', 'defaultAuthenticationService', 'primaryLDAPServer', 'bindUserPassword', 'dnToStartUserSearch']
     vars-optional:
-    - name: startDN
-      value: cn=Directory Manager
-    - name: bindUserDN
-      value: cn=Directory Manager
-    - name: attributeUsedtoRetrieveUserProfile
-      value: uid
-    - name: attributeUsedtoSearchForAUserToBeAuthenticated
-      value: uid
-    - name: secondaryLDAPServer
-      value:
+      - name: startDN
+        value: cn=Directory Manager
+      - name: bindUserDN
+        value: cn=Directory Manager
+      - name: attributeUsedtoRetrieveUserProfile
+        value: uid
+      - name: attributeUsedtoSearchForAUserToBeAuthenticated
+        value: uid
+      - name: secondaryLDAPServer
+        value:
     scripts:
       - 110-function-delete-authentication-tree
       - 110-function-create-authentication-tree
@@ -161,47 +161,47 @@ am_amster_templates:
       # Set tree as default service
       # TODO uncomment when password reset works
   112-configure-top-level-realm:
-    vars: ['newChainName','realm']
+    vars: ['newChainName', 'realm']
     vars-optional:
-    - name: moduleType
-      value: LDAP
-    - name: chainCriteria
-      value: REQUIRED
+      - name: moduleType
+        value: LDAP
+      - name: chainCriteria
+        value: REQUIRED
   113-disable-module-and-zeropage-authentication:
   114-set-session-limits:
     vars: ['realmName']
     vars-optional:
-    - name: maxSessionTime
-      value: 540
-      string: no
-    - name: maxIdleTime
-      value: 45
-      string: no
-    - name: quotaLimit
-      value: 1
-      string: no
-    - name: maxCachingTime
-      value: 3
-      string: no
+      - name: maxSessionTime
+        value: 540
+        string: no
+      - name: maxIdleTime
+        value: 45
+        string: no
+      - name: quotaLimit
+        value: 1
+        string: no
+      - name: maxCachingTime
+        value: 3
+        string: no
   118-update-ldap-module:
     vars: ['realmName', 'primaryLdapServer', 'userSearchStartDN']
     vars-optional:
-    - name: userBindDN
-      value: cn=Directory Manager
-    - name: moduleName
-      value: LDAP
-    - name: connectionMode
-      value: LDAPS
+      - name: userBindDN
+        value: cn=Directory Manager
+      - name: moduleName
+        value: LDAP
+      - name: connectionMode
+        value: LDAPS
     body:
       primaryLdapServer:
-      - "$primaryLdapServer"
+        - "$primaryLdapServer"
       secondaryLdapServer: []
       userSearchStartDN:
-      - "$userSearchStartDN"
+        - "$userSearchStartDN"
       userBindDN: $userBindDN
       userProfileRetrievalAttribute: uid
       userSearchAttributes:
-      - uid
+        - uid
       searchScope: SUBTREE
       openam-auth-ldap-connection-mode: $connectionMode
       returnUserDN: false
@@ -215,30 +215,30 @@ am_amster_templates:
       authenticationLevel: 0
   115-set-global-session-quotas:
     vars-optional:
-    - name: maxSessionListSize
-      value: 25000
-      string: no
-    - name: maxSessionTime
-      value: 540
-      string: no
-    - name: maxIdleTime
-      value: 45
-      string: no
-    - name: quotaLimit
-      value: 10 # limit of 10 as default, so multiple amadmin sessions are possible
-      string: no
-    - name: maxCachingTime
-      value: 3
-      string: no
-    - name: iplanetSessionConstraint
-      value: 'ON'
-    - name: denyLoginWhenRepoDown
-      value: 'YES'
-    - name: quotaConstraintMaxWaitTime
-      value: 6000
-      string: no
-    - name: behaviourWhenQuotaExhausted
-      value: org.forgerock.openam.session.service.DestroyAllAction
+      - name: maxSessionListSize
+        value: 25000
+        string: no
+      - name: maxSessionTime
+        value: 540
+        string: no
+      - name: maxIdleTime
+        value: 45
+        string: no
+      - name: quotaLimit
+        value: 10  # limit of 10 as default, so multiple amadmin sessions are possible
+        string: no
+      - name: maxCachingTime
+        value: 3
+        string: no
+      - name: iplanetSessionConstraint
+        value: 'ON'
+      - name: denyLoginWhenRepoDown
+        value: 'YES'
+      - name: quotaConstraintMaxWaitTime
+        value: 6000
+        string: no
+      - name: behaviourWhenQuotaExhausted
+        value: org.forgerock.openam.session.service.DestroyAllAction
   116-configure-signing-secret:
     vars: ['sharedSecret']
   117-configure-amlbcookie:
@@ -246,27 +246,27 @@ am_amster_templates:
     vars: ['realmName']
   209-function_load_all_saml:
     vars: ['realmName', 'cotName', 'fileCot', 'dirSaml']
-    vars-optional: # TODO remove
-    - name: amsterVersion
-      value: "{{ am_version }}"
+    vars-optional:  # TODO remove
+      - name: amsterVersion
+        value: "{{ am_version }}"
   210-function-load-authentication-settings:
     vars: ['realmName']
     vars-optional:
-    - name: ignoreProfile
-      value: ignore
+      - name: ignoreProfile
+        value: ignore
   500-debug-logging:
     vars: ['debuglevel']
   900-settings-with-restart:
     vars: ['cookieName', 'cookieDomains']
     vars-optional:
-    - name: locale
-      value: nl_NL
+      - name: locale
+        value: nl_NL
     scripts:
-    - 300-set-default-advanced-props
-    - 401-set-global-locale
-    - 400-set-global-security-settings
-    - 402-update-cookie-domains
-    notify: restart tomcat instance # TODO
+      - 300-set-default-advanced-props
+      - 401-set-global-locale
+      - 400-set-global-security-settings
+      - 402-update-cookie-domains
+    notify: restart tomcat instance  # TODO
 
 # Obsolete / not used:
 #  - 112-configure-top-level-realm

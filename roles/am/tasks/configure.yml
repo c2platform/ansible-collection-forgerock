@@ -45,7 +45,7 @@
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     mode: 0600
-  with_items: "{{ am_configure}}"
+  with_items: "{{ am_configure }}"
   loop_control:
     label: "{{ item['script'] }}"
   no_log: "{{ am_no_log }}"
@@ -59,9 +59,11 @@
     scripts: "{{ _amster_scripts }}"
     force: "{{ am_amster_force }}"
 
-- copy:
+- name: am_configure.yml
+  copy:
     content: "{{ {'am_configure': am_configure }|to_nice_yaml }}"
     dest: "{{ am_amster_scripts_dir }}/am_configure.yml"
+    mode: 0664
   changed_when: false
 
 - name: Execute Amster script

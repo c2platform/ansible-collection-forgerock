@@ -77,5 +77,5 @@
         loop_var: component
   when: ds_setup_config is defined
 
-#- include: certificate.yml
-#  when: ds_certificate is defined
+# - include: certificate.yml
+#   when: ds_certificate is defined

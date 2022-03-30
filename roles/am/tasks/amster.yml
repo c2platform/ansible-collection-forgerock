@@ -21,27 +21,27 @@
   register: amster_script
 
 - block:
-  - name: Download zip file
-    get_url:
-      url: "{{ am_amster_versions[am_amster_version]['url'] }}"
-      dest: "/tmp/{{ am_amster_versions[am_amster_version]['url']|basename }}"
-      checksum: "{{ am_amster_versions[am_amster_version]['checksum'] }}"
-      timeout: 600
-      mode: 1373
-    register: get_url_result
-    until: get_url_result is succeeded
+    - name: Download zip file
+      get_url:
+        url: "{{ am_amster_versions[am_amster_version]['url'] }}"
+        dest: "/tmp/{{ am_amster_versions[am_amster_version]['url']|basename }}"
+        checksum: "{{ am_amster_versions[am_amster_version]['checksum'] }}"
+        timeout: 600
+        mode: 1373
+      register: get_url_result
+      until: get_url_result is succeeded
 
-  - name: Unzip the zipfile
-    unarchive:
-      dest:  "{{ am_amster_home_version }}"
-      owner: "{{ am_owner }}"
-      group: "{{ am_group }}"
-      remote_src: yes
-      src: "/tmp/{{ am_amster_versions[am_amster_version]['url']|basename }}"
+    - name: Unzip the zipfile
+      unarchive:
+        dest: "{{ am_amster_home_version }}"
+        owner: "{{ am_owner }}"
+        group: "{{ am_group }}"
+        remote_src: yes
+        src: "/tmp/{{ am_amster_versions[am_amster_version]['url']|basename }}"
   when: not amster_script.stat.exists
 
 - name: Create home link
   file:
-   src: "{{ am_amster_home_version }}"
-   dest: "{{ am_amster_home_link }}"
-   state: link
+    src: "{{ am_amster_home_version }}"
+    dest: "{{ am_amster_home_link }}"
+    state: link

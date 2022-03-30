@@ -1,5 +1,5 @@
 ---
-- name: Stat home folder # e.g. /opt/ds/ds-6.5.4
+- name: Stat home folder  # e.g. /opt/ds/ds-6.5.4
   stat:
     path: "{{ ds_home_version }}"
   register: home_folder
@@ -15,9 +15,9 @@
       register: get_url_result
       until: get_url_result is succeeded
 
-    - name:  Unzip
+    - name: Unzip
       unarchive:
-        src:  "/tmp/{{ ds_versions[ds_version]['url']|basename }}"
+        src: "/tmp/{{ ds_versions[ds_version]['url']|basename }}"
         dest: /tmp/
         remote_src: yes
 
@@ -63,7 +63,7 @@
 
     - name: Create home link
       file:
-       src: "{{ ds_home_version }}"
-       dest: "{{ ds_home_link }}"
-       state: link
+        src: "{{ ds_home_version }}"
+        dest: "{{ ds_home_link }}"
+        state: link
   when: not home_folder.stat.exists

@@ -26,7 +26,7 @@
         name: c2platform.core.rest
         tasks_from: main
       vars:
-        rest_ansible_role: am # role_name
+        rest_ansible_role: am  # role_name
       when: am_rest_resources is defined and am_rest_resources_enabled|default(True)
 
     - name: Files
