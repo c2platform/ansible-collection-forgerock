@@ -71,7 +71,7 @@ ig_config_raw:
 
 ### Notify handlers for restart etc
 
-Changes to `config.json` require restart of service for example Tomcat. For resources defined using `ig_config` you can configure restart using list `ig_notify`. For example to trigger a Tomcat restart for `config.json`
+Changes to `config.json` require restart of service for example Tomcat. For resources defined using `ig_config` you can configure restart using dict `ig_config_notify`. For example to trigger a Tomcat restart for `config.json`
 
 ```yaml
 ig_config_notify:
