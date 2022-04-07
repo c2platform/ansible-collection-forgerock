@@ -1,5 +1,5 @@
 ---
-- name: Create config routes  # note: ig_home is created by IG
+- name: Create config dirs  # note: ig_home is created by IG
   file:
     path: "{{ item }}"
     state: directory
@@ -21,6 +21,7 @@
     group: "{{ ig_group }}"
     mode: 0640
   with_items: "{{ ig_config }}"
+  notify: "{{ ig_config_notify[item]|default(omit) }}"
   when: not item in ig_config_disabled
 
 - name: Disable configs
@@ -37,6 +38,7 @@
     group: "{{ ig_config_raw[item]['group']|default(ig_group) }}"
     mode: "{{ ig_config_raw[item]['mode']|default('0640') }}"
   with_items: "{{ ig_config_raw }}"
+  notify: "{{ ig_config_raw[item]['notify']|default(omit) }}"
 
 - name: Configure routes
   copy:
