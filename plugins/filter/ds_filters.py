@@ -220,8 +220,11 @@ def dn_from_modify_item(itm):
     if 'dn' in itm:
         return itm['dn']
     else:
-        dn = itm['ldif'].split("\n")[0]
-        dn = dn.split(':')[1]
+        if 'ldif' in itm:
+            dn = itm['ldif'].split("\n")[0]
+            dn = dn.split(':')[1]
+        else:
+            dn = ''
         return dn.strip()
 
 
