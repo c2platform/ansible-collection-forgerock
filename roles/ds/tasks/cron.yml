@@ -1,5 +1,5 @@
 ---
-- name: Cron jobs ( ds_cron ) # creates file under /etc/cron.d
+- name: Cron jobs ( ds_cron )  # creates file under /etc/cron.d
   ansible.builtin.cron:
     name: "{{ ds_cron[item]['name']|default(item) }}"
     weekday: "{{ ds_cron[item]['weekday']|default(omit) }}"

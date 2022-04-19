@@ -220,8 +220,11 @@ def dn_from_modify_item(itm):
     if 'dn' in itm:
         return itm['dn']
     else:
-        dn = itm['ldif'].split("\n")[0]
-        dn = dn.split(':')[1]
+        if 'ldif' in itm:
+            dn = itm['ldif'].split("\n")[0]
+            dn = dn.split(':')[1]
+        else:
+            dn = ''
         return dn.strip()
 
 
@@ -273,7 +276,7 @@ def ds_modify_when(item, not_if_results, only_if_results):
             not_if = True
     if 'enabled' in item:
         if not item['enabled']:
-            not_if = False
+            not_if = True
     # pprint({'not_if': not_if, 'only_if': only_if})
     return (not not_if) and only_if
 

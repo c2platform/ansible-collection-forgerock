@@ -1,71 +1,73 @@
 ---
-- set_fact:
+- name: Fact am_git_config
+  set_fact:
     am_git_config:
-      dir:  "{{ am_git_config_parent_dir }}/am-git-config-{{ inventory_hostname }}-{{ am_git_config['repo']|hash('sha1') }}"
+      dir: "{{ am_git_config_parent_dir }}/am-git-config-{{ inventory_hostname }}-{{ am_git_config['repo']|hash('sha1') }}"
 
-- set_fact:
+- name: Fact am_git_config_clone_delegate
+  set_fact:
     am_git_config_clone_delegate: localhost
   when: am_git_config_control_node
 
 # Note: default(omit) does not work on delegate_to so
 # as a workaround we just have two "Git checkout" blocks
 - block:
-  - name: Git checkout ( delegated )
-    ansible.builtin.git:
-      repo: "{{ am_git_config['repo'] }}"
-      dest: "{{ am_git_config['dir'] }}"
-      version: "{{ am_git_config['version']|default(omit) }}"
-      force: yes
-    delegate_to: "{{ am_git_config_clone_delegate }}"
-    when: not am_git_config_script is defined
+    - name: Git checkout ( delegated )
+      ansible.builtin.git:
+        repo: "{{ am_git_config['repo'] }}"
+        dest: "{{ am_git_config['dir'] }}"
+        version: "{{ am_git_config['version']|default(omit) }}"
+        force: yes
+      delegate_to: "{{ am_git_config_clone_delegate }}"
+      when: not am_git_config_script is defined
 
-  # Ansible Git module does support config
-  - name: Git checkout ( delegated and custom )
-    shell: "{{ am_git_config_script }}"
-    delegate_to: "{{ am_git_config_clone_delegate }}"
-    when: am_git_config_script is defined
-    register: _git_checkout_delegated_custom
-    changed_when: not 'Already up to date' in _git_checkout_delegated_custom.stdout
+    # Ansible Git module does support config
+    - name: Git checkout ( delegated and custom )  # noqa command-instead-of-shell
+      shell: "{{ am_git_config_script }}"
+      delegate_to: "{{ am_git_config_clone_delegate }}"
+      when: am_git_config_script is defined
+      register: _git_checkout_delegated_custom
+      changed_when: not 'Already up to date' in _git_checkout_delegated_custom.stdout
 
-  - name: Git folders ( delegated )
-    synchronize:
-      src: "{{ am_git_config['dir'] }}/{{ item['source'] }}"
-      dest: "{{ item['dest'] }}"
-      recursive: "{{ item['recursive']|default(True) }}"
-      delete: "{{ item['delete']|default(True) }}"
-      rsync_opts: "{{ item['rsync_opts']|default(omit) }}"
-    with_items: "{{ am_git_folders }}"
-    when: am_git_folders is defined
-    notify: "{{ item['notify']|default(omit) }}"
-    ignore_errors: "{{ item['ignore_errors']|default(False) }}"
+    - name: Git folders ( delegated )  # noqa ignore-errors
+      synchronize:
+        src: "{{ am_git_config['dir'] }}/{{ item['source'] }}"
+        dest: "{{ item['dest'] }}"
+        recursive: "{{ item['recursive']|default(True) }}"
+        delete: "{{ item['delete']|default(True) }}"
+        rsync_opts: "{{ item['rsync_opts']|default(omit) }}"
+      with_items: "{{ am_git_folders }}"
+      when: am_git_folders is defined
+      notify: "{{ item['notify']|default(omit) }}"
+      ignore_errors: "{{ item['ignore_errors']|default(False) }}"
   when: am_git_config_control_node
 
 - block:
-  - name: Git checkout
-    ansible.builtin.git:
-      repo: "{{ am_git_config['repo'] }}"
-      dest: "{{ am_git_config['dir'] }}"
-      version: "{{ am_git_config['version']|default(omit) }}"
-      force: yes
-    when: not am_git_config_script is defined
+    - name: Git checkout
+      ansible.builtin.git:
+        repo: "{{ am_git_config['repo'] }}"
+        dest: "{{ am_git_config['dir'] }}"
+        version: "{{ am_git_config['version']|default(omit) }}"
+        force: yes
+      when: not am_git_config_script is defined
 
-  - name: Git checkout ( custom )
-    shell: "{{ am_git_config_script }}"
-    when: am_git_config_script is defined
-    register: _git_checkout_custom
-    changed_when: not 'Already up to date' in _git_checkout_custom.stdout
+    - name: Git checkout ( custom )  # noqa command-instead-of-shell
+      shell: "{{ am_git_config_script }}"
+      when: am_git_config_script is defined
+      register: _git_checkout_custom
+      changed_when: not 'Already up to date' in _git_checkout_custom.stdout
 
-  - name: Git folders
-    synchronize:
-      src: "{{ am_git_config['dir'] }}/{{ item['source'] }}"
-      dest: "{{ item['dest'] }}"
-      recursive: "{{ item['recursive']|default(True) }}"
-      delete: "{{ item['delete']|default(True) }}"
-      rsync_opts: "{{ item['rsync_opts']|default(omit) }}"
-    delegate_to: "{{ inventory_hostname }}"
-    with_items: "{{ am_git_folders }}"
-    when: am_git_folders is defined
-    notify: "{{ item['notify']|default(omit) }}"
+    - name: Git folders
+      synchronize:
+        src: "{{ am_git_config['dir'] }}/{{ item['source'] }}"
+        dest: "{{ item['dest'] }}"
+        recursive: "{{ item['recursive']|default(True) }}"
+        delete: "{{ item['delete']|default(True) }}"
+        rsync_opts: "{{ item['rsync_opts']|default(omit) }}"
+      delegate_to: "{{ inventory_hostname }}"
+      with_items: "{{ am_git_folders }}"
+      when: am_git_folders is defined
+      notify: "{{ item['notify']|default(omit) }}"
   when: not am_git_config_control_node
 
 - name: Git files
@@ -75,6 +77,7 @@
     owner: "{{ am_owner }}"
     group: "{{ am_group }}"
     remote_src: "{{ not am_git_config_control_node }}"
+    mode: 0664
   with_items: "{{ am_git_files }}"
   when: am_git_files is defined
   notify: "{{ item['notify']|default(omit) }}"

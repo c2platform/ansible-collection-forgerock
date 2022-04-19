@@ -14,14 +14,14 @@
   environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}"
-  when:  ds_setup
+  when: ds_setup
 
 - name: Stop DS
   command: "./stop-ds"
   environment: "{{ ds_environment }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
-  when:  ds_setup
+  when: ds_setup
 
 - name: Chown recursive
   file:
@@ -30,7 +30,7 @@
     group: "{{ ds_group }}"
     recurse: yes
 
-- name: Add pam limits # /etc/security/limits.conf
+- name: Add pam limits  # /etc/security/limits.conf
   pam_limits:
     domain: "{{ ds_owner }}"
     limit_type: "{{ item['limit_type'] }}"

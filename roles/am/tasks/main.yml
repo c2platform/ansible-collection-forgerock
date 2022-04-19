@@ -26,7 +26,7 @@
         name: c2platform.core.rest
         tasks_from: main
       vars:
-        rest_ansible_role: am # role_name
+        rest_ansible_role: am  # role_name
       when: am_rest_resources is defined and am_rest_resources_enabled|default(True)
 
     - name: Files
@@ -34,11 +34,7 @@
         name: c2platform.core.files
         tasks_from: main
       vars:
-        role_name: am # role_name
-        common_files: "{{ am_files|default([]) }}"
-        common_directories: "{{ am_directories|default([]) }}"
-        common_acl: "{{ am_acl|default([]) }}"
-        common_unarchive: "{{ am_unarchive|default([]) }}"
+        common_files_role_name: am
 
     - name: Certificate AM
       include: certificate.yml

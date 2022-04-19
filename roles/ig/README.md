@@ -8,6 +8,7 @@ This Ansible role is used to configure [ForgeRock Internet Gateway](https://www.
 - [Role Variables](#role-variables)
   - [Config](#config)
   - [Config raw](#config-raw)
+  - [Notify handlers for restart etc](#notify-handlers-for-restart-etc)
   - [Routes](#routes)
   - [Rewrite paths](#rewrite-paths)
   - [Alive check](#alive-check)
@@ -67,6 +68,29 @@ ig_config_raw:
 |owner    |no      |ig_owner|       |                             |
 |group    |no      |ig_owner|       |                             |
 |mode     |no      |640     |       |                             |
+
+### Notify handlers for restart etc
+
+Changes to `config.json` require restart of service for example Tomcat. For resources defined using `ig_config` you can configure restart using dict `ig_config_notify`. For example to trigger a Tomcat restart for `config.json`
+
+```yaml
+ig_config_notify:
+  config.json: restart tomcat instance
+```
+
+For resources defined using `ig_config_raw` you can use `notify` attribute for example:
+
+```yaml
+ig_config_raw:
+  logback.xml:
+    dest: "{{ ig_home }}/config/logback.xml"
+    content: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration>
+      ...
+      </configuration>
+    notify: restart tomcat instance
+```
 
 ### Routes
 
