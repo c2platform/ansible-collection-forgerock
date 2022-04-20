@@ -1,19 +1,34 @@
 ---
+- name: "Log ds_config prepared / 0 → {{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_0.yml"
+  copy: # debug
+    content: "{{ ds_config|to_nice_yaml }}"
+    dest: "{{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_0.yml"
+  when: ds_debug
+
 - name: "Prepare config {{ component }}"
   c2platform.forgerock.ds_config_component:
     component: "{{ component }}"
     config: "{{ ds_config[component] }}"
-    get: "{{ ds_component_get }}"
-  register: _dscc
+  register: ds_config_prepared
+
+- name: ds_config prepared
+  set_fact:
+    ds_config: "{{ ds_config|combine(ds_config_prepared['config']) }}"
+
+- name: "Log ds_config prepared / 1  → {{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_1.yml"
+  copy: # debug
+    content: "{{ ds_config|to_nice_yaml }}"
+    dest: "{{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_1.yml"
+  when: ds_debug
 
 - name: Get current config
   shell: >
-    ./dsconfig {{ item['get-cmd'] }}
+    ./dsconfig {{ item['get']['cmd'] }}
     {{ ds_connect|c2platform.forgerock.ds_cmd }}
   environment: "{{ ds_environment }}"
-  with_items: "{{ _dscc['config']|selectattr('get-cmd', 'defined')|list }}"
+  with_items: "{{ ds_config[component]|list }}"
   loop_control:
-    label: "{{ component }}-{{ item['step'] }} {{ item['method'] }}"
+    label: "{{ component_index }}-{{ component }}-{{ item['step'] }} {{ item['get']['method'] }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   register: ds_config_current
@@ -23,32 +38,50 @@
   c2platform.forgerock.ds_config_component:
     component: "{{ component }}"
     config: "{{ ds_config[component] }}"
-    get: "{{ ds_component_get }}"
     config_current: "{{ ds_config_current.results|list }}"
-  register: ds_config_prepared
+  register: ds_config_prepared_2
+
+- name: ds_config current
+  set_fact:
+    ds_config: "{{ ds_config|combine(ds_config_prepared_2['config']) }}"
+
+- name: "Log ds_config prepared / 2 → {{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_2.yml"
+  copy: # debug
+    content: "{{ ds_config|to_nice_yaml }}"
+    dest: "{{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_2.yml"
+  when: ds_debug
 
 - name: Change config
   shell: >
     {{ ds_home_version }}/bin/dsconfig {{ item['cmd'] }}
     {{ ds_connect|c2platform.forgerock.ds_cmd }}
   environment: "{{ ds_environment }}"
-  with_items: "{{ ds_config_prepared['config']|list }}"
+  with_items: "{{ ds_config[component]|list }}"
   loop_control:
-    label: "{{ component }}-{{ item['step'] }} {{ item['method'] }}"
-  when: ds_component_when[item['method']]['when']
-  changed_when: ds_component_when[item['method']]['changed_when']|default(omit)
+    label: "{{ component_index }}-{{ component }}-{{ item['step'] }} {{ item['method'] }} enabled: {{ item['enabled']|default(True) }}"
+  when: item['change']
+  # changed_when: ds_component_when[item['method']]['changed_when']|default(omit)
   register: ds_config_changes
 
 - name: "Prepare config ( add results )"
   c2platform.forgerock.ds_config_component:
     component: "{{ component }}"
     config: "{{ ds_config[component] }}"
-    get: "{{ ds_component_get }}"
     config_current: "{{ ds_config_current.results|list }}"
     config_changes: "{{ ds_config_changes.results|list }}"
   register: ds_config_changes
 
-- name: Log config
+- name: ds_config changes
+  set_fact:
+    ds_config: "{{ ds_config|combine(ds_config_changes['config']) }}"
+
+- name: "Log ds_config changed / 3 → {{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_3.yml"
   copy: # debug
-    content: "{{ ds_config_changes['config']|to_nice_yaml }}"
-    dest: "{{ ds_home_version }}/logs/dsconfig-{{ component }}.yml"
+    content: "{{ ds_config|to_nice_yaml }}"
+    dest: "{{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}_3.yml"
+  when: ds_debug
+
+- name: "Log ds_config → {{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}.yml"
+  copy:
+    content: "{{ ds_config|to_nice_yaml }}"
+    dest: "{{ ds_home_version }}/logs/ds_config_{{ component_index }}_{{ component }}.yml"

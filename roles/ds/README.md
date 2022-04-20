@@ -15,6 +15,8 @@ Note: on default - without additional configuration - this role will only instal
   - [ds_db_schema_ldifs](#ds_db_schema_ldifs)
   - [ds_config](#ds_config)
     - [LDAPS certificate alias](#ldaps-certificate-alias)
+    - [LDAPS](#ldaps)
+    - [Global configuration](#global-configuration)
   - [Backends](#backends)
   - [Attribute Uniqueness](#attribute-uniqueness)
   - [Global ACI](#global-aci)
@@ -40,7 +42,7 @@ Note: on default - without additional configuration - this role will only instal
   - [Upgrade](#upgrade)
   - [Backup / restore](#backup--restore)
   - [dsconfig add](#dsconfig-add)
-  - [Global configuration](#global-configuration)
+  - [Global configuration](#global-configuration-1)
   - [Password validators](#password-validators)
 
 <!-- /MarkdownTOC -->
@@ -113,7 +115,7 @@ alias dsconfig="/opt/ds/ds/bin/dsconfig --hostname localhost --port 10636 --bind
 
 #### LDAPS certificate alias
 
-Default certificate alias is `server-cert`. To change it to for example `config-server-cert` using property `ssl-cert-nickname`. This is a simple example of adding an property with value.
+Default LDAPS certificate alias is `server-cert`. To change it to for example `config-server-cert` using property `ssl-cert-nickname`. This is a simple example of adding an property with value. See for more information [ssl-cert-nickname](https://backstage.forgerock.com/docs/opendj/2.6/configref/ldap-connection-handler.html#ssl-cert-nickname).
 
 ```yaml
 ds_config:
@@ -189,7 +191,7 @@ Log file `ds_config_0_ldaps.yml` is below. Note how the dict `ds_config` has exp
 4. key `get` is a dict with with information created to get *current state* of DS with regards to this property.
 5. Key `stdout` contains output return by `dsconfig` when changing DS. In this case nothing was returned.
 6. Key `step` is just the index of the list item in the group. Which is used for processing results of `dsconfig` commands.
-7. Key `when`
+7. Key `when` shows info used to perform *current* vs *desired state* analysis. In this case regex is simple the property value `config-server-cert`. In this case the `match-result` is equal to `match` ( and `false` ) so *current state* is not the *desired state* and `dsconfig` should run.
 
 ```yaml
 ldaps:
@@ -217,25 +219,135 @@ ldaps:
         regex: config-server-cert
 ```
 
+If we want to now remove this value we could configure for example
 
-The above configuration will evaluate to `dsconfig` command:
-
-```bash
-dsconfig set-connection-handler-prop --handler-name LDAPS --add ssl-cert-nickname:config-server-cert
-````
-
-
-```bash
-dsconfig get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+```yaml
+ds_config:
+  ldaps:
+    - method: set-connection-handler-prop
+      handler-name: LDAPS
+      remove: ssl-cert-nickname:config-server-cert
 ```
 
-The dicts also contains a `when` key that is used to check the current value of the property.
+The dict `ds_config` will now be expanded to
+
+```yaml
+ldaps:
+-   change: true
+    cmd: set-connection-handler-prop --handler-name LDAPS --remove ssl-cert-nickname:config-server-cert
+    enabled: true
+    get:
+        cmd: get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+        handler-name: LDAPS
+        method: get-connection-handler-prop
+        property: ssl-cert-nickname
+        stdout: 'Property          : Value(s)
+
+            ------------------:--------------------------------
+
+            ssl-cert-nickname : config-server-cert, server-cert'
+    handler-name: LDAPS
+    method: set-connection-handler-prop
+    remove: ssl-cert-nickname:config-server-cert
+    stdout: ''
+    step: 0
+    when:
+        match: true
+        match-result: true
+        regex: config-server-cert
+```
+
+#### LDAPS
+
+In previous chapter we have seen example of `add` and `remove`. There is also `set` operation which we use to complete LDAPS configuration:
+
+```yaml
+ds_config:
+  ldaps:
+    - method: set-connection-handler-prop
+      handler-name: LDAPS
+      add: ssl-cert-nickname:config-server-cert
+    - method: set-connection-handler-prop
+      handler-name: LDAP
+      set: enabled:false
+    - method: set-connection-handler-prop
+      handler-name: LDAPS
+      set: allow-ldap-v2:true
+```
+
+This config is expanded to:
+
+```yaml
+ldaps:
+-   add: ssl-cert-nickname:config-server-cert
+    change: false
+    cmd: set-connection-handler-prop --handler-name LDAPS --add ssl-cert-nickname:config-server-cert
+    enabled: true
+    get:
+        cmd: get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+        handler-name: LDAPS
+        method: get-connection-handler-prop
+        property: ssl-cert-nickname
+        stdout: 'Property          : Value(s)
+
+            ------------------:--------------------------------
+
+            ssl-cert-nickname : config-server-cert, server-cert'
+    handler-name: LDAPS
+    method: set-connection-handler-prop
+    step: 0
+    when:
+        match: false
+        match-result: true
+        regex: config-server-cert
+-   change: false
+    cmd: set-connection-handler-prop --handler-name LDAP --set enabled:true
+    enabled: true
+    get:
+        cmd: get-connection-handler-prop --handler-name LDAP --property enabled
+        handler-name: LDAP
+        method: get-connection-handler-prop
+        property: enabled
+        stdout: 'Property : Value(s)
+
+            ---------:---------
+
+            enabled  : true'
+    handler-name: LDAP
+    method: set-connection-handler-prop
+    set: enabled:true
+    step: 1
+    when:
+        match: false
+        match-result: true
+        regex: enabled\s+:\s+true
+-   change: false
+    cmd: set-connection-handler-prop --handler-name LDAPS --set allow-ldap-v2:true
+    enabled: true
+    get:
+        cmd: get-connection-handler-prop --handler-name LDAPS --property allow-ldap-v2
+        handler-name: LDAPS
+        method: get-connection-handler-prop
+        property: allow-ldap-v2
+        stdout: 'Property      : Value(s)
+
+            --------------:---------
+
+            allow-ldap-v2 : true'
+    handler-name: LDAPS
+    method: set-connection-handler-prop
+    set: allow-ldap-v2:true
+    step: 2
+    when:
+        match: false
+        match-result: true
+        regex: allow-ldap-v2\s+:\s+true
+```
 
 
+#### Global configuration
 
-ssl-cert-nickname                  : server-cert
 
-See [ssl-cert-nickname](https://backstage.forgerock.com/docs/opendj/2.6/configref/ldap-connection-handler.html#ssl-cert-nickname)
 
 
 ### Backends

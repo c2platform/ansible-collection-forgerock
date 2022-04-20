@@ -1,8 +1,9 @@
 ---
 - include_tasks: config_component.yml
-  with_items: "{{ ds_config_components }}"
-  when: ds_config_components is defined and ds_config_enabled|default(True)
+  with_indexed_items: "{{ ds_config_components }}"
   vars:
-    use_fingerprint: "{{ component in ds_config_components_fingerprint }}"
+    component: "{{ indexed_component.1 }}"
+    component_index: "{{ indexed_component.0 }}"
   loop_control:
-    loop_var: component
+    loop_var: indexed_component
+  when: ds_config_components is defined and ds_config_enabled|default(True)
