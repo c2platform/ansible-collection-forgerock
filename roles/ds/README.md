@@ -11,8 +11,10 @@ Note: on default - without additional configuration - this role will only instal
 - [Requirements](#requirements)
   - [Java](#java)
 - [Role Variables](#role-variables)
-  - [Setup config](#setup-config)
-  - [DB schema LDIF](#db-schema-ldif)
+  - [ds_setup_config](#ds_setup_config)
+  - [ds_db_schema_ldifs](#ds_db_schema_ldifs)
+  - [ds_config](#ds_config)
+    - [LDAPS certificate alias](#ldaps-certificate-alias)
   - [Backends](#backends)
   - [Attribute Uniqueness](#attribute-uniqueness)
   - [Global ACI](#global-aci)
@@ -60,7 +62,7 @@ ds_java_home: "{{ java['version']|c2platform.core.java_home }}"
 
 <!--A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.-->
 
-### Setup config
+### ds_setup_config
 
 At a minimum you will require `ds_setup_config` for example as follows
 
@@ -81,7 +83,7 @@ ds_setup_config:
 ```
 
 
-### DB schema LDIF
+### ds_db_schema_ldifs
 
 Using `ds_db_schema_ldifs` ldifs files can be created in `db/schema`. For example configuration below will create file `/opt/ds/ds-6.5.4/db/schema/appPerson.ldif` to create a new __appPerson__ object class. These files are automatically used upon restart of DS, but depending on a toggle mentioned below.
 
@@ -100,6 +102,141 @@ ds_db_schema_ldifs:
 ```
 
 Note: processing of schema LDIF is default disabled with `ds_db_schema_ldifs_enable: no`. This var `ds_db_schema_ldifs_enable` was added to allow you to toggle configuration on / off.
+
+### ds_config
+
+Dict `ds_config` is used to configure DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/) command. The remainder of this section contains examples of the use of this dict starting with a simple example. In the remainder of this section whenever `dsconfig` is referenced we are using an alias defined as follows.
+
+```bash
+alias dsconfig="/opt/ds/ds/bin/dsconfig --hostname localhost --port 10636 --bindDN \"cn=Directory Manager\" --bindPasswordFile /root/.dspassword --trustAll --no-prompt"
+```
+
+#### LDAPS certificate alias
+
+Default certificate alias is `server-cert`. To change it to for example `config-server-cert` using property `ssl-cert-nickname`. This is a simple example of adding an property with value.
+
+```yaml
+ds_config:
+  ldaps:
+    - method: set-connection-handler-prop
+      handler-name: LDAPS
+      add: ssl-cert-nickname:config-server-cert
+ds_config_components:
+  - ldaps
+```
+
+Notes:
+
+1. `ldaps` is just group name, `ds_config` dict groups lists of config. You can use any group name or grouping you want. 
+2. Groups you want to enable need to be added to `ds_config_components`. This is just a simple lists of group names.
+
+Below is the Ansible logging for this configuration. It shows that the dict is processed using a number of Ansible tasks. The key tasks are: **Get current config** and **Change config**. The first task checks the current state of DS and the second task changes DS if necessary.
+
+Note also a number of "ds_config" tasks: **ds_config prepared**, **ds_config current** and **ds_config changes**. This role changes the dict `ds_config` which can you help you understand what Ansible / this role is doing. For your convience this changed dict is written to disk in task **Log ds_config → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps.yml**. Note: if you configure `ds_debug: true` the other log files will also be written to disk e.g. `ds_config_0_ldaps_0.yml`.
+
+```
+TASK [c2platform.forgerock.ds : include_tasks] *********************************
+included: /home/ostraaten/git/vips-gitlab/bkwi-dev/ansible_collections/c2platform/forgerock/roles/ds/tasks/config_component.yml for bkd-ds
+
+TASK [c2platform.forgerock.ds : Log ds_config prepared / 0 → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_0.yml] ***
+skipping: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : Prepare config ldaps] **************************
+ok: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : ds_config prepared] ****************************
+ok: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : Log ds_config prepared / 1  → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_1.yml] ***
+skipping: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : Get current config] ****************************
+ok: [bkd-ds] => (item=0-ldaps-0 set-connection-handler-prop enabled: True)
+
+TASK [c2platform.forgerock.ds : Prepare config ( add current )] ****************
+ok: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : ds_config current] *****************************
+ok: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : Log ds_config prepared / 2 → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_2.yml] ***
+skipping: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : Change config] *********************************
+changed: [bkd-ds] => (item=0-ldaps-0 set-connection-handler-prop enabled: True)
+
+TASK [c2platform.forgerock.ds : Prepare config ( add results )] ****************
+ok: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : ds_config changes] *****************************
+ok: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : Log ds_config changed / 3 → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_3.yml] ***
+skipping: [bkd-ds]
+
+TASK [c2platform.forgerock.ds : Log ds_config → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps.yml] ***
+ok: [bkd-ds]
+
+PLAY RECAP *********************************************************************
+bkd-ds                     : ok=79   changed=1    unreachable=0    failed=0    skipped=69   rescued=0    ignored=0   
+```
+
+Log file `ds_config_0_ldaps.yml` is below. Note how the dict `ds_config` has expanded. The list item now has 7 extra keys.
+
+1. Key `change` contains the resuls the *current* vs *desired state* analysis. It is true and so DS was changed, which we can see in logging show above in tasks **Change config**. If we run our play again, `change` would be `false`.
+2. key `cmd` contains the `dsconfig` command line. 
+3. Key `enabled` is `true`. This is the default. You can use this key to turn specific steps / list items off.
+4. key `get` is a dict with with information created to get *current state* of DS with regards to this property.
+5. Key `stdout` contains output return by `dsconfig` when changing DS. In this case nothing was returned.
+6. Key `step` is just the index of the list item in the group. Which is used for processing results of `dsconfig` commands.
+7. Key `when`
+
+```yaml
+ldaps:
+-   add: ssl-cert-nickname:config-server-cert
+    change: true
+    cmd: set-connection-handler-prop --handler-name LDAPS --add ssl-cert-nickname:config-server-cert
+    enabled: true
+    get:
+        cmd: get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+        handler-name: LDAPS
+        method: get-connection-handler-prop
+        property: ssl-cert-nickname
+        stdout: 'Property          : Value(s)
+
+            ------------------:------------
+
+            ssl-cert-nickname : server-cert'
+    handler-name: LDAPS
+    method: set-connection-handler-prop
+    stdout: ''
+    step: 0
+    when:
+        match: false
+        match-result: false
+        regex: config-server-cert
+```
+
+
+The above configuration will evaluate to `dsconfig` command:
+
+```bash
+dsconfig set-connection-handler-prop --handler-name LDAPS --add ssl-cert-nickname:config-server-cert
+````
+
+
+```bash
+dsconfig get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+```
+
+The dicts also contains a `when` key that is used to check the current value of the property.
+
+
+
+ssl-cert-nickname                  : server-cert
+
+See [ssl-cert-nickname](https://backstage.forgerock.com/docs/opendj/2.6/configref/ldap-connection-handler.html#ssl-cert-nickname)
+
 
 ### Backends
 
