@@ -151,7 +151,8 @@ ds_config_components:
 
 Below is the Ansible logging for this configuration. It shows that the dict is processed using a number of Ansible tasks. The key tasks are: **Get current config** and **Change config**. The first task checks the current state of DS and the second task changes DS if necessary.
 
-Note also a number of "ds_config" tasks: **ds_config prepared**, **ds_config current** and **ds_config changes**. This role changes the dict `ds_config` which can you help you understand what Ansible / this role is doing. For your convience this changed dict is written to disk in task **Log ds_config → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps.yml**. Note: if you configure `ds_debug: true` the other log files will also be written to disk e.g. `ds_config_0_ldaps_0.yml`.
+<details>
+  <summary>Ansible logging</summary>
 
 ```
 TASK [c2platform.forgerock.ds : include_tasks] *********************************
@@ -199,6 +200,11 @@ ok: [bkd-ds]
 PLAY RECAP *********************************************************************
 bkd-ds                     : ok=79   changed=1    unreachable=0    failed=0    skipped=69   rescued=0    ignored=0   
 ```
+</details>
+
+Note also a number of "ds_config" tasks: **ds_config prepared**, **ds_config current** and **ds_config changes**. This role changes the dict `ds_config` which can you help you understand what Ansible / this role is doing. For your convience this changed dict is written to disk in task **Log ds_config → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps.yml**. Note: if you configure `ds_debug: true` the other log files will also be written to disk e.g. `ds_config_0_ldaps_0.yml`.
+
+
 
 Log file `ds_config_0_ldaps.yml` is below. Note how the dict `ds_config` has expanded. The list item now has 7 extra keys.
 
@@ -292,7 +298,10 @@ ds_config:
       set: allow-ldap-v2:true
 ```
 
-This config is expanded to:
+This is expanded to: 
+
+<details>
+  <summary>ds_config</summary>
 
 ```yaml
 ldaps:
@@ -360,7 +369,7 @@ ldaps:
         match-result: true
         regex: allow-ldap-v2\s+:\s+true
 ```
-
+</details>
 
 #### Global configuration
 
@@ -391,10 +400,10 @@ ds_config:
         - password-attribute:userPassword
 ```
 
-This is expanded to config included below.
+This is expanded to: 
 
 <details>
-  <summary>`ds_config`</summary>
+  <summary>ds_config</summary>
 
 ```yaml
 ds_config:
