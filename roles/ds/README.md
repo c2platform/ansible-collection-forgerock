@@ -17,6 +17,7 @@ Note: on default - without additional configuration - this role will only instal
     - [LDAPS certificate alias](#ldaps-certificate-alias)
     - [LDAPS](#ldaps)
     - [Global configuration](#global-configuration)
+    - [Password policies](#password-policies)
   - [Backends](#backends)
   - [Attribute Uniqueness](#attribute-uniqueness)
   - [Global ACI](#global-aci)
@@ -107,7 +108,28 @@ Note: processing of schema LDIF is default disabled with `ds_db_schema_ldifs_ena
 
 ### ds_config
 
-Dict `ds_config` is used to configure DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/) command. The remainder of this section contains examples of the use of this dict starting with a simple example. In the remainder of this section whenever `dsconfig` is referenced we are using an alias defined as follows.
+Dict `ds_config` is used to configure DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/) command. The remainder of this section contains examples of the use of this dict starting with a simple example. 
+
+The dict has groups of lists where each list items configures DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/) command for example:
+
+```yaml
+ds_config:
+  ldaps:
+    - method: set-connection-handler-prop
+      handler-name: LDAPS
+      add: ssl-cert-nickname:config-server-cert
+ds_config_components:
+  - ldaps
+```
+
+So `ldaps` is just group name, you can use any group name or grouping you want. Groups you want to enable need to be added to `ds_config_components`. This is just a simple lists of group names.
+
+The above dict corresponds to the following command:
+```bash
+dsconfig set-connection-handler-prop --handler-name LDAPS --add ssl-cert-nickname:config-server-cert
+```
+
+In the remainder of this section whenever `dsconfig` is referenced we are using an alias for example defined as follows.
 
 ```bash
 alias dsconfig="/opt/ds/ds/bin/dsconfig --hostname localhost --port 10636 --bindDN \"cn=Directory Manager\" --bindPasswordFile /root/.dspassword --trustAll --no-prompt"
@@ -126,11 +148,6 @@ ds_config:
 ds_config_components:
   - ldaps
 ```
-
-Notes:
-
-1. `ldaps` is just group name, `ds_config` dict groups lists of config. You can use any group name or grouping you want. 
-2. Groups you want to enable need to be added to `ds_config_components`. This is just a simple lists of group names.
 
 Below is the Ansible logging for this configuration. It shows that the dict is processed using a number of Ansible tasks. The key tasks are: **Get current config** and **Change config**. The first task checks the current state of DS and the second task changes DS if necessary.
 
@@ -347,7 +364,75 @@ ldaps:
 
 #### Global configuration
 
+```yaml
+ds_config:
+  global:
+    - method: set-global-configuration-prop
+      set: lookthrough-limit:20000
+    - method: set-global-configuration-prop
+      set: smtp-server:127.0.0.1:25
+    - method: set-global-configuration-prop
+      set: size-limit:10000
+ds_config_components: ['global']
 
+```
+
+#### Password policies
+
+Config below shows how we can update two properties the **Default Password Policy** using one `set` key. So this key can also be a list.
+
+```yaml
+ds_config:
+  password-policy:
+    - method: set-password-policy-prop
+      policy-name: Default Password Policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+```
+
+This is expanded to config included below.
+
+<details>
+  <summary>ds_config</summary>
+
+```yaml
+ds_config:
+  password-policy:
+  -   change: false
+      cmd: set-password-policy-prop --policy-name "Default Password Policy" --set   "default-password-storage-scheme:Salted
+          SHA-512" --set password-attribute:userPassword
+      enabled: true
+      get:
+          cmd: get-password-policy-prop --policy-name "Default Password Policy" --property
+              default-password-storage-scheme --property password-attribute
+          method: get-password-policy-prop
+          policy-name: Default Password Policy
+          property:
+          - default-password-storage-scheme
+          - password-attribute
+          stdout: 'Property                        : Value(s)
+  
+              --------------------------------:---------------
+  
+              default-password-storage-scheme : Salted SHA-512
+  
+              password-attribute              : userPassword'
+      method: set-password-policy-prop
+      policy-name: Default Password Policy
+      set:
+      - default-password-storage-scheme:Salted SHA-512
+      - password-attribute:userPassword
+      step: 0
+      when:
+      -   match: false
+          match-result: true
+          regex: default-password-storage-scheme\s+:\s+Salted SHA-512
+      -   match: false
+          match-result: true
+          regex: password-attribute\s+:\s+userPassword
+```
+</details>
 
 
 ### Backends
