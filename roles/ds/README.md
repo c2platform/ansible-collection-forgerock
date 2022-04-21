@@ -394,7 +394,7 @@ ds_config:
 This is expanded to config included below.
 
 <details>
-  <summary>ds_config</summary>
+  <summary>`ds_config`</summary>
 
 ```yaml
 ds_config:
