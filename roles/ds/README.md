@@ -204,8 +204,6 @@ bkd-ds                     : ok=79   changed=1    unreachable=0    failed=0    s
 
 Note also a number of "ds_config" tasks: **ds_config prepared**, **ds_config current** and **ds_config changes**. This role changes the dict `ds_config` which can you help you understand what Ansible / this role is doing. For your convience this changed dict is written to disk in task **Log ds_config → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps.yml**. Note: if you configure `ds_debug: true` the other log files will also be written to disk e.g. `ds_config_0_ldaps_0.yml`.
 
-
-
 Log file `ds_config_0_ldaps.yml` is below. Note how the dict `ds_config` has expanded. The list item now has 7 extra keys.
 
 1. Key `change` contains the resuls the *current* vs *desired state* analysis. It is true and so DS was changed, which we can see in logging show above in tasks **Change config**. If we run our play again, `change` would be `false`.
@@ -252,33 +250,38 @@ ds_config:
       remove: ssl-cert-nickname:config-server-cert
 ```
 
-The dict `ds_config` will now be expanded to
+The dict `ds_config` is expanded to:
+
+<details>
+  <summary>ds_config</summary>
 
 ```yaml
-ldaps:
--   change: true
-    cmd: set-connection-handler-prop --handler-name LDAPS --remove ssl-cert-nickname:config-server-cert
-    enabled: true
-    get:
-        cmd: get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
-        handler-name: LDAPS
-        method: get-connection-handler-prop
-        property: ssl-cert-nickname
-        stdout: 'Property          : Value(s)
-
-            ------------------:--------------------------------
-
-            ssl-cert-nickname : config-server-cert, server-cert'
-    handler-name: LDAPS
-    method: set-connection-handler-prop
-    remove: ssl-cert-nickname:config-server-cert
-    stdout: ''
-    step: 0
-    when:
-        match: true
-        match-result: true
-        regex: config-server-cert
+ds_config:
+  ldaps:
+  -   change: true
+      cmd: set-connection-handler-prop --handler-name LDAPS --remove ssl-cert-nickname:config-server-cert
+      enabled: true
+      get:
+          cmd: get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+          handler-name: LDAPS
+          method: get-connection-handler-prop
+          property: ssl-cert-nickname
+          stdout: 'Property          : Value(s)
+  
+              ------------------:--------------------------------
+  
+              ssl-cert-nickname : config-server-cert, server-cert'
+      handler-name: LDAPS
+      method: set-connection-handler-prop
+      remove: ssl-cert-nickname:config-server-cert
+      stdout: ''
+      step: 0
+      when:
+          match: true
+          match-result: true
+          regex: config-server-cert
 ```
+</details>
 
 #### LDAPS
 
@@ -298,7 +301,7 @@ ds_config:
       set: allow-ldap-v2:true
 ```
 
-This is expanded to: 
+The dict `ds_config` is expanded to:
 
 <details>
   <summary>ds_config</summary>
@@ -388,12 +391,12 @@ ds_config_components: ['global']
 
 #### Password policies
 
-Config below shows how we can update two properties the **Default Password Policy** using one `set` key. So this key can also be a list.
+Config below shows how we can create password policy **Default Password Policy** using one `set` key with two property-value pairs. Note: these properties are required to be able to create a password policy.
 
 ```yaml
 ds_config:
-  password-policy:
-    - method: set-password-policy-prop
+  default-password-policy:
+    - method: create-password-policy
       policy-name: Default Password Policy
       set:
         - default-password-storage-scheme:Salted SHA-512

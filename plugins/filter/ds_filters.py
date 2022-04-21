@@ -140,53 +140,6 @@ def current_config_select(current_config, item):
     raise ValueError('Unable to find the results for item')
 
 
-# Determine desired state is different
-def ds_config_state_diff(set_item, current_config, component_fingerprint,
-                         use_component_fingerprint, skip_state_check):
-    # pprint( {'ds_config_state_diff': set_item} )
-    # pprint( {'component_fingerprint': component_fingerprint} )
-    # pprint( {'current_config': current_config} )
-    # pprint( {'component_fingerprint[changed]':
-    # component_fingerprint['changed']} )
-    if skip_state_check:
-        return True
-    elif 'when' in set_item:
-        mtch = False
-        if 'match' in set_item['when']:
-            mtch = set_item['when']['match']
-        rslt = current_config_select(current_config, set_item)
-        p = re.compile(set_item['when']['regex'], re.MULTILINE)
-        r = p.search(rslt['stdout'])
-        # pprint({'p': p, 'r': r, 'stdout': rslt['stdout'],
-        #       'set_item': set_item})
-        if r is None:
-            return not mtch
-        else:
-            return mtch
-        return True
-    elif use_component_fingerprint:
-        return component_fingerprint['changed']
-    elif current_config is None:
-        return True
-    elif current_config['results'] == '':
-        return True
-    elif isinstance(set_item['set'], list):
-        for si in set_item['set']:
-            prop = ds_config_property_name(si)
-            tv = ds_config_property_value(si)
-            cv = ds_cmd_result_property_value(current_config['results'],
-                                              set_item, prop)
-            if tv != cv:
-                return True
-        return False
-    else:
-        prop = ds_config_property_name(set_item['set'])
-        tv = ds_config_property_value(set_item['set'])
-        cv = ds_cmd_result_property_value(current_config['results'],
-                                          set_item, prop)
-        return tv != cv
-
-
 # Return hash value for config
 def ds_config_fingerprint(config):
     if type(config).__name__ == 'AnsibleUndefined':
@@ -293,7 +246,6 @@ class FilterModule(object):
             'ds_cmd_result_property_value': ds_cmd_result_property_value,
             'ds_config_property_value': ds_config_property_value,
             'ds_config_property_name': ds_config_property_name,
-            'ds_config_state_diff': ds_config_state_diff,
             'ds_config_fingerprint': ds_config_fingerprint,
             'ds_config_fingerprint_folder': ds_config_fingerprint_folder,
             'ds_config_fingerprint_component_path':

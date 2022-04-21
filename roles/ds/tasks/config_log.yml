@@ -1,0 +1,6 @@
+---
+- name: "{{ ds_home_version }}/logs/ds_config.yml"
+  copy:
+    content: "{{ {'ds_config': ds_config}|to_nice_yaml }}"
+    dest: "{{ ds_home_version }}/logs/ds_config.yml"
+  changed_when: false

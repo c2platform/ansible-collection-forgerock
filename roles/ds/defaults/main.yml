@@ -48,3 +48,8 @@ ds_environment:
 
 ds_no_log: yes
 ds_debug: no
+
+ds_config_get_methods:
+  create-password-policy:
+    method: list-password-policies
+    regex_key: policy-name

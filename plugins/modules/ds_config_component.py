@@ -33,63 +33,38 @@ def format_ds_cmd_value(v):
 
 def ds_cmd_ignore_keys():
     kys = ['when', 'get', 'step', 'method',
-           'keys', 'cmd', 'get-cmd', 'get-stdout',
-           'change', 'enabled']
+           'keys', 'cmd', 'get-cmd',
+           'change', 'enabled', 'changed_when',
+           'property-update', 'stdout']
     return kys
 
 
 def ds_cmd_ignore_keys_get():
     kys = ds_cmd_ignore_keys()
-    kys += ['add', 'remove', 'set']
+    kys += ['add', 'remove', 'set', 'cmd']
     return kys
 
 
 # Return command switches for ForgeRock CLI utilities
 # TODO remove from filters
-def ds_cmd(cmd_config):
+def ds_cmd(cmd_config, update_properties=[]):
     cmd_line = []
     for key in cmd_config:
-        # print('key: ' + key)
-        if cmd_config[key] is None:
-            cmd_config[key] = ''
+        cck = cmd_config[key]
+        if cck is None:
+            cck = ''
         if key in ds_cmd_ignore_keys():
             continue
-        if isinstance(cmd_config[key], list):
-            for v in cmd_config[key]:
-                vf = format_ds_cmd_value(v)
+        if not isinstance(cck, list):
+            cck = [cck]
+        for v in cck:
+            vf = format_ds_cmd_value(v)
+            if key in ['add', 'remove', 'set']:
+                if v in update_properties:
+                    cmd_line.append('--{} {}'.format(key, vf))
+            else:
                 cmd_line.append('--{} {}'.format(key, vf))
-        else:
-            vf = format_ds_cmd_value(cmd_config[key])
-            cmd_line.append('--{} {}'.format(key, vf))
     return " ".join(cmd_line)
-
-
-# Return the command switches to get current config
-# TODO remove from filters
-def ds_cmd_get(cmd_config, component):
-    # pprint({'component':component, 'cmd_config': cmd_config})
-    comp = component.split('_')[0]  # e.g. connection-handler
-    if 'when' in cmd_config:
-        if 'switches' in cmd_config['when']:
-            return ds_cmd(cmd_config['when']['switches'])
-        return ''
-    if comp == 'global-configuration':
-        return '--property ' + ds_config_property_name(cmd_config['set'])
-    elif comp == 'password-validator':
-        return '--validator-name ' + \
-            format_ds_cmd_value(cmd_config['validator-name'])
-    elif comp == 'log-publisher':
-        return '--publisher-name ' + \
-            format_ds_cmd_value(cmd_config['publisher-name'])
-    elif comp == 'plugin':
-        return '--plugin-name ' + \
-            format_ds_cmd_value(cmd_config['plugin-name'])
-    elif comp == 'replication-server':
-        return '--provider-name ' + \
-            format_ds_cmd_value(cmd_config['provider-name'])
-    else:
-        msg = "No get command defined for component {}. Use a fingerprint!?"
-        raise Exception(msg.format(comp))
 
 
 def ds_config_result_of_step(results, step):
@@ -102,13 +77,156 @@ def ds_config_result_of_step(results, step):
 
 
 # Create get dict based on set dict
-def ds_cmd_get_keys(ci):
+def ds_cmd_get_keys(ci, data):
     gt = {}
+    if ci['method'] in data['get_methods']:
+        return gt
     for ky in ci:
         if ky in ds_cmd_ignore_keys_get():
             continue
         gt[ky] = ci[ky]
     return gt
+
+
+# Return the method to get current state
+def ds_cmd_get_method(ci, get_methods):
+    mthd = ci['method'].replace('set-', 'get-')
+    if ci['method'] in get_methods:
+        mthd = get_methods[ci['method']]['method']
+    return mthd
+
+
+# Return the when to evaluate current state
+def ds_cmd_get_method_when(ci, get_methods):
+    whn = {}
+    whn['match-expected'] = False  # default
+    for ky in ['match-expected']:
+        if ky in get_methods[ci['method']]:
+            whn[ky] = get_methods[ci['method']][ky]
+    if 'regex_key' in get_methods[ci['method']]:
+        whn['regex'] = ci[get_methods[ci['method']]['regex_key']] + "\\n"
+    return whn
+
+
+# Build properties to get
+def ds_config_get_properties(ci, data):
+    prps = []
+    if ci['method'] not in data['get_methods']:
+        for ky in ['add', 'remove', 'set']:
+            if ky in ci:
+                ci_ky = ci[ky]
+                if not isinstance(ci_ky, list):
+                    ci_ky = [ci_ky]
+                for p in ci_ky:
+                    prp = p.split(':', 1)[0]
+                    if prp not in prps:
+                        prps.append(prp)
+    ci['get']['property'] = prps
+    return ci
+
+# Return regex pattern to use
+#def ds_config_regex_pattern(ci):
+#    ptrn = '.*'
+#    if 'stdout' in ci['get']:
+#        if ci['get']['stdout'].count("\t") == 1:
+#            ptrn = '\t'  # one tab
+#    return ptrn
+
+
+# Return regex or list of regex for set, add, remove
+def ds_config_regex(ci, get_methods):
+    if 'when' not in ci:
+        ci['when'] = []
+    if ci['method'] in get_methods:
+        ci['when'] = [ds_cmd_get_method_when(ci, get_methods)]
+    else:
+        for ky in ['add', 'remove', 'set']:
+            if ky in ci:
+                ci_ky = ci[ky]
+                if not isinstance(ci_ky, list):  # list
+                    ci_ky = [ci[ky]]
+                for kv in ci_ky:
+                    whn = {}
+                    whn['match-expected'] = False  # default
+                    if ky == 'remove':
+                        whn['match-expected'] = True
+                    whn['prop'] = kv
+                    whn['regex'] = '.*\t'.join(kv.split(':', 1)) + '[\t|\n]'
+                    ci['when'].append(whn)
+    return ci
+
+
+# Return regex or list of regex for set, add, remove
+def ds_config_regex_match(ci):
+    whns = ci['when']
+    whns2 = []
+    ci['change'] = False
+    if not isinstance(whns, list):
+        whns = [whns]
+    for whn in whns:
+        whn['change'] = False
+        rslt = False
+        if 'match-expected' not in whn:
+            whn['match-expected'] = False  # default
+        if (re.search(whn['regex'], ci['get']['stdout'] + "\n")):
+            rslt = True  # regex match
+        if rslt == whn['match-expected']:
+            ci['change'] = True
+            whn['change'] = True
+        whn['match-result'] = rslt
+        whns2.append(whn)
+    ci['when'] = whns2
+    return ci
+
+
+# Create set cmd
+def ds_config_set_cmd(ci, data):
+    ci = ds_config_update_properties(ci)
+    cmd = "{} {}".format(ci['method'], ds_cmd(ci, ci['property-update']))
+    ci['cmd'] = cmd
+    return ci
+
+
+# Create get cmd
+def ds_config_get_cmd(ci, data):
+    if 'get' not in ci:  # create get
+        ci['get'] = {}
+        ci['get'] = ds_cmd_get_keys(ci, data)
+        ci['get']['method'] = ds_cmd_get_method(ci, data['get_methods'])
+    else:  # no get
+        ci = ds_config_get_cmd_explicit(ci, data)
+    gt_mthd = ci['get']['method']
+    # from pprint import pprint
+    # pprint({"ci['get']": ci['get']})
+    # with open('/vagrant/magweg2.txt', 'a') as f: f.write(ci['get'])
+    gt_cmd = ds_cmd(ci['get'])
+    ci['get']['cmd'] = \
+        "{} {} -s".format(gt_mthd, gt_cmd)  # -s for script friendly
+    return ci
+
+
+# Create get cmd from configured get
+def ds_config_get_cmd_explicit(ci, data):
+    if 'method' not in ci['get']:
+        ci['get']['method'] = ds_cmd_get_method(ci, data['get_methods'])
+    if 'keys' in ci['get']:
+        for ky in ci['get']['keys']:
+            ci['get'][ky] = ci[ky]
+    return ci
+
+
+# Set properties that need to be updated
+def ds_config_update_properties(ci):
+    prps = []
+    if 'when' in ci:
+        for whn in ci['when']:
+            if 'prop' not in whn:
+                continue
+            if 'change' in whn:
+                if whn['change']:
+                    prps.append(whn['prop'])
+    ci['property-update'] = prps
+    return ci
 
 
 def ds_config(data):
@@ -120,63 +238,24 @@ def ds_config(data):
     step = 0
     for ci in fcts['ds_config'][comp]:
         ci['step'] = step
-        ci['cmd'] = "{} {}".format(ci['method'], ds_cmd(ci))
-        gt = {}
         if 'enabled' not in ci:
             ci['enabled'] = True
-        if 'get' in ci:  # build explicit get
-            gt = ci['get']
-            if 'method' in ci['get']:
-                gt_mthd = ci['get']['method']
-            else:
-                gt_mthd = ci['method'].replace('set-', 'get-')
-            if 'keys' in ci['get']:
-                for ky in ci['get']['keys']:
-                    gt[ky] = ci[ky]
-        else:
-            gt = ds_cmd_get_keys(ci)  # build implicit / default get
-            gt_mthd = ci['method'].replace('set-', 'get-')
-        if 'add' in ci:  # assume simple property
-            gt['property'] = ci['add'].split(':')[0]
-        if 'remove' in ci:  # assume simple property
-            gt['property'] = ci['remove'].split(':')[0]
-        if 'set' in ci:  # assume simple property
-            gt['property'] = ci['set'].split(':')[0]
-            # e.g. property: ssl-cert-nickname
-        ci['get'] = gt
-        ci['get']['method'] = gt_mthd
-        gt_cmd = ds_cmd(gt)
-        if 'cmd' not in ci['get']:
-            ci['get']['cmd'] = "{} {}".format(gt_mthd, gt_cmd)
+        ci = ds_config_set_cmd(ci, data)
+        ci = ds_config_get_cmd(ci, data)
+        ci = ds_config_get_properties(ci, data)
         if 'config_current' in data:
             r = ds_config_result_of_step(data['config_current'], step)
             if 'stdout' in r:
                 ci['get']['stdout'] = r['stdout']
             if 'when' not in ci:   # no when key
-                if 'add' in ci:  # assume simple property
-                    ci['when'] = {}
-                    ci['when']['regex'] = ci['add'].split(':')[1]
-                if 'remove' in ci:  # assume simple property
-                    ci['when'] = {}
-                    ci['when']['regex'] = ci['remove'].split(':')[1]
-                    ci['when']['match'] = False
-                if 'set' in ci:  # assume simple property
-                    ci['when'] = {}
-                    ci['when']['regex'] = "\s+:\s+".join(ci['set'].split(':'))
+                ci = ds_config_regex(ci, data['get_methods'])
             if 'when' in ci:
-                if 'match' not in ci['when']:
-                    ci['when']['match'] = False
                 if 'stdout' in ci['get']:
-                    x = re.search(ci['when']['regex'], ci['get']['stdout'])
-                    ci['when']['match-result'] = False
-                    ci['change'] = False
-                    if (x):
-                        ci['when']['match-result'] = True
-                    if ci['when']['match-result'] == ci['when']['match']:
-                        ci['change'] = True
+                    ci = ds_config_regex_match(ci)
                 if 'enabled' in ci:
                     if not ci['enabled']:
                         ci['change'] = False
+            ci = ds_config_set_cmd(ci, data)  # update set cmd
         if 'config_changes' in data:
             r = ds_config_result_of_step(data['config_changes'], step)
             if 'stdout' in r:
@@ -190,6 +269,7 @@ def ds_config(data):
 def main():
     fields = {
         "component": {"required": True, "type": "str"},
+        "get_methods": {"required": True, "type": "dict"},
         "config": {"required": True, "type": "list"},
         "config_current": {"required": False, "type": "list"},
         "config_changes": {"required": False, "type": "list"}}

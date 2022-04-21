@@ -7,3 +7,5 @@
   loop_control:
     loop_var: indexed_component
   when: ds_config_components is defined and ds_config_enabled|default(True)
+
+- include: config_log.yml # log ds_config
