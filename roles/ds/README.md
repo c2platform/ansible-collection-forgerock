@@ -1,6 +1,6 @@
 # Ansible Role ForgeRock Directory Services (DS)
 
-This Ansible role can be used to install and configure [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role can download and setup DS. Note that default - without additional configuration - this role will only install DS as CLI utilities. To perform actual setup of DS you will have to configure `ds_setup_config` var. 
+This Ansible role can be used to install and configure [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role can download and setup DS. Note that default - without additional configuration - this role will only install DS as CLI utilities. To perform actual setup of DS you will have to configure [ds_setup_config](#ds_setup_config) dict at a minimum. 
 
 > Server distributions include command-line tools for installing, configuring, and managing servers. The tools make it possible to script all operations.
 
