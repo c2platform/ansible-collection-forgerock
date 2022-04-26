@@ -40,13 +40,6 @@ Note: on default - without additional configuration - this role will only instal
 - [Dependencies](#dependencies)
 - [Example configuration](#example-configuration)
 - [Links](#links)
-- [Notes](#notes)
-  - [Idempotancy](#idempotancy)
-  - [Upgrade](#upgrade)
-  - [Backup / restore](#backup--restore)
-  - [dsconfig add](#dsconfig-add)
-  - [Global configuration](#global-configuration-1)
-  - [Password validators](#password-validators)
 
 <!-- /MarkdownTOC -->
 
@@ -134,6 +127,14 @@ In the remainder of this section whenever `dsconfig` is referenced we are using 
 alias dsconfig="/opt/ds/ds/bin/dsconfig --hostname localhost --port 10636 --bindDN \"cn=Directory Manager\" --bindPasswordFile /root/.dspassword --trustAll --no-prompt"
 ```
 
+The tasks for `ds_config` are in [tasks/config_component.yml](./tasks/config_component.yml). Note that in this tasks file the module [c2platform.forgerock.ds_config_component](../plugins/modules/ds_config_component.py) is used three times. 
+
+1. Dict `ds_config` is prepared for querying the current status of DS. Get commands are added for example `get-connection-handler-prop`.
+2. Current vs desired status analysis is performed and this info is added to `ds_config`. Dict `ds_config` resources that require change / update get for example attribute / key `change: true`.
+3. Output of change commands is added to `ds_config`.
+
+The `ds_config` dict is written to a file `ds_config.yml` continuously. This file can help with troubleshooting issues and with gaining a better understanding of the way this Ansible role configures DS using `dsconfig` command.
+
 #### LDAPS certificate alias
 
 Default LDAPS certificate alias is `server-cert`. To change it to for example `config-server-cert` using property `ssl-cert-nickname`. This is a simple example of adding an property with value. See for more information [ssl-cert-nickname](https://backstage.forgerock.com/docs/opendj/2.6/configref/ldap-connection-handler.html#ssl-cert-nickname).
@@ -152,6 +153,7 @@ Below is the Ansible logging for this configuration. It shows that the dict is p
 <details>
   <summary>Ansible logging</summary>
 
+TODO 
 ```
 TASK [c2platform.forgerock.ds : include_tasks] *********************************
 included: /home/ostraaten/git/vips-gitlab/bkwi-dev/ansible_collections/c2platform/forgerock/roles/ds/tasks/config_component.yml for bkd-ds
@@ -485,7 +487,7 @@ ds_config:
         - index-type:equality
         - index-entry-limit:4000
 ds_config_components:
-  - backend-indexes-create:
+  - backend-indexes-create
 ```
 
 This is expanded to: 
@@ -534,14 +536,20 @@ ds_config:
 </details>
 
 
-
-
 ### Attribute Uniqueness
 
-TODO
+Make for example `uid` unique. See also [Attribute Uniqueness](https://backstage.forgerock.com/docs/ds/7/config-guide/attribute-uniqueness.html).
 
-[Attribute Uniqueness](https://backstage.forgerock.com/docs/ds/7/config-guide/attribute-uniqueness.html)
-
+```yaml
+ds_config:
+  uid-unique:
+    - method: set-plugin-prop
+      plugin-name: UID Unique Attribute
+      set:
+        - enabled:true
+ds_config_components:
+  - uid-unique
+```
 
 #### Access control
 
@@ -1457,21 +1465,6 @@ ds_config_components:
   - access-control-handler
   #- password-validator_add
 
-# Components that require use of a fingerpint to detect
-# changes between current and desired state
-ds_config_components_fingerprint:
-  - connection-handler
-  #- password-validator_add
-  #- password-policy_create
-  - password-policy
-  - password-policy_service-accounts-create
-  - password-policy_service-accounts
-  - password-policy_service-accounts-jmx-create
-  - password-policy_service-accounts-jmx
-  - backend_create
-  - backend-index_create
-  - access-control-handler
-
 ds_db_schema_ldifs: # default disabled via ds_db_schema_ldifs_enable: no
   myappPerson: | # db/schema/myappPerson.ldif to create myappPerson object class
     dn: cn=schema
@@ -1692,129 +1685,3 @@ ds_scripts:
 * [How do I rebuild indexes in DS (All versions)? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a46097400)
 * [How do I verify indexes in DS (All versions) are correct? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a59282000)
 * [Directory Services 7 > Tools Reference > ldapsearch — perform LDAP search operations](https://backstage.forgerock.com/docs/ds/7/tools-reference/ldapsearch-1.html)
-
-## Notes
-
-### Idempotancy
-
-The bulk of DS configuration is done using the `dsconfig` command which poses some challenges 
-when it comes to implementing idempotancy. Currently only a few "components" support checking
-"current" configuration. This can be seen in `ds_cmd_get` filter which shows that the following
-components support a current check:
-
-* global-configuration
-* password-validator
-* log-publisher
-* plugin
-* replication-server
-
-Other components you configure using `ds_config` dict will fail with message like
-
-> No get command defined for component <name>. Use a fingerprint!?
-
-You can fix this by adding the component name to list `ds_config_components_fingerprint`. For this
-component then a fingerprint file will be used that is stored in folder `/opt/ds/.fingerprint/6.5.4`.
-The `dsconfig` command will then only run if the fingerprint file changes. See example below.
-
-```bash
-root:~# ls /opt/ds/.fingerprint/6.5.5/
-access-control-handler         password-policy
-backend_create                 password-policy_service-accounts
-backend-index_suwiroot-create  password-policy_service-accounts-create
-backend-index_userroot-create  password-policy_service-accounts-jmx
-connection-handler             password-policy_service-accounts-jmx-create
-ds_passwords                   plugin
-root:~# 
-```
-If the fingerprint files are lost provision will fail for each component configured. Using `ds_config_ignore_errors`
-you can temporarily ignore errors so that the fingerprint files are created. Of course, then you should review the
-errors to make sure all are the result of this and not some other issue.
-
-### Upgrade
-
-### Backup / restore
-
-### dsconfig add
-
-`add` configuration is currently not checked for changes, only `set`. Combine with fingerprint for complete component configuration? I.e. run complete component configuration if 1) fingerprint changes or 2) property changes
-
-```yaml
-    - validator-name: '"Attribute Value"'
-      set: enabled:true
-      add:
-        - match-attribute:cn
-        - match-attribute:sn
-        - match-attribute:givenName
-        - match-attribute:uid
-```
-
-```bash
-forgerock@bkd-ds:~/ds-6.5.4/bin$ ./dsconfig get-password-validator-prop --hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" --bindPassword supersecret --trustAll --no-prompt --validator-name "Attribute Value"
-Property               : Value(s)
------------------------:--------------------------------------------------
-check-substrings       : true
-enabled                : true
-match-attribute        : All attributes in the user entry will be checked.
-min-substring-length   : 5
-test-reversed-password : true
-```
-
-### Global configuration
-
-Global configuration such as `lookthrough-limit`, `smtp-server` can be configured as shown below
-
-```yaml
-ds_config:
-  set-global-configuration-prop:
-    - set: lookthrough-limit:20000
-    - set: smtp-server:127.0.0.1:25
-```
-
-This will execute commands similar to
-
-```bash
-./dsconfig set-global-configuration-prop  \
---hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" \
---bindPassword supersecure   --trustAll  --no-prompt   \
---set lookthrough-limit:20000
-```
-
-Using `get-global-configuration-prop` we can check current value
-
-```bash
-./dsconfig get-global-configuration-prop  \
---hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" \
---bindPassword supersecure   --trustAll  --no-prompt   \
---property lookthrough-limit
-```
-
-### Password validators
-
-To configure password validators for example
-
-```yaml
-ds_config:
-  set-password-validator-prop:
-    - validator-name: '"Length-Based Password Validator"'
-      set:
-        - enabled:true
-        - min-password-length:8
-        - max-password-length:0
-```
-
-```bash
-./dsconfig set-password-validator-prop  --hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" --bindPassword supersecure   --trustAll  --no-prompt   --validator-name "Length-Based Password Validator" --set enabled:true --set min-password-length:8 --set max-password-length:0
-```
-
-```bash
-./dsconfig get-password-validator-prop  --hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" --bindPassword supersecure   --trustAll  --no-prompt   --validator-name "Length-Based Password Validator"
-```
-
-```bash
-forgerock@bkd-ds:~/ds-6.5.4/bin$ ./dsconfig get-password-validator-prop  --hostname 1.1.1.51.nip.io --port 4444 --bindDN "cn=Directory Manager" --bindPassword supersecure   --trustAll  --no-prompt   --validator-name "Length-Based Password Validator"
-Property            : Value(s)
---------------------:---------
-enabled             : true
-max-password-length : 0
-min-password-length : 8
-```
