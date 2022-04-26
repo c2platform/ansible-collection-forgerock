@@ -23,8 +23,30 @@ Note: on default - without additional configuration - this role will only instal
     - [Backend indexes](#backend-indexes)
   - [Attribute Uniqueness](#attribute-uniqueness)
     - [Access control](#access-control)
-- [```yaml](#yaml)
-- [```yaml](#yaml-1)
+  - [Modify](#modify)
+    - [Simple](#simple)
+    - [Download](#download)
+    - [Existence checks](#existence-checks)
+    - [Extra](#extra)
+  - [Passwords](#passwords)
+  - [Import](#import)
+  - [Directories](#directories)
+  - [Git](#git)
+  - [Files, directories and ACL](#files-directories-and-acl)
+  - [Cron](#cron)
+  - [Scripts](#scripts)
+  - [Replication](#replication)
+  - [Backup](#backup)
+- [Dependencies](#dependencies)
+- [Example configuration](#example-configuration)
+- [Links](#links)
+- [Notes](#notes)
+  - [Idempotancy](#idempotancy)
+  - [Upgrade](#upgrade)
+  - [Backup / restore](#backup--restore)
+  - [dsconfig add](#dsconfig-add)
+  - [Global configuration](#global-configuration-1)
+  - [Password validators](#password-validators)
 
 <!-- /MarkdownTOC -->
 
@@ -628,7 +650,6 @@ ds_config:
 
 To remove those `global-aci` just replace `add` with `remove`
 
-```yaml
 ```yaml
 ds_config:
   access-control-handler-properties:
