@@ -7,7 +7,7 @@ import re
 
 
 # Return ds config method e.g. set-connection-handler-prop
-# TODO remove from filster
+# TODO remove from filters
 def ds_config_method(component):
     comp = component.split('_')[0]  # e.g. connection-handler
     # pprint({'component': component, 'config': config, 'get_set': get_set})
@@ -20,7 +20,7 @@ def ds_config_method(component):
 
 
 # Return string with quotes for values with whitespace
-# TODO remove from filster
+# TODO remove from filters
 def format_ds_cmd_value(v):
     if isinstance(v, int):
         return str(v)
@@ -33,7 +33,7 @@ def format_ds_cmd_value(v):
 
 def ds_cmd_ignore_keys():
     kys = ['when', 'get', 'step', 'method',
-           'keys', 'cmd', 'get-cmd',
+           'keys', 'cmd', 'get-cmd', 'comment',
            'change', 'enabled', 'changed_when',
            'property-update', 'stdout']
     return kys
@@ -47,7 +47,7 @@ def ds_cmd_ignore_keys_get():
 
 # Return command switches for ForgeRock CLI utilities
 # TODO remove from filters
-def ds_cmd(cmd_config, update_properties=[]):
+def ds_cmd(cmd_config, update_properties=[], only_update_prop=True):
     cmd_line = []
     for key in cmd_config:
         cck = cmd_config[key]
@@ -59,7 +59,7 @@ def ds_cmd(cmd_config, update_properties=[]):
             cck = [cck]
         for v in cck:
             vf = format_ds_cmd_value(v)
-            if key in ['add', 'remove', 'set']:
+            if only_update_prop and key in ['add', 'remove', 'set']:
                 if v in update_properties:
                     cmd_line.append('--{} {}'.format(key, vf))
             else:
@@ -79,7 +79,11 @@ def ds_config_result_of_step(results, step):
 # Create get dict based on set dict
 def ds_cmd_get_keys(ci, data):
     gt = {}
-    if ci['method'] in data['get_methods']:
+    gtmds = data['get_methods']
+    if ci['method'] in gtmds:
+        if 'keys' in gtmds[ci['method']]:
+            for ky in gtmds[ci['method']]['keys']:
+                gt[ky] = ci[ky]
         return gt
     for ky in ci:
         if ky in ds_cmd_ignore_keys_get():
@@ -124,14 +128,6 @@ def ds_config_get_properties(ci, data):
     ci['get']['property'] = prps
     return ci
 
-# Return regex pattern to use
-#def ds_config_regex_pattern(ci):
-#    ptrn = '.*'
-#    if 'stdout' in ci['get']:
-#        if ci['get']['stdout'].count("\t") == 1:
-#            ptrn = '\t'  # one tab
-#    return ptrn
-
 
 # Return regex or list of regex for set, add, remove
 def ds_config_regex(ci, get_methods):
@@ -151,7 +147,12 @@ def ds_config_regex(ci, get_methods):
                     if ky == 'remove':
                         whn['match-expected'] = True
                     whn['prop'] = kv
-                    whn['regex'] = '.*\t'.join(kv.split(':', 1)) + '[\t|\n]'
+                    k, v = kv.split(':', 1)
+                    if k == 'global-aci':
+                        v = v[1:-1]
+                        v = v.replace('\\"', '"')
+                        v = re.escape(v)
+                    whn['regex'] = '.*\t'.join([k, v]) + '[\t|\n]'
                     ci['when'].append(whn)
     return ci
 
@@ -182,8 +183,15 @@ def ds_config_regex_match(ci):
 # Create set cmd
 def ds_config_set_cmd(ci, data):
     ci = ds_config_update_properties(ci)
-    cmd = "{} {}".format(ci['method'], ds_cmd(ci, ci['property-update']))
+    if 'set-' in ci['method'] and '-prop' in ci['method']:
+        cmd = "{} {}".format(ci['method'], ds_cmd(ci, ci['property-update']))
+    else:
+        cmd = "{} {}".format(ci['method'], ds_cmd(ci, [], False))
     ci['cmd'] = cmd
+    # if 'change' in cmd:
+    #     from pprint import pprint
+    #     pprint({'ci': ci})
+    #     raise Exception("Onze hoop wat dat er geen change in zou zitten" + cmd)
     return ci
 
 
@@ -205,7 +213,7 @@ def ds_config_get_cmd(ci, data):
     return ci
 
 
-# Create get cmd from configured get
+# Create get cmd from configured get - explicit get
 def ds_config_get_cmd_explicit(ci, data):
     if 'method' not in ci['get']:
         ci['get']['method'] = ds_cmd_get_method(ci, data['get_methods'])
@@ -265,7 +273,6 @@ def ds_config(data):
     fcts['ds_config'][comp] = cis
     return False, fcts['ds_config'], "DS config prepared"
 
-
 def main():
     fields = {
         "component": {"required": True, "type": "str"},
@@ -273,7 +280,7 @@ def main():
         "config": {"required": True, "type": "list"},
         "config_current": {"required": False, "type": "list"},
         "config_changes": {"required": False, "type": "list"}}
-    module = AnsibleModule(argument_spec=fields)
+    module = AnsibleModule(argument_spec=fields, supports_check_mode=True)
     has_changed, fcts, tr = ds_config(module.params)
     module.exit_json(changed=has_changed, msg=tr, config=fcts)
 

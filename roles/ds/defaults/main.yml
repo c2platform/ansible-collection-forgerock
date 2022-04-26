@@ -53,3 +53,11 @@ ds_config_get_methods:
   create-password-policy:
     method: list-password-policies
     regex_key: policy-name
+  create-backend:
+    method: list-backends
+    regex_key: backend-name
+  create-backend-index:
+    method: list-backend-indexes
+    regex_key: index-name
+    keys:
+      - backend-name

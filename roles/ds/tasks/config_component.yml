@@ -20,7 +20,7 @@
   environment: "{{ ds_environment }}"
   with_items: "{{ ds_config[component]|list }}"
   loop_control:
-    label: "{{ component_index }}-{{ component }}-{{ item['step'] }} {{ item['get']['method'] }}"
+    label: "{{ component_index }}-{{ component }}-{{ item['step'] }} {{ item['get']['method'] }} {{ item['comment']|default('') }}"
   args:
     chdir: "{{ ds_home_version }}/bin"
   register: ds_config_current
