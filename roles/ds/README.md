@@ -18,33 +18,13 @@ Note: on default - without additional configuration - this role will only instal
     - [LDAPS](#ldaps)
     - [Global configuration](#global-configuration)
     - [Password policies](#password-policies)
-  - [Backends](#backends)
+    - [Password validator](#password-validator)
+    - [Backends](#backends)
+    - [Backend indexes](#backend-indexes)
   - [Attribute Uniqueness](#attribute-uniqueness)
-  - [Global ACI](#global-aci)
-  - [Modify](#modify)
-    - [Simple](#simple)
-    - [Download](#download)
-    - [Existence checks](#existence-checks)
-    - [Extra](#extra)
-  - [Passwords](#passwords)
-  - [Import](#import)
-  - [Directories](#directories)
-  - [Git](#git)
-  - [Files, directories and ACL](#files-directories-and-acl)
-  - [Cron](#cron)
-  - [Scripts](#scripts)
-  - [Replication](#replication)
-  - [Backup](#backup)
-- [Dependencies](#dependencies)
-- [Example configuration](#example-configuration)
-- [Links](#links)
-- [Notes](#notes)
-  - [Idempotancy](#idempotancy)
-  - [Upgrade](#upgrade)
-  - [Backup / restore](#backup--restore)
-  - [dsconfig add](#dsconfig-add)
-  - [Global configuration](#global-configuration-1)
-  - [Password validators](#password-validators)
+    - [Access control](#access-control)
+- [```yaml](#yaml)
+- [```yaml](#yaml-1)
 
 <!-- /MarkdownTOC -->
 
@@ -108,9 +88,7 @@ Note: processing of schema LDIF is default disabled with `ds_db_schema_ldifs_ena
 
 ### ds_config
 
-Dict `ds_config` is used to configure DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/) command. The remainder of this section contains examples of the use of this dict starting with a simple example. 
-
-The dict has groups of lists where each list items configures DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/) command for example:
+Dict `ds_config` is used to configure DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/) command. The remainder of this section contains examples of the use of this dict starting with a simple example. The dict has groups of lists where each list item configures DS using [dsconfig](https://backstage.forgerock.com/docs/ds/6.5/configref/). 
 
 ```yaml
 ds_config:
@@ -118,11 +96,10 @@ ds_config:
     - method: set-connection-handler-prop
       handler-name: LDAPS
       add: ssl-cert-nickname:config-server-cert
-ds_config_components:
-  - ldaps
+ds_config_components: ['ldaps']
 ```
 
-So `ldaps` is just group name, you can use any group name or grouping you want. Groups you want to enable need to be added to `ds_config_components`. This is just a simple lists of group names.
+So `ldaps` is just group name, you can use any group name / grouping you want. Groups you want to enable need to be added to `ds_config_components`. This is just a simple lists of group names.
 
 The above dict corresponds to the following command:
 ```bash
@@ -145,8 +122,7 @@ ds_config:
     - method: set-connection-handler-prop
       handler-name: LDAPS
       add: ssl-cert-nickname:config-server-cert
-ds_config_components:
-  - ldaps
+ds_config_components: ['ldaps']
 ```
 
 Below is the Ansible logging for this configuration. It shows that the dict is processed using a number of Ansible tasks. The key tasks are: **Get current config** and **Change config**. The first task checks the current state of DS and the second task changes DS if necessary.
@@ -446,27 +422,97 @@ ds_config:
 ```
 </details>
 
+#### Password validator
 
-### Backends
+dsconfig list-password-validator
 
-[DS backends](https://backstage.forgerock.com/docs/ds/7/config-guide/import-export.html) can be created using config shown below. This config will use [dsconfig create-backend](https://backstage.forgerock.com/docs/ds/7/config-guide/import-export.html#create-database-backend) to create the backend.
+#### Backends
+
+Backends can be created using config shown below. This config will use [dsconfig create-backend](https://backstage.forgerock.com/docs/ds/7/config-guide/import-export.html#create-database-backend) to create the backend.
 
 ```yaml
 ds_config:
-  backend_create:
-    - set:
+  backend-create:
+    - method: create-backend
+      set:
         - base-dn:c=NL
         - enabled:true
         - db-cache-percent:5
       type: je
-      backend-name: appRoot
-    - set:
-        - base-dn:dc=example,dc=com
+      backend-name: suwiRoot
+    - method: create-backend
+      set:
+        - base-dn:dc=bkwi,dc=nl
         - enabled:true
         - db-cache-percent:5
       type: je
       backend-name: userRoot
 ```
+
+#### Backend indexes
+
+Backend indexes are created using [dsconfig create-backend-indexes](https://backstage.forgerock.com/docs/ds/5/configref/create-backend-index.html)
+
+```yaml
+ds_config:
+  backend-indexes-create:
+    - method: create-backend-index
+      backend-name: suwiRoot
+      index-name: member
+      set:
+        - index-type:equality
+        - index-entry-limit:4000
+ds_config_components:
+  - backend-indexes-create:
+```
+
+This is expanded to: 
+
+<details>
+  <summary>ds_config</summary>
+
+```yaml
+ds_config:
+    backend-index-create-userRoot:
+    -   backend-name: userRoot
+        change: true
+        cmd: create-backend-index --backend-name userRoot --set index-type:equality
+            --set index-entry-limit:4000 --index-name member
+        enabled: true
+        get:
+            backend-name: userRoot
+            cmd: list-backend-indexes --backend-name userRoot -s
+            method: list-backend-indexes
+            property: []
+            stdout: 'aci
+
+                ds-sync-conflict
+
+                ds-sync-hist
+
+                entryUUID
+
+                objectClass'
+        index-name: member
+        method: create-backend-index
+        property-update: []
+        set:
+        - index-type:equality
+        - index-entry-limit:4000
+        stdout: '
+
+            The Backend Index was created successfully'
+        step: 0
+        when:
+        -   change: true
+            match-expected: false
+            match-result: false
+            regex: userRoot\n
+```
+</details>
+
+
+
 
 ### Attribute Uniqueness
 
@@ -475,17 +521,124 @@ TODO
 [Attribute Uniqueness](https://backstage.forgerock.com/docs/ds/7/config-guide/attribute-uniqueness.html)
 
 
-### Global ACI
+#### Access control
 
-[Directory Services 7 > Security Guide > Access Control](https://backstage.forgerock.com/docs/ds/7/security-guide/access.html)
+Access control can be managed using [set-access-control-handler-prop](https://backstage.forgerock.com/docs/ds/7.1/configref/subcommands-set-access-control-handler-prop.html). Show below is example of add two global access control policies using `global-aci` key. See also [Access Control](https://backstage.forgerock.com/docs/ds/7/security-guide/access.html).
 
-
-  access-control-handler:
-    - add:
-        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)" 
+```yaml
+ds_config:
+  access-control-handler-properties:
+    - method: set-access-control-handler-prop
+      add:
+        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)"
         - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
-        - global-aci:"(targetattr!=\"userPassword||authPassword||changes||changeNumber||changeType||changeTime||targetDN||newRDN||newSuperior||deleteOldRDN||targetEntryUUID||targetUniqueID||changeInitiatorsName||changeLogCookie\")(version 3.0; acl \"Anonymous read access\"; allow (read,search,compare) userdn=\"ldap:///dc=iwkb,dc=nl\";)"
+ds_config_components:
+  - access-control-handler-properties
+```
 
+This is expanded to: 
+
+<details>
+  <summary>ds_config</summary>
+
+```yaml
+ds_config:
+    access-control-handler-properties:
+    -   add:
+        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl
+            \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)"
+        - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2
+            || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18
+            || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\")
+            (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
+        change: true
+        cmd: set-access-control-handler-prop --add global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\")
+            (version 3.0; acl \"Authenticated users control access\"; allow(read)
+            userdn=\"ldap:///all\";)" --add global-aci:"(targetcontrol=\"1.3.6.1.1.12
+            || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3
+            || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473
+            || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read)
+            userdn=\"ldap:///all\";)"
+        comment: global-aci
+        enabled: true
+        get:
+            cmd: get-access-control-handler-prop --property global-aci -s
+            method: get-access-control-handler-prop
+            property:
+            - global-aci
+            stdout: "enabled\ttrue\nglobal-aci\t(extop=\"1.3.6.1.4.1.26027.1.6.3 ||\
+                \ 1.3.6.1.4.1.1466.20037\") (version 3.0; acl \"Anonymous extended\
+                \ operation access\"; allow(read) userdn=\"ldap:///anyone\";)\t(extop=\"\
+                1.3.6.1.4.1.4203.1.11.1 || 1.3.6.1.4.1.4203.1.11.3 || 1.3.6.1.1.8\"\
+                ) (version 3.0; acl \"Authenticated users extended operation access\"\
+                ; allow(read) userdn=\"ldap:///all\";)\t(target = \"ldap:///cn=schema\"\
+                )(targetattr = \"attributeTypes || objectClasses\")(version 3.0; acl\
+                \ \"Modify schema\"; allow (write) (userdn = \"ldap:///uid=am-config,ou=admins,ou=am-config\"\
+                );)\t(target=\"ldap:///\")(targetscope=\"base\") (targetattr=\"objectClass||namingContexts||supportedAuthPasswordSchemes||supportedControl||supportedExtension||supportedFeatures||supportedLDAPVersion||supportedSASLMechanisms||supportedTLSCiphers||supportedTLSProtocols||vendorName||vendorVersion||alive||healthy\"\
+                )(version 3.0; acl \"User-Visible Root DSE Operational Attributes\"\
+                ; allow (read,search,compare) userdn=\"ldap:///anyone\";)\t(target=\"\
+                ldap:///cn=schema\")(targetscope=\"base\") (targetattr=\"objectClass||attributeTypes||dITContentRules||dITStructureRules\
+                \ ||ldapSyntaxes||matchingRules||matchingRuleUse||nameForms||objectClasses\"\
+                ) (version 3.0; acl \"User-Visible Schema Operational Attributes\"\
+                ; allow (read,search,compare) userdn=\"ldap:///all\";)\t(targetcontrol=\"\
+                1.3.6.1.1.13.1||1.3.6.1.1.13.2 ||1.2.840.113556.1.4.805||1.2.840.113556.1.4.1413\"\
+                ) (version 3.0; acl \"REST to LDAP control access\"; allow(read) userdn=\"\
+                ldap:///all\";)\t(targetcontrol=\"1.3.6.1.4.1.36733.2.1.5.1\") (version\
+                \ 3.0; acl \"Transaction ID control access\"; allow(read) userdn=\"\
+                ldap:///all\";)"
+        method: set-access-control-handler-prop
+        property-update:
+        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl
+            \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)"
+        - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2
+            || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18
+            || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\")
+            (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
+        stdout: ''
+        step: 0
+        when:
+        -   change: true
+            match-expected: false
+            match-result: false
+            prop: global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version
+                3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)"
+            regex: "global-aci.*\t\\(targetcontrol\\=\\\"2\\.16\\.840\\.1\\.113730\\\
+                .3\\.4\\.18\\\"\\)\\ \\(version\\ 3\\.0\\;\\ acl\\ \\\"Authenticated\\\
+                \ users\\ control\\ access\\\"\\;\\ allow\\(read\\)\\ userdn\\=\\\"\
+                ldap\\:\\/\\/\\/all\\\"\\;\\)[\t|\n]"
+        -   change: true
+            match-expected: false
+            match-result: false
+            prop: global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2
+                || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18
+                || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\")
+                (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
+            regex: "global-aci.*\t\\(targetcontrol\\=\\\"1\\.3\\.6\\.1\\.1\\.12\\\
+                \ \\|\\|\\ 1\\.3\\.6\\.1\\.1\\.13\\.1\\ \\|\\|\\ 1\\.3\\.6\\.1\\.1\\\
+                .13\\.2\\ \\|\\|\\ 1\\.2\\.840\\.113556\\.1\\.4\\.319\\ \\|\\|\\ 1\\\
+                .2\\.826\\.0\\.1\\.3344810\\.2\\.3\\ \\|\\|\\ 2\\.16\\.840\\.1\\.113730\\\
+                .3\\.4\\.18\\ \\|\\|\\ 2\\.16\\.840\\.1\\.113730\\.3\\.4\\.9\\ \\\
+                |\\|\\ 1\\.2\\.840\\.113556\\.1\\.4\\.473\\ \\|\\|\\ 1\\.3\\.6\\.1\\\
+                .4\\.1\\.42\\.2\\.27\\.9\\.5\\.9\\\"\\)\\ \\(version\\ 3\\.0\\;\\\
+                \ acl\\ \\\"and\\ the\\ rest\\\"\\;\\ allow\\(read\\)\\ userdn\\=\\\
+                \"ldap\\:\\/\\/\\/all\\\"\\;\\)[\t|\n]"
+
+```
+</details>
+
+To remove those `global-aci` just replace `add` with `remove`
+
+```yaml
+```yaml
+ds_config:
+  access-control-handler-properties:
+    - method: set-access-control-handler-prop
+      remove:
+        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)"
+        - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
+ds_config_components:
+  - access-control-handler-properties
+```
 
 ### Modify
 
