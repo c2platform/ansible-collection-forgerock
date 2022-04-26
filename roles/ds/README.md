@@ -1,8 +1,6 @@
 # Ansible Role ForgeRock Directory Services (DS)
 
-This Ansible role can be used to install and configure [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role can download and setup DS.
-
-Note: on default - without additional configuration - this role will only install DS as CLI utilities. To perform actual setup of DS you will have to configure `ds_setup_config` var. 
+This Ansible role can be used to install and configure [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role can download and setup DS. Note that default - without additional configuration - this role will only install DS as CLI utilities. To perform actual setup of DS you will have to configure `ds_setup_config` var. 
 
 > Server distributions include command-line tools for installing, configuring, and managing servers. The tools make it possible to script all operations.
 
@@ -21,7 +19,7 @@ Note: on default - without additional configuration - this role will only instal
     - [Password validator](#password-validator)
     - [Backends](#backends)
     - [Backend indexes](#backend-indexes)
-  - [Attribute Uniqueness](#attribute-uniqueness)
+    - [Attribute Uniqueness](#attribute-uniqueness)
     - [Access control](#access-control)
   - [Modify](#modify)
     - [Simple](#simple)
@@ -127,7 +125,7 @@ In the remainder of this section whenever `dsconfig` is referenced we are using 
 alias dsconfig="/opt/ds/ds/bin/dsconfig --hostname localhost --port 10636 --bindDN \"cn=Directory Manager\" --bindPasswordFile /root/.dspassword --trustAll --no-prompt"
 ```
 
-The tasks for `ds_config` are in [tasks/config_component.yml](./tasks/config_component.yml). Note that in this tasks file the module [c2platform.forgerock.ds_config_component](../plugins/modules/ds_config_component.py) is used three times. 
+The tasks for `ds_config` are in [tasks/config_component.yml](./tasks/config_component.yml). Note that in this tasks file the module [c2platform.forgerock.ds_config_component](../plugins/modules/ds_config_component.py) is used three times:
 
 1. Dict `ds_config` is prepared for querying the current status of DS. Get commands are added for example `get-connection-handler-prop`.
 2. Current vs desired status analysis is performed and this info is added to `ds_config`. Dict `ds_config` resources that require change / update get for example attribute / key `change: true`.
@@ -536,7 +534,7 @@ ds_config:
 </details>
 
 
-### Attribute Uniqueness
+#### Attribute Uniqueness
 
 Make for example `uid` unique. See also [Attribute Uniqueness](https://backstage.forgerock.com/docs/ds/7/config-guide/attribute-uniqueness.html).
 
