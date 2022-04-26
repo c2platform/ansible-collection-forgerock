@@ -1,6 +1,6 @@
 # Ansible Role ForgeRock Directory Services (DS)
 
-This Ansible role can be used to install and configure [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role can download and setup DS. Note that default - without additional configuration - this role will only install DS as CLI utilities. To perform actual setup of DS you will have to configure [ds_setup_config](#ds_setup_config) dict at a minimum. 
+This Ansible role can be used to install and configure [ForgeRock Directory Services](https://backstage.forgerock.com/docs/ds/6.5/install-guide/) components using the [Cross-Platform Zip](https://backstage.forgerock.com/docs/ds/6.5/install-guide/#install-files-zip). The role can download and setup DS. Note that default - without additional configuration - this role will only install DS as a command-line utility. To perform actual setup of DS you will have to configure [ds_setup_config](#ds_setup_config) dict at a minimum. 
 
 > Server distributions include command-line tools for installing, configuring, and managing servers. The tools make it possible to script all operations.
 
@@ -21,6 +21,7 @@ This Ansible role can be used to install and configure [ForgeRock Directory Serv
     - [Backend indexes](#backend-indexes)
     - [Attribute Uniqueness](#attribute-uniqueness)
     - [Access control](#access-control)
+    - [Other](#other)
   - [Modify](#modify)
     - [Simple](#simple)
     - [Download](#download)
@@ -213,29 +214,30 @@ Log file `ds_config_0_ldaps.yml` is below. Note how the dict `ds_config` has exp
 7. Key `when` shows info used to perform *current* vs *desired state* analysis. In this case regex is simple the property value `config-server-cert`. In this case the `match-result` is equal to `match` ( and `false` ) so *current state* is not the *desired state* and `dsconfig` should run.
 
 ```yaml
-ldaps:
--   add: ssl-cert-nickname:config-server-cert
-    change: true
-    cmd: set-connection-handler-prop --handler-name LDAPS --add ssl-cert-nickname:config-server-cert
-    enabled: true
-    get:
-        cmd: get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+ds_config:
+  ldaps:
+    -   add: ssl-cert-nickname:config-server-cert
+        change: true
+        cmd: set-connection-handler-prop --handler-name LDAPS --add ssl-cert-nickname:config-server-cert
+        enabled: true
+        get:
+            cmd: get-connection-handler-prop --handler-name LDAPS --property ssl-cert-nickname
+            handler-name: LDAPS
+            method: get-connection-handler-prop
+            property: ssl-cert-nickname
+            stdout: 'Property          : Value(s)
+    
+                ------------------:------------
+    
+                ssl-cert-nickname : server-cert'
         handler-name: LDAPS
-        method: get-connection-handler-prop
-        property: ssl-cert-nickname
-        stdout: 'Property          : Value(s)
-
-            ------------------:------------
-
-            ssl-cert-nickname : server-cert'
-    handler-name: LDAPS
-    method: set-connection-handler-prop
-    stdout: ''
-    step: 0
-    when:
-        match: false
-        match-result: false
-        regex: config-server-cert
+        method: set-connection-handler-prop
+        stdout: ''
+        step: 0
+        when:
+            match: false
+            match-result: false
+            regex: config-server-cert
 ```
 
 If we want to now remove this value we could configure for example
@@ -666,6 +668,44 @@ ds_config:
 ds_config_components:
   - access-control-handler-properties
 ```
+
+#### Other
+
+This DS role processes the `ds_config` in a structured and generic way and so will support other types of changes not described above. For example simple setting, adding, removing of properties will be supported. So if you want to use a method like `set-<component-name>-prop` not mentioned in this text, it will work.
+
+For other methods for example `create-backend-index` this will require extra configuration, which you can provide, without the need to change this role.
+
+```yaml
+ds_config:
+  backend-indexes-create:
+    - method: create-backend-index
+      backend-name: suwiRoot
+      index-name: member
+      set:
+        - index-type:equality
+        - index-entry-limit:4000
+ds_config_components:
+  - backend-indexes-create
+```
+
+For these type of methods there is an additional dict `ds_config_get_methods` which has default values see [defaults/main.yml](./defaults/main.yml).
+
+```yaml
+ds_config_get_methods:
+  create-password-policy:
+    method: list-password-policies
+    regex_key: policy-name
+  create-backend:
+    method: list-backends
+    regex_key: backend-name
+  create-backend-index:
+    method: list-backend-indexes
+    regex_key: index-name
+    keys:
+      - backend-name
+```
+
+Note the key `create-backend-index`. So using `ds_config_get_methods` we configure the get method to use `list-backend-indexes`, the keys to add to the get command-line `backend-name` and we also configure which key to use for constructing a regular expression to check current status `index-name`. If you check `logs/ds_config.yml` you can see that from this configuration the get command is `dsconfig list-backend-indexes --backend-name suwiRoot -s` and the `regex` is simply `member\n`.
 
 ### Modify
 
