@@ -157,50 +157,6 @@ Below is the Ansible logging for this configuration. It shows that the dict is p
 
 TODO 
 ```
-TASK [c2platform.forgerock.ds : include_tasks] *********************************
-included: /home/ostraaten/git/vips-gitlab/bkwi-dev/ansible_collections/c2platform/forgerock/roles/ds/tasks/config_component.yml for bkd-ds
-
-TASK [c2platform.forgerock.ds : Log ds_config prepared / 0 → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_0.yml] ***
-skipping: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : Prepare config ldaps] **************************
-ok: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : ds_config prepared] ****************************
-ok: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : Log ds_config prepared / 1  → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_1.yml] ***
-skipping: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : Get current config] ****************************
-ok: [bkd-ds] => (item=0-ldaps-0 set-connection-handler-prop enabled: True)
-
-TASK [c2platform.forgerock.ds : Prepare config ( add current )] ****************
-ok: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : ds_config current] *****************************
-ok: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : Log ds_config prepared / 2 → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_2.yml] ***
-skipping: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : Change config] *********************************
-changed: [bkd-ds] => (item=0-ldaps-0 set-connection-handler-prop enabled: True)
-
-TASK [c2platform.forgerock.ds : Prepare config ( add results )] ****************
-ok: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : ds_config changes] *****************************
-ok: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : Log ds_config changed / 3 → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps_3.yml] ***
-skipping: [bkd-ds]
-
-TASK [c2platform.forgerock.ds : Log ds_config → /opt/ds/ds-6.5.5/logs/ds_config_0_ldaps.yml] ***
-ok: [bkd-ds]
-
-PLAY RECAP *********************************************************************
-bkd-ds                     : ok=79   changed=1    unreachable=0    failed=0    skipped=69   rescued=0    ignored=0   
 ```
 </details>
 
@@ -497,7 +453,7 @@ ds_config:
       backend-name: siwuRoot
     - method: create-backend
       set:
-        - base-dn:dc=bkwi,dc=nl
+        - base-dn:dc=iwkb,dc=nl
         - enabled:true
         - db-cache-percent:5
       type: je
@@ -1504,8 +1460,6 @@ ds_config:
       set:
         - default-password-storage-scheme:Salted SHA-512
         - password-attribute:userPassword
-      enabled: "{{ bkwi_env_uc_hostname in ['bto', 'kit'] }}"
-      comment: "test gebruikers BTO KIT"
   password-policies:
     - method: set-password-policy-prop
       policy-name: "Default Password Policy"
@@ -1532,8 +1486,6 @@ ds_config:
     - method: set-password-policy-prop
       policy-name: "Test gebruikers Password Policy"
       set: "{{ siwunet_ds_config_pps['test-gebruikers'] }}"
-      enabled: "{{ bkwi_env_uc_hostname in ['bto', 'kit'] }}"
-      comment: "test gebruikers BTO KIT"
   password-policy-skip-admin-validation: # note: this resources are always "changed"
     # get-password-policy-prop does not work in 6.5
     - method: set-password-policy-prop
@@ -1549,8 +1501,6 @@ ds_config:
     - method: set-password-policy-prop
       policy-name: "Test gebruikers Password Policy"
       set: skip-validation-for-administrators:true
-      enabled: "{{ bkwi_env_uc_hostname in ['bto', 'kit'] }}"
-      comment: "test gebruikers BTO KIT"
   password-validator-props:
     - method: set-password-validator-prop
       validator-name: Length-Based Password Validator
@@ -1592,7 +1542,7 @@ ds_config:
       backend-name: siwuRoot
     - method: create-backend
       set:
-        - base-dn:dc=bkwi,dc=nl
+        - base-dn:dc=iwkb,dc=nl
         - enabled:true
         - db-cache-percent:5
       type: je
