@@ -16,7 +16,6 @@ This Ansible role can be used to install and configure [ForgeRock Directory Serv
     - [LDAPS](#ldaps)
     - [Global configuration](#global-configuration)
     - [Password policies](#password-policies)
-    - [Password validator](#password-validator)
     - [Backends](#backends)
     - [Backend indexes](#backend-indexes)
     - [Attribute Uniqueness](#attribute-uniqueness)
@@ -446,9 +445,37 @@ ds_config:
 ```
 </details>
 
-#### Password validator
+We can `set`, `add` and `remove` password policy properties.
 
-dsconfig list-password-validator
+```yaml
+ds_config:
+  password-policies:
+    - method: set-password-policy-prop
+      policy-name: "Default Password Policy"
+      set: 
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+        - deprecated-password-storage-scheme:Salted SHA-1
+        - last-login-time-attribute:ds-pwp-last-login-time
+        - last-login-time-format:yyyyMMddHHmmss
+        - password-expiration-warning-interval:604800 s # 7 days
+        - min-password-age:86400 s # 24 hours
+        - password-change-requires-current-password:true
+        - password-history-duration:0 s # 0 seconds
+      add:
+        - password-validator:Length-Based Password Validator
+        - password-validator:Similarity-Based Password Validator
+        - password-validator:Attribute Value
+        - password-validator:Unique Characters
+        - password-validator:Character Set
+      remove:
+        - password-validator:At least 8 characters
+        - password-validator:Common passwords
+        - password-validator:Dictionary
+        - password-validator:Repeated Characters
+```
+
+Note: use time in seconds as shown above. It is possible to configure `7 days` for `password-expiration-warning-interval` but this will cause this property to show up as changed on current vs desired state comparison because DS reports back this setting in seconds.
 
 #### Backends
 
