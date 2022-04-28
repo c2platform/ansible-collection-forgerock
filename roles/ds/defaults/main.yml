@@ -46,6 +46,7 @@ ds_environment:
   OPENDJ_JAVA_HOME: "{{ ds_java_home }}"
   JAVA_HOME: "{{ ds_java_home }}"
 
+ds_config_check_mode: false
 ds_no_log: yes
 ds_debug: no
 

@@ -188,10 +188,6 @@ def ds_config_set_cmd(ci, data):
     else:
         cmd = "{} {}".format(ci['method'], ds_cmd(ci, [], False))
     ci['cmd'] = cmd
-    # if 'change' in cmd:
-    #     from pprint import pprint
-    #     pprint({'ci': ci})
-    #     raise Exception("Onze hoop wat dat er geen change in zou zitten" + cmd)
     return ci
 
 
@@ -204,9 +200,6 @@ def ds_config_get_cmd(ci, data):
     else:  # no get
         ci = ds_config_get_cmd_explicit(ci, data)
     gt_mthd = ci['get']['method']
-    # from pprint import pprint
-    # pprint({"ci['get']": ci['get']})
-    # with open('/vagrant/magweg2.txt', 'a') as f: f.write(ci['get'])
     gt_cmd = ds_cmd(ci['get'])
     ci['get']['cmd'] = \
         "{} {} -s".format(gt_mthd, gt_cmd)  # -s for script friendly

@@ -50,7 +50,7 @@
   with_items: "{{ ds_config[component]|list }}"
   loop_control:
     label: "{{ component_index }}-{{ component }}-{{ item['step'] }} {{ item['method'] }}"
-  when: item['change']
+  when: item['change'] and not ds_config_check_mode
   changed_when: item['changed_when']|default(omit)
   register: ds_config_changes
 

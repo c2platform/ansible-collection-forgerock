@@ -3,4 +3,5 @@
   copy:
     content: "{{ {'ds_config': ds_config}|to_nice_yaml }}"
     dest: "{{ ds_home_version }}/logs/ds_config.yml"
+    mode: 0755
   changed_when: false

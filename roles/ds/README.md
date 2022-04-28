@@ -21,6 +21,7 @@ This Ansible role can be used to install and configure [ForgeRock Directory Serv
     - [Attribute Uniqueness](#attribute-uniqueness)
     - [Access control](#access-control)
     - [Other](#other)
+  - [ds_config_check_mode](#ds_config_check_mode)
   - [Modify](#modify)
     - [Simple](#simple)
     - [Download](#download)
@@ -37,6 +38,9 @@ This Ansible role can be used to install and configure [ForgeRock Directory Serv
   - [Backup](#backup)
 - [Dependencies](#dependencies)
 - [Example configuration](#example-configuration)
+  - [Play](#play)
+  - [Main](#main)
+  - [Config](#config)
 - [Links](#links)
 
 <!-- /MarkdownTOC -->
@@ -490,7 +494,7 @@ ds_config:
         - enabled:true
         - db-cache-percent:5
       type: je
-      backend-name: suwiRoot
+      backend-name: siwuRoot
     - method: create-backend
       set:
         - base-dn:dc=bkwi,dc=nl
@@ -508,7 +512,7 @@ Backend indexes are created using [dsconfig create-backend-indexes](https://back
 ds_config:
   backend-indexes-create:
     - method: create-backend-index
-      backend-name: suwiRoot
+      backend-name: siwuRoot
       index-name: member
       set:
         - index-type:equality
@@ -706,7 +710,7 @@ For other methods for example `create-backend-index` this will require extra con
 ds_config:
   backend-indexes-create:
     - method: create-backend-index
-      backend-name: suwiRoot
+      backend-name: siwuRoot
       index-name: member
       set:
         - index-type:equality
@@ -732,7 +736,11 @@ ds_config_get_methods:
       - backend-name
 ```
 
-Note the key `create-backend-index`. So using `ds_config_get_methods` we configure the get method to use `list-backend-indexes`, the keys to add to the get command-line `backend-name` and we also configure which key to use for constructing a regular expression to check current status `index-name`. If you check `logs/ds_config.yml` you can see that from this configuration the get command is `dsconfig list-backend-indexes --backend-name suwiRoot -s` and the `regex` is simply `member\n`.
+Note the key `create-backend-index`. So using `ds_config_get_methods` we configure the get method to use `list-backend-indexes`, the keys to add to the get command-line `backend-name` and we also configure which key to use for constructing a regular expression to check current status `index-name`. If you check `logs/ds_config.yml` you can see that from this configuration the get command is `dsconfig list-backend-indexes --backend-name siwuRoot -s` and the `regex` is simply `member\n`.
+
+### ds_config_check_mode
+
+The DS role has a check mode var `ds_config_check_mode` default `false` that you can use for `ds_config`. This [check mode](https://docs.ansible.com/ansible/latest/user_guide/playbooks_checkmode.html) focuses only on `ds_config` and it basically disabled to chance commands. 
 
 ### Modify
 
@@ -1243,31 +1251,46 @@ ds_cron:
 
 ## Example configuration
 
+The example configuration in this section also shows vars prefixed with `siwunet_`. These are just "helper" variables. They only exist in `group_vars` to help set actual DS vars that are prefixed with `ds_`. 
+
+There is a lot of configuration so typically you would split this up in seperate YAML files in a `group_vars` directory for your group. In this example we have for example `group_vars/my_ds/main.yml`, `group_vars/my_ds/config.yml` etc.
+
+### Play
+
 ```yaml
----
-- name: myapp_ds
-  hosts: myapp_ds
+- name: my_ds.yml
+  hosts: my_ds
   become: yes
 
   roles:
     - { role: c2platform.core.common,  tags: ["common"] }
     - { role: c2platform.core.java,    tags: ["java"] }
     - { role: c2platform.forgerock.ds, tags: ["forgerock","ds"] }
+
+  vars:
+    ds_debug: false
+    ds_passwords_force: false
 ```
 
-Example configuration that includes `ds_setup_config` for your `group_vars` or `host_vars` configuration, that will perform and configure a DS server.
+### Main
+
+For example in a `main.yml` we might have
 
 ```yaml
 ---
-java_version: jdk11_0411_oj9
-
-ds_version: 6.5.4
+ds_version: 6.5.5
 ds_versions:
-  6.5.4:
-    url: file:///vagrant/downloads/DS-6.5.4.zip
-    checksum: "sha256: 820a197f4ac11b020c653ef00c684e63034df1f9f591b826ee4735c4bde7b8f1"
+  6.5.5:
+    url: "{{ my_artefact_repo }}/software/forgerock/DS-6.5.5.zip"
+    checksum: "sha256: 05865497d76e73a23894d4ce1ccd4478026f0eae8152b0934b266a85d00fe7bd"
 
 common_pip_packages_extra: ['python-ldap']
+
+ds_connect:
+  hostname: "{{ ansible_fqdn }}"
+  port: "{{ ds_adminport }}"
+
+ds_hostname: "{{ inventory_hostname }}.bkd.local"
 
 ds_setup_config:
   instancePath:  "{{ ds_home_version }}"
@@ -1283,58 +1306,93 @@ ds_setup_config:
   set: "am-config/amConfigAdminPassword:{{ ds_rootpw }}"
   acceptLicense: ""
 
-ds_config_backend_index_templates:
-  uid_etc:
-    backend-name: myappRoot
+ds_replication_enable: true
+```
+
+### Config
+
+In `config.yml`
+
+```yaml
+---
+# ds_config, ds_config_components
+siwunet_ds_config_backend_index_templates:
+  index_type1:
+    method: create-backend-index
+    backend-name: siwuRoot
     set:
       - index-type:equality
       - index-entry-limit:4000
-  cn_etc:
-    backend-name: myappRoot
+  index_type2:
+    method: create-backend-index
+    backend-name: siwuRoot
     set:
       - index-type:equality
       - index-type:substring
       - index-entry-limit:4000
 
+siwunet_backend_index_create:
+  - "{{ siwunet_ds_config_backend_index_templates['index_type1']|combine({ 'index-name':'member' }) }}"
+  - "{{ siwunet_ds_config_backend_index_templates['index_type1']|combine({ 'index-name':'uniqueMember' }) }}"
+  - "{{ siwunet_ds_config_backend_index_templates['index_type1']|combine({ 'index-name':'ou' }) }}"
+  - "{{ siwunet_ds_config_backend_index_templates['index_type2']|combine({ 'index-name':'cn' }) }}"
+  - "{{ siwunet_ds_config_backend_index_templates['index_type2']|combine({ 'index-name':'givenName' }) }}"
+  - "{{ siwunet_ds_config_backend_index_templates['index_type2']|combine({ 'index-name':'sn' }) }}"
+  - "{{ siwunet_ds_config_backend_index_templates['index_type2']|combine({ 'index-name':'mail' }) }}"
+  - method: create-backend-index
+    set:
+      - index-type:equality
+      - index-type:substring
+      - index-entry-limit:100000
+    backend-name: siwuRoot
+    index-name: businessCategory
+  - method: create-backend-index
+    set:
+      - index-type:equality
+      - index-type:substring
+      - index-entry-limit:100000
+    backend-name: siwuRoot
+    index-name: uid
+
 # Password policy settings
-ds_config_pps:
+siwunet_ds_config_pps:
   generic:
     - default-password-storage-scheme:Salted SHA-512
     - password-attribute:userPassword
     - deprecated-password-storage-scheme:Salted SHA-1
     - last-login-time-attribute:ds-pwp-last-login-time
     - last-login-time-format:yyyyMMddHHmmss
-    - password-expiration-warning-interval:7 days
-    - min-password-age:24 hours
+    - password-expiration-warning-interval:604800 s # 7 days
+    - min-password-age:86400 s # 24 hours
     - password-change-requires-current-password:true
-    - password-history-duration:0 seconds
-    - skip-validation-for-administrators:true
+    - password-history-duration:0 s # 0 seconds
+    # - skip-validation-for-administrators:true # seperate group
     - require-secure-authentication:true
   default:
     - allow-user-password-changes:true
     - expire-passwords-without-warning:true
     - grace-login-count:2
-    - lockout-duration:0 minutes
-    - lockout-failure-expiration-interval:0 minutes
+    - lockout-duration:0 s # 0 minutes
+    - lockout-failure-expiration-interval:0 s # 0 minutes
     - lockout-failure-count:5
-    - max-password-reset-age:14 days
+    - max-password-reset-age:1209600 s # 14 days
     - password-history-count:10
     - require-secure-password-changes:true
-    - max-password-age:56 days
+    - max-password-age:4838400 s # 56 days
     - force-change-on-add:true
     - force-change-on-reset:true
-    - idle-lockout-interval:45 days
+    - idle-lockout-interval:3888000 s # 45 days
   service-accounts:
     - expire-passwords-without-warning:false
     - force-change-on-add:false
     - force-change-on-reset:false
     - grace-login-count:10
-    - idle-lockout-interval:2000 days
+    - idle-lockout-interval:172800000 s # 2000 days
     - lockout-duration:1 s
     - lockout-failure-expiration-interval:1 s
     - lockout-failure-count:10000
-    - max-password-age:2000 days
-    - max-password-reset-age:8 hours
+    - max-password-age:172800000 s # 2000 days
+    - max-password-reset-age:28800 s # 8 hours
     - password-history-count:5
     - require-secure-password-changes:true
   jmx:
@@ -1343,400 +1401,237 @@ ds_config_pps:
     - force-change-on-add:false
     - force-change-on-reset:false
     - grace-login-count:10
-    - idle-lockout-interval:2000 days
+    - idle-lockout-interval:172800000 s # 2000 days
     - lockout-duration:480 s
     - lockout-failure-expiration-interval:600 s
     - lockout-failure-count:5
-    - max-password-age:2000 days
-    - max-password-reset-age:8 hours
+    - max-password-age:172800000 s # 2000 days
+    - max-password-reset-age:28800 s # 8 hours
     - password-history-count:5
-    - password-history-duration:0 seconds
+    - password-history-duration:0 s
+  test-gebruikers:
+    - default-password-storage-scheme:Salted SHA-512
+    - allow-user-password-changes:true
+    - expire-passwords-without-warning:false
+    - password-expiration-warning-interval:432000 s # 5 days
+    - force-change-on-add:false
+    - force-change-on-reset:false
+    - grace-login-count:0
+    - idle-lockout-interval:0 s
+    - lockout-duration:0 s
+    - lockout-failure-expiration-interval:0 s
+    - lockout-failure-count:0
+    - max-password-age:0 s
+    - max-password-reset-age:0 s
+    - min-password-age:0 s
+    - password-attribute:userPassword
+    - password-change-requires-current-password:false
+    - password-history-count:0
+    - password-history-duration:0 s
+    - require-secure-authentication:false
+    - require-secure-password-changes:false
+
+ds_config_enabled: true
 
 ds_config:
-  connection-handler_set_cert: # note underscore → connection-handler component
-    - handler-name: LDAPS
+  ldaps:
+    - method: set-connection-handler-prop
+      handler-name: LDAPS
       add: ssl-cert-nickname:config-server-cert
-  connection-handler:
-    - handler-name: LDAP
-      set: enabled:false
-    - handler-name: LDAPS
+    - method: set-connection-handler-prop
+      handler-name: LDAP
+      set: enabled:true
+    - method: set-connection-handler-prop
+      handler-name: LDAPS
       set: allow-ldap-v2:true
-  global-configuration:
-    - set: lookthrough-limit:20000
-    - set: smtp-server:127.0.0.1:25
+  global:
+    - method: set-global-configuration-prop
+      set: lookthrough-limit:20000
+    - method: set-global-configuration-prop
+      set: smtp-server:127.0.0.1:25
+    - method: set-global-configuration-prop
+      set: size-limit:10000
   log-publisher:
-    - publisher-name: File-Based Access Logger
+    - method: set-log-publisher-prop
+      publisher-name: File-Based Access Logger
       set: enabled:false
-  password-policy_create:
-    - policy-name: Default Password Policy
+    - method: set-log-publisher-prop
+      publisher-name: File-Based Audit Logger
+      set: enabled:false
+    - method: set-log-publisher-prop
+      publisher-name: File-Based Debug Logger
+      set: enabled:false
+    - method: set-log-publisher-prop
+      publisher-name: File-Based Error Logger
+      set: enabled:true
+    - method: set-log-publisher-prop
+      publisher-name: File-Based HTTP Access Logger
+      set: enabled:false
+    - method: set-log-publisher-prop
+      publisher-name: Filtered Json File-Based Access Logger
+      set: enabled:false
+    - method: set-log-publisher-prop
+      publisher-name: Json File-Based Access Logger
+      set: enabled:true
+    - method: set-log-publisher-prop
+      publisher-name: Json File-Based HTTP Access Logger
+      set: enabled:false
+    - method: set-log-publisher-prop
+      publisher-name: Replication Repair Logger
+      set: enabled:true
+  password-policies-create:
+    - method: create-password-policy # default created on setup!?
+      policy-name: "Default Password Policy"
       type: password-policy
       set:
         - default-password-storage-scheme:Salted SHA-512
         - password-attribute:userPassword
-      when:
-        regex: '^(Default Password Policy)\s+:'
-        method: list-password-policies
-        match: no
-        #switches:
-        #  property: password-attribute
-  password-policy:
-    - policy-name: Default Password Policy
-      set: "{{ ds_config_pps['generic'] + ds_config_pps['default'] }}"
+    - method: create-password-policy
+      policy-name: "Password Policy Service Accounts"
+      type: password-policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+    - method: create-password-policy
+      policy-name: "Password Policy JMX Service Accounts"
+      type: password-policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+    - method:  create-password-policy
+      policy-name: "Test gebruikers Password Policy"
+      type: password-policy
+      set:
+        - default-password-storage-scheme:Salted SHA-512
+        - password-attribute:userPassword
+      enabled: "{{ bkwi_env_uc_hostname in ['bto', 'kit'] }}"
+      comment: "test gebruikers BTO KIT"
+  password-policies:
+    - method: set-password-policy-prop
+      policy-name: "Default Password Policy"
+      set: "{{ siwunet_ds_config_pps['generic'] + siwunet_ds_config_pps['default'] }}"
       add:
         - password-validator:Length-Based Password Validator
         - password-validator:Similarity-Based Password Validator
         - password-validator:Attribute Value
         - password-validator:Unique Characters
         - password-validator:Character Set
-  password-policy_remove:
-    - policy-name: Default Password Policy
-      remove: password-validator:At least 8 characters
-      when:
-        regex: '^password-validator\s:[\S\s.]*(\sAt least 8 characters)[\s,].*$'
-        method: get-password-policy-prop
-        match: yes
-        switches:
-           policy-name: Default Password Policy
-           property: password-validator
-    - policy-name: Default Password Policy
-      remove: password-validator:Common passwords
-      when:
-        regex: '^password-validator\s:[\S\s.]*(\sCommon passwords)[\s,].*$'
-        method: get-password-policy-prop
-        match: yes
-        switches:
-           policy-name: Default Password Policy
-           property: password-validator
-    - policy-name: Default Password Policy
-      remove: password-validator:Dictionary
-      when:
-        regex: '^password-validator\s:[\S\s.]*(\sDictionary)[\s,].*$'
-        method: get-password-policy-prop
-        match: yes
-        switches:
-           policy-name: Default Password Policy
-           property: password-validator
-    - policy-name: Default Password Policy
-      remove: password-validator:Repeated Characters
-      when:
-        regex: '^password-validator\s:[\S\s.]*(\sRepeated Characters)[\s,].*$'
-        method: get-password-policy-prop
-        match: yes
-        switches:
-           policy-name: Default Password Policy
-           property: password-validator
-  password-policy_service-accounts-create:
-    - policy-name: Password Policy Service Accounts
-      type: password-policy
-      set:
-        - default-password-storage-scheme:Salted SHA-512
-        - password-attribute:userPassword
-  password-policy_service-accounts:
-    - policy-name: Password Policy Service Accounts
-      set: "{{ ds_config_pps['generic'] + ds_config_pps['service-accounts'] }}"
-  password-policy_service-accounts-jmx-create:
-    - policy-name: Password Policy JMX Service Accounts
-      type: password-policy
-      set:
-        - default-password-storage-scheme:Salted SHA-512
-        - password-attribute:userPassword
-  password-policy_service-accounts-jmx:
-    - policy-name: Password Policy JMX Service Accounts
-      set: "{{ ds_config_pps['generic'] + ds_config_pps['jmx'] }}"
-  password-validator:
-    - validator-name: '"Length-Based Password Validator"'
+    - method: set-password-policy-prop
+      policy-name: "Default Password Policy" # TODO add to previous
+      remove:
+        - password-validator:At least 8 characters
+        - password-validator:Common passwords
+        - password-validator:Dictionary
+        - password-validator:Repeated Characters
+    - method: set-password-policy-prop
+      policy-name: "Password Policy Service Accounts"
+      set: "{{ siwunet_ds_config_pps['generic'] + siwunet_ds_config_pps['service-accounts'] }}"
+    - method: set-password-policy-prop
+      policy-name: "Password Policy JMX Service Accounts"
+      set: "{{ siwunet_ds_config_pps['generic'] + siwunet_ds_config_pps['jmx'] }}"
+    - method: set-password-policy-prop
+      policy-name: "Test gebruikers Password Policy"
+      set: "{{ siwunet_ds_config_pps['test-gebruikers'] }}"
+      enabled: "{{ bkwi_env_uc_hostname in ['bto', 'kit'] }}"
+      comment: "test gebruikers BTO KIT"
+  password-policy-skip-admin-validation: # note: this resources are always "changed"
+    # get-password-policy-prop does not work in 6.5
+    - method: set-password-policy-prop
+      policy-name: "Default Password Policy"
+      set: skip-validation-for-administrators:true
+      # changed_when: false # TODO
+    - method: set-password-policy-prop
+      policy-name: "Password Policy Service Accounts"
+      set: skip-validation-for-administrators:true
+    - method: set-password-policy-prop
+      policy-name: "Password Policy JMX Service Accounts"
+      set: skip-validation-for-administrators:true
+    - method: set-password-policy-prop
+      policy-name: "Test gebruikers Password Policy"
+      set: skip-validation-for-administrators:true
+      enabled: "{{ bkwi_env_uc_hostname in ['bto', 'kit'] }}"
+      comment: "test gebruikers BTO KIT"
+  password-validator-props:
+    - method: set-password-validator-prop
+      validator-name: Length-Based Password Validator
       set:
         - enabled:true
         - min-password-length:8
         - max-password-length:0
-    - validator-name: '"Similarity-Based Password Validator"'
+    - method: set-password-validator-prop
+      validator-name: Similarity-Based Password Validator
       set:
         - enabled:true
         - min-password-difference:3
-    - validator-name: '"Attribute Value"'
+    - method: set-password-validator-prop
+      validator-name: Attribute Value
       set: enabled:true
       add:
         - match-attribute:cn
         - match-attribute:sn
         - match-attribute:givenName
         - match-attribute:uid
-    - validator-name: '"Unique Characters"'
+    - method: set-password-validator-prop
+      validator-name: Unique Characters
       set:
         - enabled:true
         - min-unique-characters:4
         - case-sensitive-validation:true
-    - validator-name: '"Character Set"'
+    - method: set-password-validator-prop
+      validator-name: Character Set
       set:
         - enabled:true
         - allow-unclassified-characters:true
-  backend_create:
-    - set:
+  backend-create:
+    - method: create-backend
+      set:
         - base-dn:c=NL
         - enabled:true
         - db-cache-percent:5
       type: je
-      backend-name: myappRoot
-    - set:
-        - base-dn:dc=myapporg,dc=nl
+      backend-name: siwuRoot
+    - method: create-backend
+      set:
+        - base-dn:dc=bkwi,dc=nl
         - enabled:true
         - db-cache-percent:5
       type: je
       backend-name: userRoot
-  access-control-handler:
-    - add:
-        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)" 
+  access-control-handler-properties:
+    - method: set-access-control-handler-prop
+      add:
+        - global-aci:"(targetcontrol=\"2.16.840.1.113730.3.4.18\") (version 3.0; acl \"Authenticated users control access\"; allow(read) userdn=\"ldap:///all\";)"
         - global-aci:"(targetcontrol=\"1.3.6.1.1.12 || 1.3.6.1.1.13.1 || 1.3.6.1.1.13.2 || 1.2.840.113556.1.4.319 || 1.2.826.0.1.3344810.2.3 || 2.16.840.1.113730.3.4.18 || 2.16.840.1.113730.3.4.9 || 1.2.840.113556.1.4.473 || 1.3.6.1.4.1.42.2.27.9.5.9\") (version 3.0; acl \"and the rest\"; allow(read) userdn=\"ldap:///all\";)"
-        - global-aci:"(targetattr!=\"userPassword||authPassword||changes||changeNumber||changeType||changeTime||targetDN||newRDN||newSuperior||deleteOldRDN||targetEntryUUID||targetUniqueID||changeInitiatorsName||changeLogCookie\")(version 3.0; acl \"Anonymous read access\"; allow (read,search,compare) userdn=\"ldap:///dc=myapporg,dc=nl\";)"
-  backend-index_create:
-    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name': 'uid' }) }}"
-    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'member' }) }}"
-    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'uniqueMember' }) }}"
-    - "{{ ds_config_backend_index_templates['uid_etc']|combine({ 'index-name':'ou' }) }}"
-    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'cn' }) }}"
-    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'givenName' }) }}"
-    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'sn' }) }}"
-    - "{{ ds_config_backend_index_templates['cn_etc']|combine({ 'index-name':'mail' }) }}"
-    - set:
-        - index-type:equality
-        - index-type:substring
-        - index-entry-limit:100000
-      backend-name: myappRoot
-      index-name: businessCategory
-#  password-validator_add:
-#    - validator-name: '"Attribute Value"'
-#      set: enabled:true
-#      add:
-#        - match-attribute:cn
-#        - match-attribute:sn
-#        - match-attribute:givenName
-#        - match-attribute:uid
-#      #remove:
-#      #  - match-attribute:sn
+      comment: global-aci
+  backend-index-create-siwuRoot: "{{ siwunet_backend_index_create }}"
+  backend-index-create-userroot: "{{ siwunet_backend_index_create|c2platform.core.update_list_attibute('backend-name', 'userRoot')|list }}"
+  uid-unique:
+    - method: set-plugin-prop
+      plugin-name: UID Unique Attribute
+      set:
+        - enabled:true
+  replication-server:
+    - method: set-replication-server-prop
+      provider-name: Multimaster Synchronization
+      set:
+        - changelog-enabled:disabled
 
 ds_config_components:
-  - connection-handler
-  - global-configuration
+  - ldaps
+  - global
   - log-publisher
-  - password-policy_create
-  - password-policy
-  - password-policy_service-accounts-create
-  - password-policy_service-accounts
-  - password-policy_service-accounts-jmx-create
-  - password-policy_service-accounts-jmx
-  - password-validator
-  - password-policy_remove
-  - backend_create
-  - backend-index_create
-  - access-control-handler
-  #- password-validator_add
+  - password-policies-create
+  - password-policies
+  - password-policy-skip-admin-validation
+  - password-validator-props
+  - backend-create
+  - access-control-handler-properties
+  - backend-index-create-siwuRoot
+  - backend-index-create-userroot
+  - uid-unique
 
-ds_db_schema_ldifs: # default disabled via ds_db_schema_ldifs_enable: no
-  myappPerson: | # db/schema/myappPerson.ldif to create myappPerson object class
-    dn: cn=schema
-    changetype: modify
-    add: attributeTypes
-    attributeTypes: ( myapp-account-expiration-time-oid NAME 'myapp-account-expiration-time' DESC 'The time the account becomes disabled' EQUALITY generalizedTimeMatch ORDERING generalizedTimeOrderingMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE USAGE userApplications )
-    dn: cn=schema
-    changetype: modify
-    add: objectClasses
-    objectClasses: ( myappPerson-oid NAME 'myappPerson' DESC 'Extra properties for a myapp user' SUP top AUXILIARY MAY ( myapp-account-expiration-time ) )
-ds_modify:
-  - name: userstore.myappRoot
-    ldif: |
-      dn: c=NL
-      objectClass: country
-      objectClass: top
-      c: NL
-  - name: userstore.userRoot
-    ldif: |
-      dn: dc=myapporg,dc=nl
-      objectClass: domain
-      objectClass: top
-      dc: myapporg
-  - name: organization.special
-    ldif: |
-      dn: o=special,c=NL
-      objectClass: organization
-      objectClass: top
-      o: special
-  - name: organization.myapp
-    ldif: |
-      dn: o=myapp,c=NL
-      objectClass: organization
-      objectClass: top
-      o: myapp
-  - name: special.sa_reports
-    ldif: |
-      dn: cn=sa_reports,o=special,c=NL
-      objectClass: person
-      objectClass: inetOrgPerson
-      objectClass: organizationalPerson
-      objectClass: top
-      sn: Reports
-      cn: sa_reports
-      givenName: Service Account
-      uid: sa_reports
-      ds-pwp-password-policy-dn: cn=Password Policy Service Accounts,cn=Password Policies,cn=config
-      ds-rlim-lookthrough-limit: 100000
-      ds-pwp-last-login-time: 20200903105229
-      ds-privilege-name: unindexed-search
-      ds-rlim-time-limit: 300
-      ds-rlim-size-limit: 10000
-  - name: special.sa_monitor
-    ldif: |
-      dn: cn=sa_monitor,o=special,c=NL
-      objectClass: person
-      objectClass: inetOrgPerson
-      objectClass: organizationalPerson
-      objectClass: top
-      sn: Myapp JMX monitoring account
-      cn: sa_monitor
-      givenName: Service Account
-      uid: sa_monitor
-      ds-pwp-password-policy-dn: cn=Password Policy JMX Service Accounts,cn=Password Policies,cn=config
-      ds-rlim-lookthrough-limit: 100000
-      ds-pwp-last-login-time: 20200903105938
-      ds-privilege-name: jmx-read
-      ds-rlim-size-limit:  1000
-  - name: special.sa_useradmin
-    ldif: |
-      dn: cn=sa_useradmin,o=special,c=NL
-      objectClass: person
-      objectClass: inetOrgPerson
-      objectClass: organizationalPerson
-      objectClass: top
-      sn: Myapp User Administrator
-      cn: sa_useradmin
-      givenName: Service Account
-      uid: sa_useradmin
-      ds-pwp-password-policy-dn: cn=Password Policy Service Accounts,cn=Password Policies,cn=config
-      ds-rlim-lookthrough-limit: 100000
-      ds-pwp-last-login-time: 20200829000000
-      ds-privilege-name: proxied-auth
-      ds-privilege-name: subentry-write
-      ds-privilege-name: password-reset
-      ds-privilege-name: modify-acl
-      ds-privilege-name: unindexed-search
-      ds-rlim-size-limit: 100000
-  - name: passwordpolicy.am_config
-    ldif: |
-      dn: uid=am-config,ou=admins,ou=am-config
-      changetype: modify
-      replace: ds-pwp-password-policy-dn
-      ds-pwp-password-policy-dn: cn=Root Password Policy,cn=Password Policies,cn=config
-    search: "&(objectclass=top)(uid=am-config)(ds-pwp-password-policy-dn=cn=Root Password Policy,cn=Password Policies,cn=config)"
-  - name: add-ACI-to-cNL
-    ldif: |
-      dn: c=NL
-      changetype: modify
-      add: aci
-      aci: (target="ldap:///o=myapp,c=nl")(targetattr ="*")(version 3.0; acl "Allow apps proxied auth"; allow(all, proxy)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
-      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Allow apps proxy auth"; allow(all)(userdn =  "ldap:///cn=sa_useradmin,o=special,c=nl");)
-      aci: (target="ldap:///o=myapp,c=nl")(version 3.0; acl "Delegated import and export rights"; allow (import,export) (userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
-      aci: (extop="1.3.6.1.4.1.4203.1.11.1 || 1.3.6.1.4.1.26027.1.6.1")(version 3.0; acl "Password modify and policy extended operation"; allow (read)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
-      aci: (target="ldap:///o=myappdesk,c=nl")(targetattr ="* || +")(version 3.0; acl "Allow auth"; allow(add,delete,write,read,search,compare)(userdn = "ldap:///o=myappdesk,c=nl??sub?(uid=a_*)");)
-      aci: (target="ldap:///o=myapp,c=nl")(targetattr ="* || +")(version 3.0; acl "Allow auth"; allow(add,delete,write,read,search,compare)(userdn = "ldap:///o=myappdesk,c=nl??sub?(uid=a_*)");)
-      aci: (target="ldap:///o=myapp,c=nl")(targetattr="aci||ds-pwp-account-disabled")(version 3.0; acl "Delegated write and delete rights"; allow (delete,write,read,search,compare)(userdn = "ldap:///cn=sa_useradmin,o=special,c=nl");)
-      aci: (targetattr="objectclass||cn||sn||givenName||initials||mail||telephoneNumber||facsimileTelephoneNumber||businessCategory||myapp-account-expiration-time||userPassword||authPassword||isMemberOf")(version 3.0; acl "Self entry read"; allow (read,search,compare) userdn="ldap:///self";)
-      aci: (targetattr="sn||givenName||initials||mail||telephoneNumber||facsimileTelephoneNumber")(version 3.0; acl "Self entry update"; allow (delete,write) userdn="ldap:///self";)
-      aci: (targetattr="objectClass||businessCategory||myapp-account-expiration-time||ou||cn||employeeNumber||telephoneNumber||facsimileTelephoneNumber||givenName||initials||mail||sn||uid||isMemberOf||ds-pwp-account-disabled||ds-pwp-last-login-time||ds-pwp-password-expiration-time||ds-pwp-warned-time||pwdAccountLockedTime||pwdChangedTime||pwdFailureTime||pwdReset")(version 3.0; acl "Report user read rights"; allow (read,search,compare)(userdn = "ldap:///cn=sa_reports,o=special,c=nl");)
-      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Report user account status rights"; allow(all) userdn = "ldap:///cn=sa_reports,o=special,c=nl";)
-      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Self account status rights"; allow (read) userdn="ldap:///self";)
-      aci: (target="ldap:///o=myapp,c=nl")(targetcontrol = "1.3.6.1.4.1.42.2.27.9.5.8")(targetattr ="*")(version 3.0; acl "Account usability"; allow(all)(userdn = "ldap:///all");)
-    search: "&(objectclass=top)(c=NL)(aci=*)"
-  - name: 11-add-self-manage-settings
-    ldif: |
-      dn: c=NL
-      changetype: modify
-      add: aci
-      aci: (targetattr = "objectclass || inetuserstatus || iplanet-am-user-login-status || iplanet-am-user-account-life || iplanet-am-session-quota-limit || iplanet-am-user-alias-list ||  iplanet-am-session-max-session-time || iplanet-am-session-max-idle-time || iplanet-am-session-get-valid-sessions || iplanet-am-session-destroy-sessions || iplanet-am-user-admin-start-dn || iplanet-am-auth-post-login-process-class || iplanet-am-user-federation-info || iplanet-am-user-federation-info-key || ds-pwp-account-disabled || sun-fm-saml2-nameid-info || sun-fm-saml2-nameid-infokey || sunAMAuthInvalidAttemptsData || memberof || member || kbaInfoAttempts")(version 3.0; acl "OpenAM User self modification denied for these attributes"; deny (write) userdn ="ldap:///self";)
-      aci: (targetcontrol="1.3.6.1.4.1.42.2.27.8.5.1 || 1.3.6.1.4.1.36733.2.1.5.1") (version 3.0; acl "Allow anonymous access to behera draft and transaction control"; allow(read) userdn="ldap:///anyone";)
-      aci: (targetattr="userPassword") (version 3.0; acl "Allow password change"; allow (write) userdn="ldap:///self";)
-    search: "&(objectclass=top)(c=NL)(aci=*Allow password change*)"
-  - name: 15-add-aci-for-sa_useradmin
-    ldif: |
-      dn: cn=sa_useradmin,o=special,c=NL
-      changetype: modify
-      add: aci
-      aci: (targetcontrol="2.16.840.1.113730.3.4.18")
-        (version 3.0; acl "Apps can use the Proxy Authorization Control";
-        allow(read) userdn="ldap:///cn=sa_useradmin,o=special,c=NL";)
-    search: "&(objectclass=top)(uid=sa_useradmin)(aci=*)"
-  - name: 16-delete-password-reset-from-sa_useradmin
-    ldif: |
-      dn: cn=sa_useradmin,o=special,c=NL
-      changetype: modify
-      delete: ds-privilege-name
-      ds-privilege-name: password-reset
-    search: "&(objectclass=top)(uid=sa_useradmin)(!(ds-privilege-name=password-reset))"
-
-ds_import: # default disabled - ds_import_enable: no
-  - name: export
-    ldif-url: file:///vagrant/downloads/export.ldif
-    properties:
-      backendId: myappRoot
-      skipFile: /tmp/export-skipped.ldif
-      rejectFile: /tmp/export-reject.ldif
-      no-prompt: ''
-      offline: ''
-      # excludeFilter
-    sed:
-      - 's/dn: c=nl/dn: c=NL/g'
-      - 's/c: nl/c: NL/g'
-# see secrets.yml for passwords - passwords are default 'secret'
-#ds_passwords:
-# see also secrets.yml
-#    sa_reports:
-#      authzId: cn=sa_reports,o=special,c=NL
-#      newPassword: supersecure
-#    sa_monitor:
-#      authzId: cn=sa_monitor,o=special,c=NL
-#      newPassword: supersecure
-#    sa_useradmin:
-#      authzId: cn=sa_useradmin,o=special,c=NL
-#      newPassword: supersecure
-
-ds_git_repos:
-  scripts:
-    repo: "{{ myapp_ds_scripts_repo }}" # vault
-    dest: "{{ ds_home_link }}/scripts"
-
-ds_scripts_connect:
-  hostname: "{{ ds_connect['hostname'] }}"
-  port: "{{ ds_connect['port'] }}"
-  bindDN:  "{{ ds_connect['bindDN'] }}"
-  bindPassword: "{{ ds_connect['bindPassword'] }}"
-  baseDn: c=NL
-
-ds_scripts:
-  password-reset_subentry-write:
-    # Note: this script does not filter currently on cn=Administrators
-    # which is currently not a problem because there are not other groups
-    # than groups with cn=Administrators
-    shell: |
-      # python3 -c 'import sys; print(sys.stdout.encoding)'
-      python3 migrate-admin-aci.py {{ ds_scripts_connect|c2platform.forgerock.ds_cmd }}
-    chdir: "{{ ds_home_version }}/scripts/ds"
-  migrate-myapp-expiry:
-    shell: |
-      python3 migrate-myapp-expiry.py {{ ds_scripts_connect|c2platform.forgerock.ds_cmd }}
-    chdir: "{{ ds_home_version }}/scripts/ds"
-
-#  ds_attributes:
-#  password-reset_subentry-write:
-#    filter: (objectclass=groupOfUniqueNames)
-#    attributes:
-#      - name: aci
-#        value: >
-#          (target="ldap:///{dn-parent}")(targetattr="ds-pwp-account-expiration-time")
-#          (version 3.0; acl "Delegated expiration rights"; allow (write,delete) groupdn="ldap:///dn"; )
-#        target: parent # default self
-#    members:
-#      - name: uniqueMember
-#        attributes:
-#          - name: ds-privilege-name
-#            values: ['password-reset', 'subentry-write']
-#
+ds_config_components_replication:
+  - replication-server
 ```
 
 
@@ -1744,7 +1639,6 @@ ds_scripts:
 
 * [How do I configure DS/OpenDJ (All versions) to be stopped and started as a service using systemd and systemctl? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a56766667)
 * [DS 6 > Configuration Reference](https://backstage.forgerock.com/docs/ds/6/configref/index.html#preface) aka `dsconfig` command.
-* Note that the -- commandline options given in the Forgerock website, as mentioned above, at times are buggy. The leading source for the proper ones is the help screen (dsconfig --help).
 * [DS 6 > Reference | Replication](https://backstage.forgerock.com/docs/ds/6/reference/index.html#dsreplication-1)
 * [How do I verify that a DS 5.x, 6 or OpenDJ 3.x server is responding to LDAP requests without providing a password? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a54816700)
 * [How do I rebuild indexes in DS (All versions)? - Knowledge - BackStage](https://backstage.forgerock.com/knowledge/kb/article/a46097400)
