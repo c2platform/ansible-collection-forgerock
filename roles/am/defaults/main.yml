@@ -157,9 +157,6 @@ am_amster_templates:
     scripts:
       - 110-function-delete-authentication-tree
       - 110-function-create-authentication-tree
-      # - 110-function-load-authentication-service
-      # Set tree as default service
-      # TODO uncomment when password reset works
   112-configure-top-level-realm:
     vars: ['newChainName', 'realm']
     vars-optional:
