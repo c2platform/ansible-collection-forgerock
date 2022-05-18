@@ -1,6 +1,6 @@
 # Ansible Collection - c2platform.forgerock
 
-[![Linters ( Ansible, YAML )](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/ci.yml/badge.svg)](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/ci.yml)
+[![Linters ( Ansible, YAML )](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/ci.yml/badge.svg)](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/ci.yml) [![Release and deploy to Galaxy](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/release.yml/badge.svg)](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/release.yml)
 
 Roles for [ForgeRock](https://www.forgerock.com/) platform.
 
