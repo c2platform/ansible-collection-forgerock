@@ -1,5 +1,7 @@
 # Ansible Collection - c2platform.forgerock
 
+[![Linters ( Ansible, YAML )](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/ci.yml/badge.svg)](https://github.com/c2platform/ansible-collection-forgerock/actions/workflows/ci.yml)
+
 Roles for [ForgeRock](https://www.forgerock.com/) platform.
 
 ## Roles
