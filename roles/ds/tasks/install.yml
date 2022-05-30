@@ -4,6 +4,14 @@
     path: "{{ ds_home_version }}"
   register: home_folder
 
+- name: Create home
+  file:
+    path: "{{ ds_home }}"
+    state: directory
+    owner: "{{ ds_owner }}"
+    group: "{{ ds_group }}"
+    mode: "{{ ds_home_dir_mode }}"
+
 - block:
     - name: Download zip
       get_url:
@@ -34,16 +42,15 @@
         shell: /bin/bash
         system: true
 
-    - name: Create home
+    - name: Create dirs
       file:
         path: "{{ item }}"
         state: directory
         owner: "{{ ds_owner }}"
         group: "{{ ds_group }}"
-        mode: 0755
+        mode: "{{ ds_home_dir_mode }}"
         recurse: yes
       with_items:
-        - "{{ ds_home }}"
         - "{{ ds_home_version }}"
         - "{{ ds_home_version }}/scripts"
         - "{{ ds_home|c2platform.forgerock.ds_config_fingerprint_folder(ds_version) }}"

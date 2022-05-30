@@ -5,7 +5,7 @@
     state: directory
     owner: "{{ ig_owner }}"
     group: "{{ ig_group }}"
-    mode: 0755
+    mode: "{{ ig_home_dir_mode }}"
   with_items:
     - "{{ ig_home }}"
     - "{{ ig_home }}/config"

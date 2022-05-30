@@ -1,6 +1,7 @@
 ---
 am_amster_version: 6.5.3
 am_amster_home: /opt/amster
+am_amster_directories_dir_mode: '0750'
 am_amster_home_version: "{{ am_amster_home }}/{{ am_amster_home|basename }}-{{ am_amster_version }}"
 am_amster_home_link: "{{ am_amster_home  }}/{{ am_amster_home|basename }}"
 am_amster_scripts_dir: "{{ am_amster_home_version }}/scripts"
